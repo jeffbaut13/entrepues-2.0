@@ -21,6 +21,7 @@ import CheckoutPage from "../pages/checkout/CheckoutPage";
 import CheckoutSuccesPage from "../pages/checkout/CheckoutSuccesPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import CartaPage from "../pages/carta/CartaPage";
+import SeleccionPlatosPage from "../pages/reservar/SeleccionPlatosPage";
 
 /**
  * Configuración centralizada de rutas de la aplicación
@@ -36,7 +37,6 @@ function AppRouter() {
           <Route path="/" element={<HomePage />} />
 
           {/* Logica de reserva y checkout */}
-          <Route path="/reservar" element={<ReservarPage />} />
 
           {/* Logica menu y productos */}
           <Route path="/menu" element={<MenuPage />} />
@@ -47,6 +47,11 @@ function AppRouter() {
         <Route path="/carta" element={<CartaPage />} />
 
         <Route element={<CheckoutLayout />}>
+          <Route path="/reservar" element={<ReservarPage />} />
+          <Route
+            path="/reservar/elegir-platos"
+            element={<SeleccionPlatosPage />}
+          />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/checkout/success" element={<CheckoutSuccesPage />} />
           <Route path="/checkout/cancel" element={<CheckoutPage />} />

@@ -69,23 +69,36 @@ export const isValidTime = (timeStr) => {
  * @param {number} children
  * @returns {boolean}
  */
-export const isValidGuestCount = (adults, children) => {
+export const isValidGuestCount = (adults, children, mascotas = 0) => {
   // Convertir a números, null/undefined = 0
   const adultsNum = adults !== null && adults !== undefined ? Number(adults) : 0;
   const childrenNum = children !== null && children !== undefined ? Number(children) : 0;
+  const mascotasNum = mascotas !== null && mascotas !== undefined ? Number(mascotas) : 0;
   
   // Verificar que sean números válidos (no NaN)
-  if (isNaN(adultsNum) || isNaN(childrenNum)) {
+  if (isNaN(adultsNum) || isNaN(childrenNum) || isNaN(mascotasNum)) {
     return false;
   }
   
   // Ambos deben ser enteros no-negativos
-  if (!Number.isInteger(adultsNum) || !Number.isInteger(childrenNum) || adultsNum < 0 || childrenNum < 0) {
+  if (
+    !Number.isInteger(adultsNum) ||
+    !Number.isInteger(childrenNum) ||
+    !Number.isInteger(mascotasNum) ||
+    adultsNum < 0 ||
+    childrenNum < 0 ||
+    mascotasNum < 0
+  ) {
     return false;
   }
   
-  // Al menos 1 adulto, máximo 6 personas totales (adultos + niños)
-  return adultsNum >= 1 && (adultsNum + childrenNum) >= 1 && (adultsNum + childrenNum) <= 6;
+  // Al menos 1 adulto, máximo 12 visitantes totales (adultos + niños + mascotas)
+  return (
+    adultsNum >= 1 &&
+    (adultsNum + childrenNum) >= 1 &&
+    mascotasNum <= 4 &&
+    adultsNum + childrenNum + mascotasNum <= 12
+  );
 };
 
 /**
@@ -134,9 +147,12 @@ export const validateReservaPayload = (payload) => {
   // Validar cantidad de personas (nota: el objeto usa "ninos" para Firestore)
   let adultos = payload.adultos ?? payload.adults ?? 0;
   let ninos = payload.ninos ?? payload.children ?? payload.niños ?? 0;
+  let mascotas = payload.mascotas ?? 0;
   
-  if (!isValidGuestCount(adultos, ninos)) {
-    errors.push("Cantidad de adultos y niños inválida (mín 1 adulto, máx 6 personas totales)");
+  if (!isValidGuestCount(adultos, ninos, mascotas)) {
+    errors.push(
+      "Cantidad inválida (mín 1 adulto, máx 12 visitantes totales incluyendo mascotas y máx 4 mascotas)"
+    );
   }
 
   return {

@@ -1,7 +1,7 @@
 import { useLocation } from "react-router-dom";
 
 export const HOME_ROUTES = ["/"];
-export const DARK_ROUTES = ["/reservar"];
+export const DARK_ROUTES = ["/reservar", "/reservar/elegir-platos"];
 export const LIGHT_ROUTES = ["/menu", "/descubrenos"];
 
 const normalizePath = (path = "") => {

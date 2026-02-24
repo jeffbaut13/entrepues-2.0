@@ -11,8 +11,10 @@ import PasoCantidad from "../reserva/PasoCantidad";
 import PasoContacto from "../reserva/PasoContacto";
 import ResumenReserva from "../reserva/ResumenReserva";
 import { Button } from "../ui/Button";
+import { useNavigate } from "react-router-dom";
 
-export default function SliderVertical() {
+export default function SliderVertical({ setactiveFull }) {
+  const navigate = useNavigate();
   const swiperRef = useRef(null);
   const [isContactDataValid, setIsContactDataValid] = useState(false);
 
@@ -22,8 +24,11 @@ export default function SliderVertical() {
     completedSteps,
     setCompletedSteps,
     reservaData,
+    reservaZonaData,
     updateReservaData,
-    showMenuSelected,
+    setZonaExpanded,
+    setDatosReservaCompletados,
+
     editarReserva,
     enviarDatos,
     showThankYouPage,
@@ -40,6 +45,12 @@ export default function SliderVertical() {
   const name = reservaData.name;
   const email = reservaData.email;
   const whatsapp = reservaData.whatsapp;
+  const totalOcupacion =
+    Number(adults || 0) + Number(children || 0) + Number(mascotas || 0);
+  const canContinueFromCantidad =
+    Boolean(reservaZonaData?.selectedZoneId) &&
+    Boolean(reservaZonaData?.mesaSeleccionada) &&
+    Number(adults || 0) > 0;
 
   // Funciones helper
   const updateReservaField = (field, value) => {
@@ -71,7 +82,8 @@ export default function SliderVertical() {
   };
 
   const handleElegirMenu = async () => {
-    showMenuSelected(true);
+    setDatosReservaCompletados(true);
+    navigate("/reservar/elegir-platos");
   };
 
   const handleConfirmarReserva = async () => {
@@ -98,7 +110,12 @@ export default function SliderVertical() {
     editarReserva(lastCompletedStep);
   };
 
-  const confirmarPaso = () => {
+  const confirmarPaso = async () => {
+    if (currentStep === 0 && !canContinueFromCantidad) {
+      alert("Selecciona una zona, una mesa y al menos 1 adulto para continuar");
+      return;
+    }
+
     // Si estamos en el paso de contacto (3), validar datos completos
     if (currentStep === 3) {
       if (!isContactDataValid) {
@@ -109,7 +126,11 @@ export default function SliderVertical() {
 
     const newCompleted = [...completedSteps];
     newCompleted[currentStep] = true;
-    setCompletedSteps(newCompleted);
+
+    if (currentStep === 0) {
+      setZonaExpanded(false);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
@@ -120,6 +141,8 @@ export default function SliderVertical() {
         swiperRef.current.swiper.slideTo(4);
       }
     }
+
+    setCompletedSteps(newCompleted);
   };
 
   return (
@@ -137,16 +160,21 @@ export default function SliderVertical() {
     >
       {/* PASO 0: Fecha */}
       <SwiperSlide className="size-full">
-        <div className="w-full h-full flex flex-col items-center justify-center p-10">
+        <div className="w-full h-full flex flex-col items-center justify-center">
           <div className="w-full flex-1 flex flex-col">
             <div className="flex-1">
-              <PasoFecha
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
+              <PasoCantidad
+                adults={adults}
+                children={children}
+                mascotas={mascotas}
+                setAdults={setAdults}
+                setChildren={setChildren}
+                setMascotas={setMascotas}
+                onConfirm={confirmarPaso}
+                canConfirm={canContinueFromCantidad}
               />
             </div>
           </div>
-          <ConfirmarPasoBoton confirmarPaso={confirmarPaso} />
         </div>
       </SwiperSlide>
 
@@ -155,11 +183,9 @@ export default function SliderVertical() {
         <div className="w-full h-full flex flex-col items-center justify-center py-8">
           <div className="w-full max-w-lg flex-1 flex flex-col">
             <div className="flex-1 flex items-center justify-center">
-              <PasoHora
-                hour={hour}
-                minute={minute}
-                setHour={setHour}
-                setMinute={setMinute}
+              <PasoFecha
+                selectedDate={selectedDate}
+                setSelectedDate={setSelectedDate}
               />
             </div>
           </div>
@@ -172,17 +198,18 @@ export default function SliderVertical() {
         <div className="w-full h-full flex flex-col items-center justify-center py-8">
           <div className="w-full max-w-sm flex-1 flex flex-col">
             <div className="flex-1 flex items-center justify-center">
-              <PasoCantidad
-                adults={adults}
-                children={children}
-                mascotas={mascotas}
-                setAdults={setAdults}
-                setChildren={setChildren}
-                setMascotas={setMascotas}
+              <PasoHora
+                hour={hour}
+                minute={minute}
+                setHour={setHour}
+                setMinute={setMinute}
               />
             </div>
           </div>
-          <ConfirmarPasoBoton confirmarPaso={handleElegirMenu} texto="Seleccionar platos"/>
+          <ConfirmarPasoBoton
+            confirmarPaso={handleElegirMenu}
+            texto="Seleccionar platos"
+          />
         </div>
       </SwiperSlide>
     </Swiper>

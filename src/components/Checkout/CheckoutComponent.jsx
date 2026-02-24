@@ -21,7 +21,7 @@ export const CheckoutComponent = () => {
   // Determinar el estado basado en la URL
   const isSuccessPage = location.pathname.includes("/success");
   const isCancelPage = location.pathname.includes("/cancel");
-  const { showMenuSelected, limpiarDatosCheckout, resetReserva } =
+  const {  limpiarDatosCheckout, resetReserva } =
     useReservaStore();
 
   const {
@@ -70,7 +70,7 @@ export const CheckoutComponent = () => {
     if (resultado.ok) {
       limpiarDatosCheckout();
       resetReserva();
-      showMenuSelected(false);
+     
       navigate("/checkout/success");
       return;
     }

@@ -12,6 +12,7 @@ import { convertTo12Hour, getAmPm } from "./horaUtils";
 import PlatosSeleccion from "./PlatosSeleccion";
 
 import useReservaStore from "../../store/reservaStore";
+import { Mapa } from "../ui/Mapa";
 
 export const ReservarComponent = () => {
   return (
@@ -40,12 +41,6 @@ export const ReservarComponent = () => {
 };
 
 const ReservaComponent = () => {
-  /* Estados locales */
-  const [detalleAsistentes, setDetalleAsistentes] = useState({
-    adultos: 0,
-    ninos: 0,
-    asistentes: [],
-  });
   // Estados derivados del store
   const stepRefs = useRef([]);
 
@@ -53,15 +48,19 @@ const ReservaComponent = () => {
 
   const {
     showMenu,
-    showMenuSelected,
+
     currentStep,
     setCurrentStep,
     completedSteps,
     reservaData,
+    detalleAsistentes,
+    isZonaExpanded,
     closeThankYou,
   } = useReservaStore();
 
   const isMobile = useIsMobile();
+
+  const [activeFull, setactiveFull] = useState(false);
 
   // Estados derivados del store
   const selectedDate = reservaData.selectedDate
@@ -74,6 +73,19 @@ const ReservaComponent = () => {
   const mascotas = reservaData.mascotas;
 
   const pasos = [
+    {
+      titulo: "Visitantes",
+      icon: User,
+      descripcion: completedSteps[2]
+        ? `${adults} adulto${adults !== 1 ? "s" : ""}${
+            children > 0 ? `, ${children} niño${children !== 1 ? "s" : ""}` : ""
+          }${
+            mascotas > 0
+              ? `, ${mascotas} mascota${mascotas !== 1 ? "s" : ""}`
+              : ""
+          }`
+        : "",
+    },
     {
       titulo: "Fecha",
       icon: Calendar,
@@ -92,40 +104,7 @@ const ReservaComponent = () => {
         ? `${convertTo12Hour(hour)}:${minute} ${getAmPm(hour)}`
         : "",
     },
-    {
-      titulo: "Visitantes",
-      icon: User,
-      descripcion: completedSteps[2]
-        ? `${adults} adulto${adults !== 1 ? "s" : ""}${
-            children > 0 ? `, ${children} niño${children !== 1 ? "s" : ""}` : ""
-          }${
-            mascotas > 0
-              ? `, ${mascotas} mascota${mascotas !== 1 ? "s" : ""}`
-              : ""
-          }`
-        : "",
-    },
   ];
-
-  useEffect(() => {
-    const adultosCount = Number(reservaData?.adults || 0);
-    const ninosCount = Number(reservaData?.children || 0);
-
-    const asistentesAdultos = Array.from(
-      { length: adultosCount },
-      (_, i) => `Adulto ${i + 1}`
-    );
-    const asistentesNinos = Array.from(
-      { length: ninosCount },
-      (_, i) => `Niño ${i + 1}`
-    );
-
-    setDetalleAsistentes({
-      adultos: adultosCount,
-      ninos: ninosCount,
-      asistentes: [...asistentesAdultos, ...asistentesNinos],
-    });
-  }, [reservaData?.adults, reservaData?.children]);
 
   useEffect(() => {
     try {
@@ -137,7 +116,6 @@ const ReservaComponent = () => {
         parsed?.estado === "temporal" && parsed?.uiState?.showMenu === true;
 
       if (debeAbrirMenu) {
-        showMenuSelected(true);
         setCurrentStep(2);
       }
     } catch (error) {
@@ -146,28 +124,7 @@ const ReservaComponent = () => {
         error
       );
     }
-  }, [showMenuSelected, setCurrentStep]);
-
-  if (showMenu) {
-    return (
-      <motion.div
-        className="w-full lg:h-[48rem] h-full mx-auto flex justify-center items-center"
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-      >
-        <motion.div
-          className="py-8 md:max-w-7xl w-full h-full flex flex-col"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
-        >
-          <PlatosSeleccion asistentes={detalleAsistentes} />
-        </motion.div>
-      </motion.div>
-    );
-  }
+  }, [setCurrentStep]);
 
   return (
     <motion.div
@@ -177,13 +134,13 @@ const ReservaComponent = () => {
       transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
     >
       <motion.div
-        className="w-full lg:h-[40.2060625rem] h-full flex lg:flex-row flex-col items-stretch bg-white/20 text-dark rounded-xl lg:gap-6 gap-3 lg:p-6 p-3 md:py-4 overflow-hidden"
+        className="w-full lg:h-[40.2060625rem] h-full flex lg:flex-row flex-col items-stretch bg-white/20 text-dark rounded-xl lg:gap-6 gap-3 lg:p-6 p-3 md:py-4 overflow-hidden relative"
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.7, delay: 0.5, ease: "easeOut" }}
       >
         <motion.div
-          className="lg:w-1/3 w-full lg:h-full h-auto flex flex-col justify-start lg:justify-between overflow-y-auto lg:overflow-y-visible max-lg:gap-2 lg:py-8"
+          className={`lg:w-1/3 w-full lg:h-full h-auto flex flex-col justify-start lg:justify-between overflow-y-auto lg:overflow-y-visible max-lg:gap-2 lg:py-8`}
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.7, ease: "easeOut" }}
@@ -253,16 +210,31 @@ const ReservaComponent = () => {
             })}
           </AnimatePresence>
         </motion.div>
-        {/* Slider Vertical con Swiper */}
-        <motion.div
-          className="flex-1 lg:h-full h-auto bg-[#faf7f1] text-dark rounded-lg overflow-hidden min-h-0"
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
+
+        <div
+          className={`absolute right-0 top-0 h-full z-10 p-6 bg-white/20 ${
+            isZonaExpanded ? "w-full" : " w-[37.875rem]"
+          } transition-all duration-500 ease-in-out`}
         >
-          <SliderVertical />
-        </motion.div>
+          <div className="size-full bg-[#faf7f1]">
+            <SliderVertical   />
+          </div>
+        </div>
+        {/* Slider Vertical con Swiper */}
       </motion.div>
     </motion.div>
   );
 };
+
+/* 
+<motion.div
+          className={`bg-[#faf7f1] text-dark rounded-lg overflow-hidden min-h-0 ${
+            shouldOverlayCantidad
+              ? "absolute inset-3 z-40"
+              : "flex-1 lg:h-full h-auto"
+          }`}
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
+        >
+        </motion.div> */

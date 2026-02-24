@@ -1,3 +1,5 @@
+import { Pet } from "./Pet";
+
 export const MesasSelectorx4 = ({
   index = 0,
   size = "lg",
@@ -5,6 +7,7 @@ export const MesasSelectorx4 = ({
   strokeSecondary = "var(--secondary)",
   strokeDark = "var(--dark)",
   numeroAsistentes,
+  petSeats = [],
 }) => {
   const width = () => {
     switch (size) {
@@ -21,13 +24,27 @@ export const MesasSelectorx4 = ({
 
   // Función para determinar el color de relleno de cada silla
   const getColorForSilla = (sillaNumber) => {
+    if (petSeats.includes(sillaNumber)) {
+      return "fill-[#ffffff00]";
+    }
     return sillaNumber < index ? colorRelleno : "fill-[#ffffff00]";
   };
 
   // Función para determinar el color del stroke de cada silla
   const getStrokeForSilla = (sillaNumber) => {
+    if (petSeats.includes(sillaNumber)) {
+      return "transparent";
+    }
     return sillaNumber < index ? strokeSecondary : strokeDark;
   };
+
+  const petPositions = {
+    0: { x: 67, y: 15, rotate: 0 },
+    1: { x: 67, y: 120, rotate: 180 },
+    2: { x: 120, y: 67, rotate: 90 },
+    3: { x: 15, y: 67, rotate: -90 },
+  };
+  const petSize = 32;
 
   return (
     <picture className={`${width()} h-auto relative`}>
@@ -2323,6 +2340,28 @@ export const MesasSelectorx4 = ({
             />
           </g>
         </g>
+
+        {petSeats.map((seatIndex) => {
+          const position = petPositions[seatIndex];
+          if (!position) return null;
+
+          return (
+            <g
+              key={`pet-seat-x4-${seatIndex}`}
+              transform={`translate(${position.x} ${position.y}) rotate(${position.rotate})`}
+              pointerEvents="none"
+            >
+              <foreignObject
+                x={-petSize / 2}
+                y={-petSize / 2}
+                width={petSize}
+                height={petSize}
+              >
+                <Pet />
+              </foreignObject>
+            </g>
+          );
+        })}
       </svg>
     </picture>
   );
@@ -2333,19 +2372,36 @@ export const MesasSelectorx6 = ({
   colorRelleno = "fill-secondary",
   strokeSecondary = "var(--secondary)",
   strokeDark = "var(--dark)",
+  petSeats = [],
 }) => {
   // Función para determinar el color de relleno de cada silla
   const getColorForSilla = (sillaNumber) => {
+    if (petSeats.includes(sillaNumber)) {
+      return "fill-[#ffffff00]";
+    }
     return sillaNumber < index ? colorRelleno : "fill-[#ffffff00]";
   };
 
   // Función para determinar el color del stroke de cada silla
   const getStrokeForSilla = (sillaNumber) => {
+    if (petSeats.includes(sillaNumber)) {
+      return "transparent";
+    }
     return sillaNumber < index ? strokeSecondary : strokeDark;
   };
 
+  const petPositions = {
+    0: { x: 67, y: 15, rotate: 0 },
+    1: { x: 67, y: 120, rotate: 180 },
+    2: { x: 15, y: 67, rotate: -90 },
+    3: { x: 121, y: 15, rotate: 0 },
+    4: { x: 121, y: 120, rotate: 180 },
+    5: { x: 174, y: 67, rotate: 90 },
+  };
+  const petSize = 18;
+
   return (
-    <picture>
+    <picture className="relative inline-block">
       <svg
         id="uuid-933c0d02-4a1d-4b6c-9df8-9829b03ad05a"
         data-name="Capa 2"
@@ -5764,6 +5820,28 @@ export const MesasSelectorx6 = ({
             </g>
           </g>
         </g>
+
+        {petSeats.map((seatIndex) => {
+          const position = petPositions[seatIndex];
+          if (!position) return null;
+
+          return (
+            <g
+              key={`pet-seat-x6-${seatIndex}`}
+              transform={`translate(${position.x} ${position.y}) rotate(${position.rotate})`}
+              pointerEvents="none"
+            >
+              <foreignObject
+                x={-petSize / 2}
+                y={-petSize / 2}
+                width={petSize}
+                height={petSize}
+              >
+                <Pet />
+              </foreignObject>
+            </g>
+          );
+        })}
       </svg>
     </picture>
   );
