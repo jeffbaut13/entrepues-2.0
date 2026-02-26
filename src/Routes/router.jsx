@@ -40,11 +40,11 @@ function AppRouter() {
 
           {/* Logica menu y productos */}
           <Route path="/menu" element={<MenuPage />} />
+          <Route path="/carta" element={<CartaPage />} />
           {/* Ruta de descubrenos - Video 360 */}
-          <Route path="/descubrenos" element={<VideoScrollPage />} />
           {/* <Route path="/descubrenos" element={<Video360Page />} /> */}
+          <Route path="/descubrenos" element={<VideoScrollPage />} />
         </Route>
-        <Route path="/carta" element={<CartaPage />} />
 
         <Route element={<CheckoutLayout />}>
           <Route path="/reservar" element={<ReservarPage />} />

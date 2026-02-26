@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   CreditCard,
@@ -18,11 +18,12 @@ export const CheckoutComponent = () => {
   const location = useLocation();
   const [mostrarExito, setMostrarExito] = useState(false);
 
+  const [activeCollapse, setActiveCollapse] = useState(1);
+
   // Determinar el estado basado en la URL
   const isSuccessPage = location.pathname.includes("/success");
   const isCancelPage = location.pathname.includes("/cancel");
-  const {  limpiarDatosCheckout, resetReserva } =
-    useReservaStore();
+  const { limpiarDatosCheckout, resetReserva } = useReservaStore();
 
   const {
     datosReserva,
@@ -70,7 +71,7 @@ export const CheckoutComponent = () => {
     if (resultado.ok) {
       limpiarDatosCheckout();
       resetReserva();
-     
+
       navigate("/checkout/success");
       return;
     }
@@ -145,7 +146,7 @@ export const CheckoutComponent = () => {
           className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center"
           initial={{ scale: 0.9, y: 30 }}
           animate={{ scale: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.2, delay: 0.2 }}
         >
           <motion.div
             initial={{ scale: 0 }}
@@ -197,7 +198,7 @@ export const CheckoutComponent = () => {
           className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center"
           initial={{ scale: 0.9, y: 30 }}
           animate={{ scale: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.2, delay: 0.2 }}
         >
           <motion.div
             initial={{ scale: 0 }}
@@ -248,131 +249,175 @@ export const CheckoutComponent = () => {
       className="size-full flex items-center justify-center"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: 0.2 }}
     >
       {/* Main Content */}
-      <main className="w-full max-w-6xl mx-auto">
+      <main className="w-full max-w-md mx-auto pt-12">
         <motion.div
-          className="grid lg:grid-cols-2"
+          className="flex flex-col"
           initial={{ y: 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.2 }}
         >
-          {/* Panel Izquierdo - Resumen */}
           <motion.div
-            className="bg-white/40 text-dark backdrop-blur rounded-l-2xl p-6 flex flex-col justify-between translate-x-2 pr-8"
             initial={{ x: -30, opacity: 0 }}
+            className="bg-white/20 text-dark rounded-t-2xl flex flex-col justify-between overflow-hidden"
             animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
+            transition={{ duration: 0.25 }}
           >
-            <div className="w-full">
-              <h2 className="font-parkson mb-6">
-                <span className="!text-5xl">Resumen de tu</span>
+            <button
+              type="button"
+              className={`w-full text-left ${
+                activeCollapse === 1 ? "bg-dark text-white" : ""
+              } px-6 py-4 transition-all duration-200`}
+              onClick={() => setActiveCollapse(0)}
+            >
+              <h2 className="font-parkson">
+                <span className="!text-3xl">Resumen de tu</span>
                 <br />
-                <span className="!text-9xl !leading-20">Reserva</span>
+                <span className="!text-6xl !leading-10">Reserva</span>
               </h2>
 
-              {/* Detalles de la Reserva */}
-              <div className="space-y-4 mb-6">
-                <div className="flex items-center space-x-3">
-                  <div>
-                    <p>
-                      {formatearFecha(datosReserva.reservaData?.selectedDate)}
-                    </p>
-                    <p>
-                      {formatearHora(
-                        datosReserva.reservaData?.hour,
-                        datosReserva.reservaData?.minute
-                      )}
-                    </p>
-                    <p>
-                      {datosReserva.reservaData?.adults} adulto(s)
-                      {datosReserva.reservaData?.children > 0 &&
-                        `, ${datosReserva.reservaData.children} niño(s)`}
-                    </p>
+              <span
+                className={`w-14 h-1 rounded-full ${
+                  activeCollapse === 1 ? "bg-white" : ""
+                } inline-block `}
+              />
+            </button>
+
+            <motion.div
+              initial={false}
+              animate={
+                activeCollapse === 0
+                  ? { opacity: 1, height: "auto" }
+                  : { opacity: 0, height: 0 }
+              }
+              transition={{
+                height: { duration: 0.28, ease: "easeInOut" },
+                opacity: { duration: 0.2, ease: "easeOut" },
+              }}
+              className="overflow-hidden px-6"
+            >
+              <div className="w-full">
+                <div className="space-y-4 mb-6">
+                  <div className="flex items-center">
+                    <div>
+                      <p>
+                        {formatearFecha(datosReserva.reservaData?.selectedDate)}
+                      </p>
+                      <p>
+                        {formatearHora(
+                          datosReserva.reservaData?.hour,
+                          datosReserva.reservaData?.minute
+                        )}
+                      </p>
+                      <p>
+                        {datosReserva.reservaData?.adults} adulto(s)
+                        {datosReserva.reservaData?.children > 0 &&
+                          `, ${datosReserva.reservaData.children} niño(s)`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <h3 className="font-bold mb-3">Platos Seleccionados</h3>
+                  <div className="bg-dark/5 rounded-lg p-4 max-h-48 overflow-y-auto">
+                    {datosReserva.platosSeleccionados?.map(
+                      (asistente, index) => (
+                        <div key={index} className="mb-3 last:mb-0">
+                          <p className="font-medium mb-2">{asistente.nombre}</p>
+                          {asistente.platos?.map((plato, platoIndex) => (
+                            <div
+                              key={platoIndex}
+                              className="[&>span]:!text-base flex justify-between items-center py-1"
+                            >
+                              <span>
+                                {plato.cantidad}x {plato.nombre}
+                              </span>
+                              <span className="font-bold">
+                                ${plato.precio * plato.cantidad}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Platos Seleccionados */}
-              <div className="mb-6">
-                <h3 className="font-semibold mb-3 opacity-60">
-                  Platos Seleccionados
-                </h3>
-                <div className="bg-dark/10 rounded-lg p-4 max-h-48 overflow-y-auto">
-                  {datosReserva.platosSeleccionados?.map((asistente, index) => (
-                    <div key={index} className="mb-3 last:mb-0">
-                      <p className="font-medium mb-2">{asistente.nombre}</p>
-                      {asistente.platos?.map((plato, platoIndex) => (
-                        <div
-                          key={platoIndex}
-                          className="[&>span]:!text-base flex justify-between items-center py-1"
-                        >
-                          <span>
-                            {plato.cantidad}x {plato.nombre}
-                          </span>
-                          <span className="font-bold">
-                            ${plato.precio * plato.cantidad}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  ))}
+              <div className="py-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>Subtotal</span>
+                    <span className="font-medium">
+                      ${montoTotal?.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between border-b border-dark/20">
+                    <span>IVA (19%)</span>
+                    <span className="font-medium">
+                      ${impuestos?.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-lg font-bold pt-2">
+                    <span>Total</span>
+                    <span>${montoFinal?.toLocaleString()}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* Resumen de Costos */}
-            <div className="pt-4">
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="">Subtotal</span>
-                  <span className="font-medium">
-                    ${montoTotal?.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between border-b border-dark/20">
-                  <span className="">IVA (19%)</span>
-                  <span className="font-medium">
-                    ${impuestos?.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between text-lg font-bold pt-2">
-                  <span>Total</span>
-                  <span>${montoFinal?.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
+            </motion.div>
           </motion.div>
 
-          {/* Panel Derecho - Pago */}
           <motion.div
-            className="bg-white/40 text-dark backdrop-blur rounded-l-2xl p-6 flex flex-col justify-between translate-x-2 pr-8"
-            initial={{ x: 30, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
+            className={`bg-white text-dark rounded-2xl flex flex-col justify-between overflow-hidden`}
+            initial={{ x: 30, opacity: 0, y: 0 }}
+            animate={{ x: 0, opacity: 1, y: activeCollapse === 1 ? -12 : 0 }}
+            transition={{ duration: 0.25 }}
           >
-            <div className="w-full">
-              <h2 className="font-bold text-center font-parkson !text-5xl mb-8">
+            <button
+              type="button"
+              className="w-full px-6 flex flex-col justify-center items-center transition-all duration-200 py-4"
+              onClick={() => setActiveCollapse(1)}
+            >
+              <span
+                className={`w-14 h-1 rounded-full ${
+                  activeCollapse === 0 ? "bg-dark" : ""
+                } inline-block`}
+              />
+              <h2 className="font-bold font-parkson !text-6xl leading-12 inline-block">
                 Contacto
               </h2>
+            </button>
 
-              {/* Error Display */}
-              {error && (
-                <motion.div
-                  className="bg-red-50 border border-red-200 rounded-3xl p-4 mb-6 flex items-center space-x-2"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <AlertCircle className="w-5 h-5 text-red-500" />
-                  <p className="text-red-700 !text-xs">{error}</p>
-                </motion.div>
-              )}
+            <motion.div
+              initial={false}
+              animate={
+                activeCollapse === 1
+                  ? { opacity: 1, height: "auto" }
+                  : { opacity: 0, height: 0 }
+              }
+              transition={{
+                height: { duration: 0.28, ease: "easeInOut" },
+                opacity: { duration: 0.2, ease: "easeOut" },
+              }}
+              className="overflow-hidden px-6"
+            >
+              <div className="w-full space-y-3">
+                {error && (
+                  <motion.div
+                    className="bg-red-50 border border-red-200 rounded-3xl p-4 flex items-center space-x-2"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <AlertCircle className="w-5 h-5 text-red-500" />
+                    <p className="text-red-700 !text-xs">{error}</p>
+                  </motion.div>
+                )}
 
-              {/* Formulario de Contacto */}
-              <div className="space-y-6 mb-6">
-                <div>
-                  <label className="hidden items-center space-x-2 font-medium mb-2">
+                <div className="py-1">
+                  <label className="hidden items-center font-medium">
                     <span>Nombre Completo</span>
                   </label>
                   <input
@@ -386,7 +431,7 @@ export const CheckoutComponent = () => {
                   />
                 </div>
 
-                <div>
+                <div className="py-1">
                   <label className="hidden items-center space-x-2  font-medium mb-2">
                     <span>Email</span>
                   </label>
@@ -401,7 +446,7 @@ export const CheckoutComponent = () => {
                   />
                 </div>
 
-                <div>
+                <div className="py-1">
                   <label className="hidden items-center space-x-2  font-medium mb-2">
                     <span>WhatsApp</span>
                   </label>
@@ -417,7 +462,7 @@ export const CheckoutComponent = () => {
                   />
                 </div>
 
-                <div>
+                <div className="py-1">
                   <label className="hidden items-center space-x-2  font-medium mb-2">
                     <MessageSquare className="w-4 h-4" />
                     <span>Notas Especiales (Opcional)</span>
@@ -432,67 +477,34 @@ export const CheckoutComponent = () => {
                   />
                 </div>
               </div>
-            </div>
-            {/* Método de Pago */}
-            <div className="mb-6">
-              <div className="flex justify-between items-center">
-                <h3 className="font-semibold mb-3">Método de Pago</h3>
-                <button
-                  onClick={() => setMetodoPago("tarjeta")}
-                  className={`py-2 px-8 gap-2 flex rounded-3xl border-2 transition-all ${
-                    metodoPago === "tarjeta"
-                      ? "border-dark"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <CreditCard className="" />
-                  <p className="text-sm font-medium">Tarjeta</p>
-                </button>
-                <button
-                  onClick={() => setMetodoPago("pse")}
-                  className={`py-2 px-8 gap-2 flex rounded-3xl border-2 transition-all ${
-                    metodoPago === "pse"
-                      ? "border-dark"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <i>
-                    <img
-                      src="/imagenes/pse.png"
-                      alt="PSE"
-                      className="w-5 h-5"
-                    />
-                  </i>
-                  <p className="text-sm font-medium">PSE</p>
-                </button>
-              </div>
-            </div>
-            <div className="w-full">
-              {/* Botón de Pago */}
-              <Button
-                onClick={handlePagar}
-                disabled={pagoEnProceso}
-                type="button-dark"
-                width="full"
-                customClass="disabled:opacity-50 disabled:cursor-not-allowed py-3"
-                title={
-                  <>
-                    {pagoEnProceso ? (
-                      <div className="flex items-center justify-center space-x-2">
-                        <LoaderIcon className="w-5 h-5 animate-spin" />
-                        <span>Procesando Pago...</span>
-                      </div>
-                    ) : (
-                      `Pagar $${montoFinal?.toLocaleString()}`
-                    )}
-                  </>
-                }
-              ></Button>
 
-              <p className="text-xs  text-center mt-3">
-                Al hacer clic en pagar aceptas nuestros términos y condiciones.
-              </p>
-            </div>
+              <div className="w-full space-y-2 my-6">
+                <Button
+                  onClick={handlePagar}
+                  disabled={pagoEnProceso}
+                  type="button-dark"
+                  width="full"
+                  customClass="disabled:opacity-50 disabled:cursor-not-allowed py-3"
+                  title={
+                    <>
+                      {pagoEnProceso ? (
+                        <div className="flex items-center justify-center space-x-2">
+                          <LoaderIcon className="w-5 h-5 animate-spin" />
+                          <span>Procesando Pago...</span>
+                        </div>
+                      ) : (
+                        `Pagar $${montoFinal?.toLocaleString()}`
+                      )}
+                    </>
+                  }
+                ></Button>
+
+                <p className="!text-sm text-center">
+                  Al hacer clic en pagar aceptas nuestros términos y
+                  condiciones.
+                </p>
+              </div>
+            </motion.div>
           </motion.div>
         </motion.div>
       </main>

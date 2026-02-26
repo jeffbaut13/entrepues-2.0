@@ -3,7 +3,7 @@ import { Logo } from "../ui/Logo";
 export const Intro = ({ categorias, setCategoriaSelected }) => {
   return (
     <main className={`${styles.main} ${styles.color}`}>
-      <Logo color="#fff6ea" customClass={styles.logo} />
+      {/* <Logo color="#fff6ea" customClass={styles.logo} /> */}
       <h1 className={`${styles.fontFamily} ${styles.title}`}>MENÚ</h1>
 
       {categorias.map((categoria, index) => (

@@ -10,21 +10,18 @@ export const Loader = ({ onLoadingComplete }) => {
   const [shouldEnd, setShouldEnd] = useState(false);
 
   useEffect(() => {
-    // Div2 aparece a los 1000ms
     const showDiv2Timer = setTimeout(() => {
       setDiv2Visible(true);
     }, 1000);
 
-    // Div1 se va a los 1200ms
     const hideDiv1Timer = setTimeout(() => {
       setDiv1Visible(false);
-    }, 5200);
+    }, 2000);
 
-    // Loader termina a los 2000ms
     const endLoaderTimer = setTimeout(() => {
       setDiv2Visible(false);
       setShouldEnd(true);
-    }, 7000);
+    }, 4000);
 
     return () => {
       clearTimeout(showDiv2Timer);

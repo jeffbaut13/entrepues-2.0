@@ -1,8 +1,14 @@
 import { useLocation } from "react-router-dom";
 
 export const HOME_ROUTES = ["/"];
-export const DARK_ROUTES = ["/reservar", "/reservar/elegir-platos"];
-export const LIGHT_ROUTES = ["/menu", "/descubrenos"];
+export const DARK_ROUTES = [
+  "/reservar",
+  "/reservar/elegir-platos",
+  "/checkout",
+];
+export const LIGHT_ROUTES = ["/descubrenos", "/carta"];
+
+export const BG_ROUTES = ["/menu"];
 
 const normalizePath = (path = "") => {
   if (!path) return "/";
@@ -17,11 +23,13 @@ export const useRouteMode = () => {
   const isHome = HOME_ROUTES.map(normalizePath).includes(currentPath);
   const isDark = DARK_ROUTES.map(normalizePath).includes(currentPath);
   const isLight = LIGHT_ROUTES.map(normalizePath).includes(currentPath);
+  const isBg = BG_ROUTES.map(normalizePath).includes(currentPath);
 
   return {
     isHome,
     isDark,
     isLight,
+    isBg,
     currentPath,
   };
 };

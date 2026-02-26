@@ -10,6 +10,7 @@ import {
 } from "../../firebase/actions";
 import { Intro } from "./Intro";
 import { Loader } from "../ui/Loader";
+import { useHeaderChangeStore } from "../../store/headerChangeStore";
 
 export const CartaComponent = () => {
   const [catalogo, setDataCatalogo] = useState({});
@@ -21,6 +22,7 @@ export const CartaComponent = () => {
   const tabRefs = useRef({});
   const categoriaDesdeScrollRef = useRef(false);
   const bloquearObserverHastaRef = useRef(0);
+  const { setChangeDark } = useHeaderChangeStore();
 
   // Cargar todo el catalogo de productos de firebase
   useEffect(() => {
@@ -39,7 +41,6 @@ export const CartaComponent = () => {
   }, []);
 
   const catalogoTodo = obtenerProductosCatalogo(catalogo);
-  console.log(catalogoTodo);
 
   const productosAgrupadosPorSubcategoria = useMemo(() => {
     const grupos = new Map();
@@ -202,7 +203,10 @@ export const CartaComponent = () => {
     productosAgrupadosPorSubcategoria,
   ]);
 
-  console.log(categorias);
+  const handleChange = (categoria) => {
+    setChangeDark();
+    setCategoriaSelected(categoria);
+  };
 
   if (loading) {
     return <Loader />;
@@ -211,10 +215,7 @@ export const CartaComponent = () => {
   if (categoriaSelected === null) {
     return (
       <div className="w-full h-dvh">
-        <Intro
-          categorias={categorias}
-          setCategoriaSelected={setCategoriaSelected}
-        />
+        <Intro categorias={categorias} setCategoriaSelected={handleChange} />
       </div>
     );
   }
@@ -223,6 +224,7 @@ export const CartaComponent = () => {
     <div className="w-full h-dvh">
       <div className={styles.main}>
         <div className="size-full md:max-w-md rounded-lg overflow-hidden">
+          <div className="h-12" />
           <div className="text-center size-full rounded-lg flex flex-col items-center justify-center">
             <div
               ref={tabsContainerRef}
@@ -290,7 +292,7 @@ export const CartaComponent = () => {
             <div className="w-full px-[16px] bg-[#fff6ea] rounded-t-[16px] -translate-y-4 pt-0.5 z-20 relative">
               <div
                 ref={scrollContainerRef}
-                className="space-y-8 text-start overflow-auto max-h-[70vh] px-[12px] mt-[35px] pb-[35px]"
+                className="space-y-8 text-start overflow-auto max-h-[60vh] px-[12px] mt-[35px] pb-[35px]"
               >
                 {productosAgrupadosPorSubcategoria.map((subcategoria) => (
                   <div

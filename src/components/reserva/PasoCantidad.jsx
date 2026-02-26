@@ -1,40 +1,21 @@
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, FishOff } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, EffectFade } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/effect-fade";
 import { IncremenAndDecrementComponent } from "../common/IncrementAndDrecrement";
 import { MesasSelectorx4, MesasSelectorx6 } from "../common/MesasSelector";
 import { Button } from "../ui/Button";
 import useReservaStore from "../../store/reservaStore";
 
 import { Mapa } from "../ui/Mapa";
+import { DontPet } from "../ui/DontPet";
 
 const MAX_OCUPACION_TOTAL = 12;
 const MAX_MASCOTAS = 4;
 
-const getGridColsClass = (mesaGridCols) => {
-  const baseCols = Number(mesaGridCols?.base || 2);
-  const mdCols = Number(mesaGridCols?.md || 6);
-
-  const baseMap = {
-    1: "grid-cols-1",
-    2: "grid-cols-2",
-    3: "grid-cols-3",
-    4: "grid-cols-4",
-  };
-
-  const mdMap = {
-    1: "md:grid-cols-1",
-    2: "md:grid-cols-2",
-    3: "md:grid-cols-3",
-    4: "md:grid-cols-4",
-    5: "md:grid-cols-5",
-    6: "md:grid-cols-6",
-  };
-
-  return `${baseMap[baseCols] || "grid-cols-2"} ${
-    mdMap[mdCols] || "md:grid-cols-6"
-  }`;
-};
 
 const PasoCantidad = ({
   adults = 0,
@@ -46,13 +27,15 @@ const PasoCantidad = ({
   onConfirm,
   canConfirm = false,
 }) => {
+  const [errorAsistentes, setErrorAsistentes] = useState("");
+
   const {
     actualizarDetalleAsistentes,
     limpiarDetalleAsistentes,
     reservaZonaData,
-    seleccionarZona,
     seleccionarMesaBase,
     isZonaExpanded,
+    seleccionarZona,
     setZonaExpanded,
   } = useReservaStore();
 
@@ -70,7 +53,6 @@ const PasoCantidad = ({
     "";
   const opcionesMesa = reservaZonaData?.opcionesMesa || [];
   const mesaSeleccionada = reservaZonaData?.mesaSeleccionada;
-  const mesaGridCols = reservaZonaData?.mesaGridCols;
   const permiteMascotas = Boolean(reservaZonaData?.permiteMascotas);
 
   const syncAsistentes = (nextAdults, nextChildren) => {
@@ -85,6 +67,12 @@ const PasoCantidad = ({
     limpiarDetalleAsistentes();
   };
 
+  const showMaxAsistentesError = () => {
+    setErrorAsistentes(
+      `Has alcanzado el máximo de ${MAX_OCUPACION_TOTAL} asistentes.`
+    );
+  };
+
   const renderMesaUnit = (
     capacidadBase,
     ocupadas,
@@ -92,7 +80,7 @@ const PasoCantidad = ({
     selected = false,
     petSeats = []
   ) => {
-    const className = selected ? "ring-2 ring-dark rounded-md" : "";
+    const className = selected ? "ring-2 ring-dark/30 rounded-md" : "";
 
     if (capacidadBase <= 4) {
       return (
@@ -212,6 +200,12 @@ const PasoCantidad = ({
   }, [adultsNum, childrenNum]);
 
   useEffect(() => {
+    if (totalOcupacion < MAX_OCUPACION_TOTAL && errorAsistentes) {
+      setErrorAsistentes("");
+    }
+  }, [totalOcupacion, errorAsistentes]);
+
+  useEffect(() => {
     if (!permiteMascotas && mascotasNum > 0) {
       setMascotas(0);
     }
@@ -233,7 +227,7 @@ const PasoCantidad = ({
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25 }}
-            className="w-full h-full rounded-2xl flex flex-col gap-3"
+            className="w-full h-full min-h-0 rounded-2xl flex flex-col gap-3"
           >
             {/* Increment and decrement */}
             <div className="w-full flex justify-center gap-12">
@@ -242,11 +236,13 @@ const PasoCantidad = ({
                 <IncremenAndDecrementComponent
                   item={adultsNum}
                   increaseQuantity={() => {
-                    if (totalOcupacion < MAX_OCUPACION_TOTAL) {
-                      const nextAdults = adultsNum + 1;
-                      setAdults(nextAdults);
-                      syncAsistentes(nextAdults, childrenNum);
+                    if (totalOcupacion >= MAX_OCUPACION_TOTAL) {
+                      showMaxAsistentesError();
+                      return;
                     }
+                    const nextAdults = adultsNum + 1;
+                    setAdults(nextAdults);
+                    syncAsistentes(nextAdults, childrenNum);
                   }}
                   decreaseQuantity={() => {
                     const nextAdults = Math.max(adultsNum - 1, 0);
@@ -261,11 +257,13 @@ const PasoCantidad = ({
                 <IncremenAndDecrementComponent
                   item={childrenNum}
                   increaseQuantity={() => {
-                    if (totalOcupacion < MAX_OCUPACION_TOTAL) {
-                      const nextChildren = childrenNum + 1;
-                      setChildren(nextChildren);
-                      syncAsistentes(adultsNum, nextChildren);
+                    if (totalOcupacion >= MAX_OCUPACION_TOTAL) {
+                      showMaxAsistentesError();
+                      return;
                     }
+                    const nextChildren = childrenNum + 1;
+                    setChildren(nextChildren);
+                    syncAsistentes(adultsNum, nextChildren);
                   }}
                   decreaseQuantity={() => {
                     const nextChildren = Math.max(childrenNum - 1, 0);
@@ -275,64 +273,82 @@ const PasoCantidad = ({
                 />
               </div>
 
-              <div className="flex justify-between flex-col items-center gap-3">
-                <p>Mascotas</p>
-                <IncremenAndDecrementComponent
-                  item={mascotasNum}
-                  increaseQuantity={() => {
-                    if (!permiteMascotas) {
-                      return;
-                    }
-                    if (mascotasNum >= MAX_MASCOTAS) {
-                      return;
-                    }
-                    if (totalOcupacion >= MAX_OCUPACION_TOTAL) {
-                      return;
-                    }
-                    setMascotas(mascotasNum + 1);
-                  }}
-                  decreaseQuantity={() => {
-                    setMascotas(Math.max(mascotasNum - 1, 0));
-                  }}
-                />
-              </div>
+              {permiteMascotas && (
+                <div className="flex justify-between flex-col items-center gap-3">
+                  <p>Mascotas</p>
+                  <IncremenAndDecrementComponent
+                    item={mascotasNum}
+                    increaseQuantity={() => {
+                      if (mascotasNum >= MAX_MASCOTAS) {
+                        return;
+                      }
+                      if (totalOcupacion >= MAX_OCUPACION_TOTAL) {
+                        showMaxAsistentesError();
+                        return;
+                      }
+                      setMascotas(mascotasNum + 1);
+                    }}
+                    decreaseQuantity={() => {
+                      setMascotas(Math.max(mascotasNum - 1, 0));
+                    }}
+                  />
+                </div>
+              )}
             </div>
+
+            {errorAsistentes && (
+              <p className="text-center text-sm text-red-500 px-3">
+                {errorAsistentes}
+              </p>
+            )}
+
             {/* Mesas y botones */}
-            <div className="size-full flex flex-col justify-end bg-white/40 rounded-2xl">
-              <div className="size-full rounded-2xl p-3 overflow-auto relative flex justify-center items-center">
+            <div className="size-full min-h-0 flex flex-col justify-between bg-white/40 rounded-2xl overflow-hidden">
+              <div />
+              <div className="w-full h-100 min-h-0 rounded-2xl p-3 relative flex flex-col justify-start items-stretch overflow-hidden">
+                <p className="w-full text-center !text-5xl font-parkson mb-4">
+                  {selectedZoneName}
+                </p>
                 <p className="text-end mb-2  absolute right-2 top-2">
                   {!permiteMascotas && (
                     <>
-                      <FishOff className="text-red-600 ml-1" />
+                      <DontPet size="w-6 h-auto" color="fill-dark/40" />
                     </>
                   )}
                 </p>
+                <div className="w-full flex-1 min-h-0 flex gap-3 overflow-hidden">
+                  <div
+                    className={`w-1/2 border border-dark flex flex-wrap items-center justify-between h-full min-h-0 overflow-y-auto gap-3 pr-1`}
+                  >
+                    {opcionesMesa.map((opcion) => {
+                      const isSelected =
+                        mesaSeleccionada?.optionId === opcion.optionId;
 
-                <div className={`grid ${getGridColsClass(mesaGridCols)} gap-3`}>
-                  {opcionesMesa.map((opcion) => {
-                    const isSelected =
-                      mesaSeleccionada?.optionId === opcion.optionId;
+                      return (
+                        <button
+                          key={opcion.optionId}
+                          type="button"
+                          onClick={() => seleccionarMesaBase(opcion.optionId)}
+                          className={`w-27 h-auto rounded-xl p-2 transition ${
+                            isSelected ? "bg-white" : "bg-white/40"
+                          }`}
+                        >
+                          <div className="flex flex-wrap items-center justify-center gap-2">
+                            {renderMesaGroup(
+                              opcion,
+                              "sm",
+                              isSelected,
+                              ocupacionPorMesa[opcion.optionId] || null
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
 
-                    return (
-                      <button
-                        key={opcion.optionId}
-                        type="button"
-                        onClick={() => seleccionarMesaBase(opcion.optionId)}
-                        className={`rounded-xl p-2 transition ${
-                          isSelected ? "bg-white" : "bg-white/40"
-                        }`}
-                      >
-                        <div className="flex flex-wrap items-center justify-center gap-2">
-                          {renderMesaGroup(
-                            opcion,
-                            "sm",
-                            isSelected,
-                            ocupacionPorMesa[opcion.optionId] || null
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
+                  <div className="flex-1 h-full min-h-0 overflow-hidden">
+                    <RegionImageSlider />
+                  </div>
                 </div>
               </div>
 
@@ -365,4 +381,41 @@ const PasoCantidad = ({
   );
 };
 
+const RegionImageSlider = () => {
+  const slides = [
+    { src: "/imagenes/regiones/img-1.webp", alt: "Imagen región 1" },
+    { src: "/imagenes/regiones/img-2.webp", alt: "Imagen región 2" },
+    { src: "/imagenes/regiones/img-3.webp", alt: "Imagen región 3" },
+  ];
+
+  return (
+    <div className="w-full h-full overflow-hidden relative bg-black/10">
+      <Swiper
+        modules={[Autoplay, EffectFade]}
+        effect="fade"
+        fadeEffect={{ crossFade: true }}
+        loop={true}
+        autoplay={{
+          delay: 2500,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: false,
+        }}
+        speed={700}
+        className="w-full h-full"
+      >
+        {slides.map((slide) => (
+          <SwiperSlide key={slide.src} className="w-full h-full">
+            <img
+              src={slide.src}
+              alt={slide.alt}
+              className="w-full h-full object-cover"
+            />
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    </div>
+  );
+};
+
 export default PasoCantidad;
+

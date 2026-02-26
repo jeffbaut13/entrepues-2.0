@@ -8,10 +8,12 @@ import { useObserverVisibility } from "../../hooks/useObserverVisibility";
 import { useLoaderContext } from "../../context/LoaderContext";
 import { Button } from "../ui/Button";
 import { Logo } from "../ui/Logo";
+import { useHeaderChangeStore } from "../../store/headerChangeStore";
 
 export const Header = ({ loading }) => {
-  const navigate = useNavigate();
-  const { isHome, isDark, isLight } = useRouteMode();
+  const { isHome, isDark, isLight, isBg } = useRouteMode();
+
+  const { changeColor } = useHeaderChangeStore();
 
   const isSectionTwoVisible = useObserverVisibility(".hide-logo-section");
   const { loadingComplete } = useLoaderContext();
@@ -26,13 +28,15 @@ export const Header = ({ loading }) => {
       return <HeaderHome isSectionTwoVisible={isSectionTwoVisible} />;
     }
 
-    if (isDark) {
+    if (isDark || isBg) {
       return <HeaderTheme darkTheme={true} />;
     }
     if (isLight) {
-      return <HeaderTheme darkTheme={false} />;
+      return <HeaderTheme darkTheme={false} changeColor={changeColor} />;
     }
   };
+ 
+
   return (
     <>
       <AnimatePresence mode="wait">
@@ -41,7 +45,9 @@ export const Header = ({ loading }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: getAnimationDelay() }}
-            className={`w-full h-auto fixed z-1001 top-0 left-0 text-secondary flex flex-col items-center justify-between`}
+            className={`w-full ${
+              isBg ? "bg-secondary" : ""
+            } h-auto fixed z-1001 top-0 left-0 text-secondary flex flex-col items-center justify-between`}
           >
             <div className="mx-auto max-w-7xl w-full md:px-0 h-22 grid grid-cols-3 items-center gap-4 place-items-center">
               {headerRender(isSectionTwoVisible)}
@@ -70,13 +76,13 @@ const HeaderHome = ({ isSectionTwoVisible }) => {
   );
 };
 
-const HeaderTheme = ({ darkTheme }) => {
+const HeaderTheme = ({ darkTheme, changeColor }) => {
   const navigate = useNavigate();
   return (
     <>
       <motion.div
         className={`w-fit inline-flex gap-4 items-center justify-self-start ${
-          darkTheme ? "text-dark" : "text-white"
+          darkTheme ? "text-dark" : changeColor ? "text-dark" : "text-white"
         }`}
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -87,7 +93,11 @@ const HeaderTheme = ({ darkTheme }) => {
           href={"/"}
           Icon={Home}
           customClass={`!bg-transparent !border-none ${
-            darkTheme ? "!text-dark" : "!text-white  "
+            darkTheme
+              ? "!text-dark"
+              : changeColor
+              ? "!text-dark"
+              : "!text-white  "
           }`}
         />
         |
@@ -96,7 +106,11 @@ const HeaderTheme = ({ darkTheme }) => {
           Icon={ChevronLeft}
           title="Volver"
           customClass={`!bg-transparent !border-none ${
-            darkTheme ? "!text-dark" : "!text-white "
+            darkTheme
+              ? "!text-dark"
+              : changeColor
+              ? "!text-dark"
+              : "!text-white "
           }`}
           onClick={() => navigate(-1)}
         />
@@ -106,7 +120,10 @@ const HeaderTheme = ({ darkTheme }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
       >
-        <Logo color={darkTheme ? "dark" : "white"} size="md" />
+        <Logo
+          color={darkTheme ? "dark" : changeColor ? "dark" : "white"}
+          size="md"
+        />
       </motion.div>
       <div />
     </>

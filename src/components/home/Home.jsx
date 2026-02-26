@@ -1,23 +1,26 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
-import { Header } from "../header/Header";
-import { Titulo } from "../ui/Titulo";
-import { easing } from "../../constants/easing";
 import { CallToActions } from "../common/CallToAction/CallToActions";
-import useReservaStore from "../../store/reservaStore";
 import ArcScrollReveal from "../ScrollSvg";
-import { Logo } from "../ui/Logo";
 import { Title } from "../ui/Title";
 import { IconoSeparador } from "../ui/IconoSeparador";
+import { ScrollDownLottie } from "../ui/ScrollDownLottie";
 
 export const HomeComponent = () => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [showScrollHint, setShowScrollHint] = useState(false);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    const handleScroll = () => {
+      setShowScrollHint(window.scrollY < 100);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   return (
@@ -27,6 +30,12 @@ export const HomeComponent = () => {
       <SectionTwo />
       <SectionThree />
       <Footer />
+      <ScrollDownLottie
+        color="#FFFFFF"
+        size={120}
+        showScrollHint={showScrollHint}
+        className="!bottom-28"
+      />
     </>
   );
 };
@@ -70,14 +79,16 @@ const SectionTwo = () => {
               }}
               transition={{ duration: 0.7, ease: "easeOut" }}
             >
-              En Entrepués cocinamos con tradición, con tiempo,
-              <br className="hidden lg:block" /> con cariño y con ese sabor que
-              empieza en la casa. <br className="hidden lg:block" />
-              Aquí cada plato trae una historia y cada espacio{" "}
+              En un país donde muchos hablan de comida típica, nosotros la{" "}
               <br className="hidden lg:block" />
-              es un pedacito del país, pensado para que te sientes{" "}
+              hacemos como es, respetando las preparaciones, los tiempos y{" "}
+              <br className="hidden lg:block" /> los sabores como manda la
+              tradición. Cocinamos con tiempo y{" "}
               <br className="hidden lg:block" />
-              sin afán, compartas y te antojes de recorrerlo todo.
+              con cariño, para que cuando te sientes a la mesa sientas que
+              <br className="hidden lg:block" />
+              estás en casa, pero con el cuidado, la calidad y el detalle que
+              <br className="hidden lg:block" /> merece un buen restaurante.
             </motion.p>
           </motion.div>
         </div>
@@ -91,14 +102,17 @@ const SectionThree = () => {
     {
       url: 0,
       title: "La bandeja paisa",
+      content: "Más rica del país",
     },
     {
       url: 0,
       title: "El sanchocho",
+      content: "Más rico del país",
     },
     {
       url: 0,
       title: "El ajiaco",
+      content: "Más rico del país",
     },
   ];
   return (
@@ -185,9 +199,7 @@ const SectionThree = () => {
                     <span className="w-fit !text-4xl">{item.title}</span>
                     <span className="flex-1 h-px rounded-full bg-secondary" />
                   </span>
-                  <span className="!text-7xl !leading-14">
-                    más rica del país
-                  </span>
+                  <span className="!text-7xl !leading-14">{item.content}</span>
                 </h4>
               </motion.div>
             ))}
@@ -259,16 +271,18 @@ const Footer = () => {
               }}
               transition={{ duration: 0.7, ease: "easeOut" }}
             >
-              Entrepués nace del orgullo por lo nuestro. De esa cocina
-              colombiana <br className="hidden lg:block" /> tradicional que se
-              hace con manos sabias y con familia alrededor{" "}
-              <br className="hidden lg:block" /> Queríamos que toda la riqueza
-              del país tuviera una casa donde <br className="hidden lg:block" />
-              se vea, se sienta y se comparta en cada región. Aquí cada receta{" "}
-              <br className="hidden lg:block" /> guarda memoria, cada
-              ingrediente tiene origen y cada visita{" "}
+              Entrepués nace del orgullo por lo nuestro y por la cocina
+              colombiana hecha <br className="hidden lg:block" /> como debe ser.
+              De esas recetas que pasan de generación en generación,{" "}
               <br className="hidden lg:block" />
-              se siente como en casa.
+              que se preparan con tiempo, con manos sabias y con la familia
+              alrededor. <br className="hidden lg:block" />
+              Queríamos que los sabores tradicionales del país tuvieran una casa
+              donde <br className="hidden lg:block" />
+              se respetaran sin cambios ni atajos. Aquí cada receta tiene
+              historia, cada <br className="hidden lg:block" />
+              ingrediente tiene origen y cada visita se siente como volver a
+              casa.
             </motion.p>
           </motion.div>
         </div>

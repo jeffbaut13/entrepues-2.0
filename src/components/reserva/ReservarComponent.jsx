@@ -1,18 +1,30 @@
-import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Calendar, ChevronLeft, Home, Timer, User } from "lucide-react";
+import { Calendar, Timer, User } from "lucide-react";
 
-import { Logo } from "../ui/Logo";
-import { Button } from "../ui/Button";
 import SliderVertical from "../slider/SliderVertical";
 import HeaderPaso from "./HeaderPaso";
-import { useIsMobile } from "../../hooks/useIsMobile";
 import { convertTo12Hour, getAmPm } from "./horaUtils";
-import PlatosSeleccion from "./PlatosSeleccion";
 
 import useReservaStore from "../../store/reservaStore";
-import { Mapa } from "../ui/Mapa";
+
+const normalizeRegionParam = (value = "") =>
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+
+const resolveRegionName = (value = "") => {
+  const normalized = normalizeRegionParam(value);
+
+  const aliases = {
+    pacifico: "pacifica",
+  };
+
+  return aliases[normalized] || normalized;
+};
 
 export const ReservarComponent = () => {
   return (
@@ -41,26 +53,24 @@ export const ReservarComponent = () => {
 };
 
 const ReservaComponent = () => {
+  const [searchParams] = useSearchParams();
+
   // Estados derivados del store
   const stepRefs = useRef([]);
 
   /* zustand */
 
   const {
-    showMenu,
-
     currentStep,
     setCurrentStep,
-    completedSteps,
+    pasosReserva,
     reservaData,
-    detalleAsistentes,
     isZonaExpanded,
-    closeThankYou,
+    seleccionarZona,
+    setZonaExpanded,
   } = useReservaStore();
 
-  const isMobile = useIsMobile();
-
-  const [activeFull, setactiveFull] = useState(false);
+  const regionFromUrl = searchParams.get("region") || "";
 
   // Estados derivados del store
   const selectedDate = reservaData.selectedDate
@@ -74,9 +84,10 @@ const ReservaComponent = () => {
 
   const pasos = [
     {
+      key: "visitantes",
       titulo: "Visitantes",
       icon: User,
-      descripcion: completedSteps[2]
+      descripcion: pasosReserva.visitantes.completado
         ? `${adults} adulto${adults !== 1 ? "s" : ""}${
             children > 0 ? `, ${children} niño${children !== 1 ? "s" : ""}` : ""
           }${
@@ -85,25 +96,34 @@ const ReservaComponent = () => {
               : ""
           }`
         : "",
+      habilitado: pasosReserva.visitantes.habilitado,
+      completado: pasosReserva.visitantes.completado,
     },
     {
+      key: "fecha",
       titulo: "Fecha",
       icon: Calendar,
-      descripcion: completedSteps[0]
+      descripcion: pasosReserva.fecha.completado
         ? selectedDate.toLocaleDateString("es-CO", {
             weekday: "short",
             day: "numeric",
             month: "short",
           })
         : "",
+      habilitado: pasosReserva.fecha.habilitado,
+      completado: pasosReserva.fecha.completado,
     },
     {
+      key: "hora",
       titulo: "Hora",
       icon: Timer,
-      descripcion: completedSteps[1]
+      descripcion: pasosReserva.hora.completado
         ? `${convertTo12Hour(hour)}:${minute} ${getAmPm(hour)}`
         : "",
+      habilitado: pasosReserva.hora.habilitado,
+      completado: pasosReserva.hora.completado,
     },
+    // Puedes agregar más pasos aquí si es necesario
   ];
 
   useEffect(() => {
@@ -126,12 +146,27 @@ const ReservaComponent = () => {
     }
   }, [setCurrentStep]);
 
+  useEffect(() => {
+    if (!regionFromUrl) return;
+
+    const regionToSelect = resolveRegionName(regionFromUrl);
+    if (!regionToSelect) return;
+
+    seleccionarZona(regionToSelect);
+    setZonaExpanded(true);
+    setCurrentStep(0);
+  }, [regionFromUrl, seleccionarZona, setZonaExpanded, setCurrentStep]);
+
   return (
     <motion.div
-      className="flex-1 w-full h-full max-w-5xl mx-auto px-2 md:px-4 flex items-center justify-center"
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+      className="flex-1 w-full h-full mx-auto px-2 md:px-4 flex items-center justify-center"
+      initial={{ opacity: 0, y: 40, maxWidth: "64rem" }}
+      animate={{
+        opacity: 1,
+        y: 0,
+        maxWidth: isZonaExpanded ? "70rem" : "64rem",
+      }}
+      transition={{ duration: 0.2, delay: 0.1, ease: "easeOut" }}
     >
       <motion.div
         className="w-full lg:h-[40.2060625rem] h-full flex lg:flex-row flex-col items-stretch bg-white/20 text-dark rounded-xl lg:gap-6 gap-3 lg:p-6 p-3 md:py-4 overflow-hidden relative"
@@ -161,12 +196,10 @@ const ReservaComponent = () => {
           <AnimatePresence>
             {pasos.map((paso, index) => {
               const isExpanded = currentStep === index;
-              const isCompleted = completedSteps[index];
-
               return (
                 <motion.div
                   ref={(el) => (stepRefs.current[index] = el)}
-                  key={index}
+                  key={paso.key}
                   className={`${
                     index !== pasos.length - 1 ? "lg:border-b" : ""
                   } lg:border-l border-dark/20 flex-shrink-0 lg:flex-1`}
@@ -182,25 +215,19 @@ const ReservaComponent = () => {
                   <HeaderPaso
                     index={index}
                     paso={paso}
-                    pasos={pasos}
+                    habilitado={paso.habilitado}
                     content={
                       <>
-                        {paso.descripcion === "" ? (
-                          <></>
-                        ) : (
-                          <>
-                            <p className="text-start lg:!text-xl md:!text-base">
-                              {paso.descripcion || "-- /--"}
-                            </p>
-                          </>
+                        {paso.descripcion === "" ? null : (
+                          <p className="text-start lg:!text-xl md:!text-base">
+                            {paso.descripcion || "-- /--"}
+                          </p>
                         )}
                       </>
                     }
                     isExpanded={isExpanded}
-                    isCompleted={isCompleted}
-                    currentStep={currentStep}
                     onClick={() => {
-                      if (isCompleted || index < currentStep) {
+                      if (paso.habilitado) {
                         setCurrentStep(index);
                       }
                     }}
@@ -217,7 +244,7 @@ const ReservaComponent = () => {
           } transition-all duration-500 ease-in-out`}
         >
           <div className="size-full bg-[#faf7f1]">
-            <SliderVertical   />
+            <SliderVertical />
           </div>
         </div>
         {/* Slider Vertical con Swiper */}
@@ -225,16 +252,3 @@ const ReservaComponent = () => {
     </motion.div>
   );
 };
-
-/* 
-<motion.div
-          className={`bg-[#faf7f1] text-dark rounded-lg overflow-hidden min-h-0 ${
-            shouldOverlayCantidad
-              ? "absolute inset-3 z-40"
-              : "flex-1 lg:h-full h-auto"
-          }`}
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
-        >
-        </motion.div> */

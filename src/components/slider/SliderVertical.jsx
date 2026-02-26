@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
@@ -8,30 +8,24 @@ import useReservaStore from "../../store/reservaStore";
 import PasoFecha from "../reserva/datepicker/PasoFecha";
 import PasoHora from "../reserva/PasoHoraMain";
 import PasoCantidad from "../reserva/PasoCantidad";
-import PasoContacto from "../reserva/PasoContacto";
-import ResumenReserva from "../reserva/ResumenReserva";
 import { Button } from "../ui/Button";
 import { useNavigate } from "react-router-dom";
 
-export default function SliderVertical({ setactiveFull }) {
+export default function SliderVertical() {
   const navigate = useNavigate();
   const swiperRef = useRef(null);
-  const [isContactDataValid, setIsContactDataValid] = useState(false);
 
   const {
     currentStep,
     setCurrentStep,
     completedSteps,
     setCompletedSteps,
+    setPasoReserva,
     reservaData,
     reservaZonaData,
     updateReservaData,
     setZonaExpanded,
     setDatosReservaCompletados,
-
-    editarReserva,
-    enviarDatos,
-    showThankYouPage,
   } = useReservaStore();
 
   const selectedDate = reservaData.selectedDate
@@ -42,15 +36,27 @@ export default function SliderVertical({ setactiveFull }) {
   const adults = reservaData.adults;
   const children = reservaData.children;
   const mascotas = reservaData.mascotas;
-  const name = reservaData.name;
-  const email = reservaData.email;
-  const whatsapp = reservaData.whatsapp;
-  const totalOcupacion =
-    Number(adults || 0) + Number(children || 0) + Number(mascotas || 0);
   const canContinueFromCantidad =
     Boolean(reservaZonaData?.selectedZoneId) &&
     Boolean(reservaZonaData?.mesaSeleccionada) &&
     Number(adults || 0) > 0;
+  const safeCompletedSteps = Array.isArray(completedSteps)
+    ? completedSteps
+    : [false, false, false, false];
+  const stepKeys = ["visitantes", "fecha", "hora", "platos"];
+
+  const marcarPasoComoConfirmado = (stepIndex) => {
+    const currentStepKey = stepKeys[stepIndex];
+    const nextStepKey = stepKeys[stepIndex + 1];
+
+    if (currentStepKey) {
+      setPasoReserva(currentStepKey, { completado: true, habilitado: true });
+    }
+
+    if (nextStepKey) {
+      setPasoReserva(nextStepKey, { habilitado: true });
+    }
+  };
 
   // Funciones helper
   const updateReservaField = (field, value) => {
@@ -66,9 +72,6 @@ export default function SliderVertical({ setactiveFull }) {
   const setAdults = (adults) => updateReservaField("adults", adults);
   const setChildren = (children) => updateReservaField("children", children);
   const setMascotas = (mascotas) => updateReservaField("mascotas", mascotas);
-  const setName = (name) => updateReservaField("name", name);
-  const setEmail = (email) => updateReservaField("email", email);
-  const setWhatsapp = (whatsapp) => updateReservaField("whatsapp", whatsapp);
 
   // Sincronizar Swiper con currentStep
   useEffect(() => {
@@ -82,32 +85,12 @@ export default function SliderVertical({ setactiveFull }) {
   };
 
   const handleElegirMenu = async () => {
+    const newCompleted = [...safeCompletedSteps];
+    newCompleted[2] = true;
+    setCompletedSteps(newCompleted);
+    marcarPasoComoConfirmado(2);
     setDatosReservaCompletados(true);
     navigate("/reservar/elegir-platos");
-  };
-
-  const handleConfirmarReserva = async () => {
-    if (!name.trim() || !email.trim() || !whatsapp.trim()) {
-      alert("Por favor completa todos los datos de contacto");
-      return;
-    }
-
-    const result = await enviarDatos();
-    if (result.ok) {
-      showThankYouPage();
-    } else {
-      alert("Error al confirmar la reserva: " + result.error);
-    }
-  };
-
-  const handleEditarReserva = () => {
-    const lastCompletedStep = completedSteps.reduce(
-      (lastIndex, completed, index) => {
-        return completed ? index : lastIndex;
-      },
-      0
-    );
-    editarReserva(lastCompletedStep);
   };
 
   const confirmarPaso = async () => {
@@ -116,16 +99,9 @@ export default function SliderVertical({ setactiveFull }) {
       return;
     }
 
-    // Si estamos en el paso de contacto (3), validar datos completos
-    if (currentStep === 3) {
-      if (!isContactDataValid) {
-        alert("Por favor completa todos los datos de contacto");
-        return;
-      }
-    }
-
-    const newCompleted = [...completedSteps];
+    const newCompleted = [...safeCompletedSteps];
     newCompleted[currentStep] = true;
+    marcarPasoComoConfirmado(currentStep);
 
     if (currentStep === 0) {
       setZonaExpanded(false);

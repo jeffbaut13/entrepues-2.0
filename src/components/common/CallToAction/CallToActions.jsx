@@ -1,32 +1,14 @@
 import { motion } from "framer-motion";
-import {
-  ArrowLeft,
-  ConciergeBell,
-  Notebook,
-  RefreshCcwDot,
-} from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 import { Button } from "../../ui/Button";
 import { redes } from "../../../constants/redesSociales";
-import useMenuStore from "../../../store/menuStore";
-import useReservaStore from "../../../store/reservaStore";
 import { useObserverVisibility } from "../../../hooks/useObserverVisibility";
 import { useLoaderContext } from "../../../context/LoaderContext";
 
 export const CallToActions = ({ site = "home" }) => {
-  const navigate = useNavigate();
-  // zustand
-  const openMenuWithContext = useMenuStore(
-    (state) => state.openMenuWithContext
-  );
-  const { openBookingWithOrigin } = useReservaStore();
   const isSectionVisible = useObserverVisibility(".hide-logo-section");
   const { loadingComplete } = useLoaderContext();
-
-  const handleOpenMenu = () => {
-    openMenuWithContext("Volver al inicio");
-  };
 
   // Los delays se calculan desde el final del loader (2s) + delay adicional
   // Los delays originales se mantienen sumando 2s

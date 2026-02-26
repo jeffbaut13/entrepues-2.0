@@ -6,10 +6,10 @@ import {
 } from "./firestore";
 
 const CATEGORIAS = [
-  "bebidas",
   "desayunos",
   "entradas",
   "platos_fuertes",
+  "bebidas",
   "postres",
 ];
 

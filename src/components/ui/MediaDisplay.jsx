@@ -106,8 +106,8 @@ export const MediaDisplay = ({
           poster={posterImage || imageSrc}
           style={{ width: '100%', height: '100%' }}
           onError={handleVideoError}
-          onLoadStart={() => console.log(`Cargando video: ${videoSrc}`)}
-          onLoadedData={() => console.log(`Video cargado exitosamente: ${videoSrc}`)}
+          //onLoadStart={() => console.log(`Cargando video: ${videoSrc}`)}
+          //onLoadedData={() => console.log(`Video cargado exitosamente: ${videoSrc}`)}
         >
           <source src={videoSrc} type="video/mp4" />
           {/* Fallback para navegadores que no soportan el formato */}
