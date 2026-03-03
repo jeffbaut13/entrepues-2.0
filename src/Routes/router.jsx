@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import AdminLayout from "../components/admin/AdminLayout";
 import CheckoutLayout from "../components/layout/CheckoutLayout";
+import VideoScrollLayout from "../components/layout/videscrollLayout";
 
 // Admin Pages
 import AdminPage from "../pages/admin/AdminPage";
@@ -13,7 +14,7 @@ import AdminStoragePage from "../pages/admin/AdminStoragePage";
 
 // Pages
 import HomePage from "../pages/home/HomePage";
-import VideoScrollPage from "../pages/descubrenos/VideoScrollPage";
+import { VideoScrollComponent } from "../components/VideoScroll/VideoScrollComponent";
 import Video360Page from "../pages/descubrenos/Video360Page";
 import MenuPage from "../pages/menu/MenuPage";
 import ReservarPage from "../pages/reservar/ReservarPage";
@@ -43,7 +44,9 @@ function AppRouter() {
           <Route path="/carta" element={<CartaPage />} />
           {/* Ruta de descubrenos - Video 360 */}
           {/* <Route path="/descubrenos" element={<Video360Page />} /> */}
-          <Route path="/descubrenos" element={<VideoScrollPage />} />
+        </Route>
+        <Route path="/descubrenos" element={<VideoScrollLayout />}>
+          <Route index element={<VideoScrollComponent />} />
         </Route>
 
         <Route element={<CheckoutLayout />}>

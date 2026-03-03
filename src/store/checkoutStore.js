@@ -46,6 +46,34 @@ const validateWhatsapp = (value) => {
   return "";
 };
 
+const buildCheckoutStateFromReserva = (datos) => {
+  const subtotal =
+    datos?.platosSeleccionados?.reduce((total, asistente) => {
+      return (
+        total +
+        (asistente.platos?.reduce((sum, plato) => {
+          return sum + plato.precio * plato.cantidad;
+        }, 0) || 0)
+      );
+    }, 0) || 0;
+
+  const impuestos = subtotal * 0.19;
+  const montoFinal = subtotal + impuestos;
+
+  return {
+    datosReserva: datos,
+    montoTotal: subtotal,
+    impuestos,
+    montoFinal,
+    datosContacto: {
+      nombre: datos?.reservaData?.name || "",
+      email: datos?.reservaData?.email || "",
+      whatsapp: datos?.reservaData?.whatsapp || "",
+      notas: "",
+    },
+  };
+};
+
 /**
  * Store para manejar el flujo de checkout y pagos
  * Integra con pasarelas de pago y maneja el estado de la transacción
@@ -98,32 +126,7 @@ export const useCheckoutStore = create(
           if (stored) {
             const datos = JSON.parse(stored);
 
-            // Calcular totales
-            const subtotal =
-              datos.platosSeleccionados?.reduce((total, asistente) => {
-                return (
-                  total +
-                  (asistente.platos?.reduce((sum, plato) => {
-                    return sum + plato.precio * plato.cantidad;
-                  }, 0) || 0)
-                );
-              }, 0) || 0;
-
-            const impuestos = subtotal * 0.19; // 19% IVA
-            const montoFinal = subtotal + impuestos;
-
-            set({
-              datosReserva: datos,
-              montoTotal: subtotal,
-              impuestos: impuestos,
-              montoFinal: montoFinal,
-              datosContacto: {
-                nombre: datos.reservaData?.name || "",
-                email: datos.reservaData?.email || "",
-                whatsapp: datos.reservaData?.whatsapp || "",
-                notas: "",
-              },
-            });
+            set(buildCheckoutStateFromReserva(datos));
 
             console.log("✅ Datos de reserva cargados:", datos);
             return { ok: true, data: datos };
@@ -132,6 +135,20 @@ export const useCheckoutStore = create(
           throw new Error("No se encontraron datos de reserva");
         } catch (error) {
           console.error("❌ Error cargando datos de reserva:", error);
+          set({ error: error.message });
+          return { ok: false, error: error.message };
+        }
+      },
+
+      cargarDatosReservaDesdeResultado: (datos) => {
+        try {
+          if (!datos?.reservaData || !Array.isArray(datos?.platosSeleccionados)) {
+            throw new Error("Resultado de reserva incompleto");
+          }
+
+          set(buildCheckoutStateFromReserva(datos));
+          return { ok: true, data: datos };
+        } catch (error) {
           set({ error: error.message });
           return { ok: false, error: error.message };
         }

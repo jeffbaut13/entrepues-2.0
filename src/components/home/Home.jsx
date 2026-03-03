@@ -12,7 +12,7 @@ export const HomeComponent = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setShowScrollHint(window.scrollY < 100);
+      setShowScrollHint(window.scrollY < 7068);
     };
 
     handleScroll();
@@ -32,10 +32,11 @@ export const HomeComponent = () => {
       <Footer />
       <ScrollDownLottie
         color="#FFFFFF"
-        size={120}
+        size={60}
         showScrollHint={showScrollHint}
-        className="!bottom-28"
+        className="!bottom-34"
       />
+      
     </>
   );
 };

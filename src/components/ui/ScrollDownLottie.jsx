@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Lottie from "lottie-react";
-import scrollDownAnimation from "../../data/scroll-down.json";
+import scrollDownAnimation from "../../data/Scroll-Icon.json";
 
 const hexToNormalizedRgb = (hexColor) => {
   const normalized = (hexColor || "#FFFFFF").replace("#", "").trim();
@@ -50,6 +50,7 @@ export const ScrollDownLottie = ({
   className = "",
   size = 56,
   showScrollHint,
+  fixed = true,
 }) => {
   const animationData = useMemo(() => {
     const cloned = JSON.parse(JSON.stringify(scrollDownAnimation));
@@ -65,7 +66,9 @@ export const ScrollDownLottie = ({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 8 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className={`pointer-events-none fixed bottom-6 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center justify-center ${
+          className={`pointer-events-none ${
+            fixed ? "fixed" : "absolute"
+          } bottom-6 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center justify-center ${
             className ? className : ""
           }`}
         >
@@ -76,6 +79,7 @@ export const ScrollDownLottie = ({
               minWidth: size,
               minHeight: size,
             }}
+            className="animate-mouse-float"
           >
             <Lottie
               animationData={animationData}
@@ -84,8 +88,8 @@ export const ScrollDownLottie = ({
               style={{ width: "100%", height: "100%" }}
             />
           </div>
-          <span className="text-white text-center font-parkson !text-4xl -translate-y-6">
-            Scroll
+          <span className="text-white text-center font-parkson !text-3xl">
+            Desliza
           </span>
         </motion.div>
       )}

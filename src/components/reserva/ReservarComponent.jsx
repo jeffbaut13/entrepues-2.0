@@ -52,7 +52,7 @@ export const ReservarComponent = () => {
   );
 };
 
-const ReservaComponent = () => {
+export const ReservaComponent = ({ region }) => {
   const [searchParams] = useSearchParams();
 
   // Estados derivados del store
@@ -70,7 +70,8 @@ const ReservaComponent = () => {
     setZonaExpanded,
   } = useReservaStore();
 
-  const regionFromUrl = searchParams.get("region") || "";
+  const regionFromUrl = searchParams.get("region") || region || "andina";
+ 
 
   // Estados derivados del store
   const selectedDate = reservaData.selectedDate
@@ -153,21 +154,29 @@ const ReservaComponent = () => {
     if (!regionToSelect) return;
 
     seleccionarZona(regionToSelect);
-    setZonaExpanded(true);
-    setCurrentStep(0);
-  }, [regionFromUrl, seleccionarZona, setZonaExpanded, setCurrentStep]);
+  }, [regionFromUrl, seleccionarZona]);
+
+  const debeInicializarEnVisitantes =
+    !pasosReserva.visitantes.completado &&
+    !pasosReserva.fecha.completado &&
+    !pasosReserva.hora.completado &&
+    !pasosReserva.platos.habilitado;
+
+  useEffect(() => {
+    if (!regionFromUrl) return;
+    if (debeInicializarEnVisitantes) {
+      setZonaExpanded(true);
+      setCurrentStep(0);
+    }
+  }, [
+    regionFromUrl,
+    debeInicializarEnVisitantes,
+    setZonaExpanded,
+    setCurrentStep,
+  ]);
 
   return (
-    <motion.div
-      className="flex-1 w-full h-full mx-auto px-2 md:px-4 flex items-center justify-center"
-      initial={{ opacity: 0, y: 40, maxWidth: "64rem" }}
-      animate={{
-        opacity: 1,
-        y: 0,
-        maxWidth: isZonaExpanded ? "70rem" : "64rem",
-      }}
-      transition={{ duration: 0.2, delay: 0.1, ease: "easeOut" }}
-    >
+    <>
       <motion.div
         className="w-full lg:h-[40.2060625rem] h-full flex lg:flex-row flex-col items-stretch bg-white/20 text-dark rounded-xl lg:gap-6 gap-3 lg:p-6 p-3 md:py-4 overflow-hidden relative"
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -249,6 +258,6 @@ const ReservaComponent = () => {
         </div>
         {/* Slider Vertical con Swiper */}
       </motion.div>
-    </motion.div>
+    </>
   );
 };

@@ -18,7 +18,7 @@ export const CallToActions = ({ site = "home" }) => {
 
   return (
     <div className="fixed bottom-0 size-full z-[51] flex flex-col items-center justify-end pb-6">
-      <div className="md:max-w-2xl max-w-sm w-full flex flex-col md:gap-6 gap-4 text-2xl z-20">
+      <div className="md:max-w-md max-w-sm w-full flex flex-col md:gap-6 gap-4 text-2xl z-20">
         <div className="w-full flex md:flex-row flex-col justify-center items-center gap-4 overflow-hidden">
           <Button
             width="full"
@@ -27,7 +27,7 @@ export const CallToActions = ({ site = "home" }) => {
             }`}
             type="enlace"
             fontSize="2xl"
-            href={"/menu"}
+            href={"/carta"}
             title="Menú"
             motionProps={{
               initial: { y: 100 },
@@ -43,7 +43,7 @@ export const CallToActions = ({ site = "home" }) => {
             width="full"
             customClass="order-1  md:order-2 !bg-secondary !text-brown !border !border-brown"
             type="enlace"
-            href={"/reservar"}
+            href={"/descubrenos"}
             title="Reservar"
             fontSize="2xl"
             motionProps={{
@@ -56,45 +56,6 @@ export const CallToActions = ({ site = "home" }) => {
               },
             }}
           />
-          {site == "home" ? (
-            <>
-              <Button
-                width="full"
-                customClass="order-3 md:order-3"
-                type="enlace"
-                title="Vista 360°"
-                href={"/descubrenos"}
-                fontSize="2xl"
-                motionProps={{
-                  initial: { y: 100 },
-                  animate: { y: 0 },
-                  transition: {
-                    delay: getAnimationDelay(1.3),
-                    ease: "easeInOut",
-                    duration: 1,
-                  },
-                }}
-              />
-            </>
-          ) : (
-            <Button
-              width="full"
-              customClass="order-3 md:order-1"
-              type="enlace"
-              title="Volver"
-              Icon={ArrowLeft}
-              href={"/"}
-              motionProps={{
-                initial: { y: 100 },
-                animate: { y: 0 },
-                transition: {
-                  delay: getAnimationDelay(1),
-                  ease: "easeInOut",
-                  duration: 1,
-                },
-              }}
-            />
-          )}
         </div>
 
         <motion.div

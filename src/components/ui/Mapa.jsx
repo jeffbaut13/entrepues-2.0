@@ -1,4 +1,10 @@
-export const Mapa = ({ handleShowZone, theme, regionActive, sizeText }) => {
+export const Mapa = ({
+  handleShowZone,
+  theme,
+  regionActive,
+  sizeText,
+  size,
+}) => {
   const fontSize = () => {
     switch (sizeText) {
       case "sm":
@@ -16,7 +22,6 @@ export const Mapa = ({ handleShowZone, theme, regionActive, sizeText }) => {
     caribe: "CARIBE",
     pacifica: "PACÍFICA",
     amazonia: "AMAZONÍA",
-    insular: "INSULAR",
     orinoquia: "ORINOQUÍA",
     andina: "ANDINA",
   };
@@ -58,7 +63,7 @@ export const Mapa = ({ handleShowZone, theme, regionActive, sizeText }) => {
   };
 
   return (
-    <picture className="size-full inline-block">
+    <picture className={`${size ? size : "size-full inline-block"}`}>
       <svg
         id="uuid-fe5ee73b-e389-4a25-bee8-8cdab55967c4"
         data-name="Capa 2"
@@ -90,7 +95,7 @@ export const Mapa = ({ handleShowZone, theme, regionActive, sizeText }) => {
             >
               {REGION_LABELS.caribe}
             </text>
-            <g
+            {/* <g
               transform="translate(25 234) scale(0.3)"
               className={`${getRegionLabelClass(
                 "caribe"
@@ -115,7 +120,7 @@ export const Mapa = ({ handleShowZone, theme, regionActive, sizeText }) => {
                 <path d="M94,198.3v-11.82h1.56v10.42h5.82v1.39h-7.38Z" />
                 <path d="M105.35,198.3v-5.01l-4.55-6.81h1.9l2.33,3.56c.43.67.83,1.33,1.2,2,.35-.62.78-1.31,1.29-2.09l2.29-3.47h1.82l-4.72,6.81v5.01h-1.56Z" />
               </g>
-            </g>
+            </g> */}
           </g>
 
           <g data-name="pacifica" className="group cursor-pointer">
@@ -159,28 +164,6 @@ export const Mapa = ({ handleShowZone, theme, regionActive, sizeText }) => {
               )} font-parkson ${fontSize()} transition-colors duration-300 ease-in-out`}
             >
               {REGION_LABELS.amazonia}
-            </text>
-          </g>
-
-          <g data-name="insular" className="group cursor-pointer">
-            <rect
-              x="256.07"
-              y=".5"
-              width="155.49"
-              height="117.28"
-              className={getRegionShapeClass("insular")}
-              style={{ strokeMiterlimit: 10 }}
-            />
-            <text
-              x="333.82"
-              y="59.14"
-              textAnchor="middle"
-              dominantBaseline="middle"
-              className={`${getRegionLabelClass(
-                "insular"
-              )} font-parkson ${fontSize()} transition-colors duration-300 ease-in-out`}
-            >
-              {REGION_LABELS.insular}
             </text>
           </g>
 

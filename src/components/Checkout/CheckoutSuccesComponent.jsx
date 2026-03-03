@@ -1,10 +1,10 @@
 import { useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../ui/Button";  
+import { Button } from "../ui/Button";
 import useCheckoutStore from "../../store/checkoutStore";
 
-export const CheckoutSuccesComponent = () => {
+export const CheckoutSuccesComponent = ({ onFinalizar }) => {
   const navigate = useNavigate();
   const { obtenerReservaGuardada, resetCheckout } = useCheckoutStore();
 
@@ -15,20 +15,24 @@ export const CheckoutSuccesComponent = () => {
 
   useEffect(() => {
     if (!reserva) {
+      if (typeof onFinalizar === "function") {
+        onFinalizar();
+        return;
+      }
       navigate("/checkout");
     }
-  }, [reserva, navigate]);
+  }, [reserva, navigate, onFinalizar]);
 
   const handleFinalizar = () => {
     resetCheckout();
+    if (typeof onFinalizar === "function") {
+      onFinalizar();
+      return;
+    }
     navigate("/");
   };
 
   const numeroReserva = reserva?.["numero-de-reserva"] || "----";
-  const email = reserva?.email || "sin correo";
-  const fecha = reserva?.fecha || "-";
-  const hora = reserva?.hora || "-";
-  const total = Number(reserva?.montoTotal || 0);
 
   if (!reserva) return null;
 

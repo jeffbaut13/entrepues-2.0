@@ -6,7 +6,6 @@ export const MesasSelectorx4 = ({
   colorRelleno = "fill-[#ffffff00]",
   strokeSecondary = "var(--secondary)",
   strokeDark = "var(--dark)",
-  numeroAsistentes,
   petSeats = [],
 }) => {
   const width = () => {
@@ -16,7 +15,7 @@ export const MesasSelectorx4 = ({
       case "md":
         return "w-8";
       case "lg":
-        return "w-10";
+        return "w-32";
       default:
         return "w-8";
     }
@@ -47,11 +46,7 @@ export const MesasSelectorx4 = ({
   const petSize = 32;
 
   return (
-    <picture className={`${width()} h-auto relative`}>
-      <span className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2">
-        {numeroAsistentes}
-      </span>
-
+    <picture className={`${width()} h-auto relative inline-block`}>
       <svg
         id="uuid-b9dc02be-eb8e-43af-b1d6-12117cc3cc19"
         data-name="Capa 2"
@@ -2373,7 +2368,20 @@ export const MesasSelectorx6 = ({
   strokeSecondary = "var(--secondary)",
   strokeDark = "var(--dark)",
   petSeats = [],
+  size = "lg",
 }) => {
+  const width = () => {
+    switch (size) {
+      case "sm":
+        return "w-6";
+      case "md":
+        return "w-8";
+      case "lg":
+        return "w-46";
+      default:
+        return "w-8";
+    }
+  };
   // Función para determinar el color de relleno de cada silla
   const getColorForSilla = (sillaNumber) => {
     if (petSeats.includes(sillaNumber)) {
@@ -2401,7 +2409,7 @@ export const MesasSelectorx6 = ({
   const petSize = 18;
 
   return (
-    <picture className="relative inline-block">
+    <picture className={`${width()} h-auto relative inline-block`}>
       <svg
         id="uuid-933c0d02-4a1d-4b6c-9df8-9829b03ad05a"
         data-name="Capa 2"

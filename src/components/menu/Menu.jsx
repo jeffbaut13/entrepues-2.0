@@ -90,7 +90,7 @@ const SectionOne = () => {
           backgroundImage: "url('/imagenes/menu/background_menu.webp')",
         }}
       >
-        <div className="size-full absolute top-0 left-0 bg-black/50 z-10" />
+        <div className="size-full absolute top-0 left-0 bg-black/20 z-10" />
         <motion.div
           variants={{
             hidden: { opacity: 0, scale: 0.85 },
@@ -181,7 +181,7 @@ const Sections = ({ invert = false, content }) => {
             </motion.div>
 
             {/* Usando el componente reutilizable MediaDisplay */}
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-hidden max-h-150 flex justify-center items-center">
               <MediaDisplay
                 videoSrc={content.videoSrc !== "" ? content.videoSrc : null}
                 imageSrc={content.imageSrc !== "" ? content.imageSrc : null}

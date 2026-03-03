@@ -10,7 +10,7 @@ import { Button } from "../ui/Button";
 import { Logo } from "../ui/Logo";
 import { useHeaderChangeStore } from "../../store/headerChangeStore";
 
-export const Header = ({ loading }) => {
+export const Header = ({ loading, logo }) => {
   const { isHome, isDark, isLight, isBg } = useRouteMode();
 
   const { changeColor } = useHeaderChangeStore();
@@ -29,13 +29,12 @@ export const Header = ({ loading }) => {
     }
 
     if (isDark || isBg) {
-      return <HeaderTheme darkTheme={true} />;
+      return <HeaderTheme darkTheme={true} logo={logo} />;
     }
     if (isLight) {
-      return <HeaderTheme darkTheme={false} changeColor={changeColor} />;
+      return <HeaderTheme darkTheme={false} logo={logo} />;
     }
   };
- 
 
   return (
     <>
@@ -49,7 +48,10 @@ export const Header = ({ loading }) => {
               isBg ? "bg-secondary" : ""
             } h-auto fixed z-1001 top-0 left-0 text-secondary flex flex-col items-center justify-between`}
           >
-            <div className="mx-auto max-w-7xl w-full md:px-0 h-22 grid grid-cols-3 items-center gap-4 place-items-center">
+            {(isHome || isLight) && (
+              <div className="bg-gradient-to-t to-black/65 w-full h-62 absolute top-0 left-0 z-0 pointer-events-none" />
+            )}
+            <div className="mx-auto max-w-7xl w-full md:px-0 h-32 grid grid-cols-3 items-center gap-4 place-items-center relative z-10">
               {headerRender(isSectionTwoVisible)}
             </div>
           </motion.header>
@@ -63,26 +65,27 @@ const HeaderHome = ({ isSectionTwoVisible }) => {
   return (
     <>
       <div />
+
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
         className="py-8"
       >
-        <Logo color={isSectionTwoVisible ? "dark" : "white"} size="lg" />
+        <Logo color={"white"} size="lg" />
       </motion.div>
       <div />
     </>
   );
 };
 
-const HeaderTheme = ({ darkTheme, changeColor }) => {
+const HeaderTheme = ({ darkTheme, logo }) => {
   const navigate = useNavigate();
   return (
     <>
       <motion.div
         className={`w-fit inline-flex gap-4 items-center justify-self-start ${
-          darkTheme ? "text-dark" : changeColor ? "text-dark" : "text-white"
+          darkTheme ? "text-dark" : "text-white"
         }`}
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -93,11 +96,7 @@ const HeaderTheme = ({ darkTheme, changeColor }) => {
           href={"/"}
           Icon={Home}
           customClass={`!bg-transparent !border-none ${
-            darkTheme
-              ? "!text-dark"
-              : changeColor
-              ? "!text-dark"
-              : "!text-white  "
+            darkTheme ? "!text-dark" : "!text-white"
           }`}
         />
         |
@@ -106,25 +105,26 @@ const HeaderTheme = ({ darkTheme, changeColor }) => {
           Icon={ChevronLeft}
           title="Volver"
           customClass={`!bg-transparent !border-none ${
-            darkTheme
-              ? "!text-dark"
-              : changeColor
-              ? "!text-dark"
-              : "!text-white "
+            darkTheme ? "!text-dark" : "!text-white"
           }`}
           onClick={() => navigate(-1)}
         />
       </motion.div>
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
-      >
-        <Logo
-          color={darkTheme ? "dark" : changeColor ? "dark" : "white"}
-          size="md"
-        />
-      </motion.div>
+      <AnimatePresence mode="wait">
+        {logo ? (
+          <motion.div
+            key={"logo"}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+          >
+            <Logo color={darkTheme ? "dark" : "white"} size="lg" />
+          </motion.div>
+        ) : (
+          <div />
+        )}
+      </AnimatePresence>
       <div />
     </>
   );

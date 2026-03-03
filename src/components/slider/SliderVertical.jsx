@@ -90,7 +90,7 @@ export default function SliderVertical() {
     setCompletedSteps(newCompleted);
     marcarPasoComoConfirmado(2);
     setDatosReservaCompletados(true);
-    navigate("/reservar/elegir-platos");
+    
   };
 
   const confirmarPaso = async () => {
@@ -139,6 +139,7 @@ export default function SliderVertical() {
         <div className="w-full h-full flex flex-col items-center justify-center">
           <div className="w-full flex-1 flex flex-col">
             <div className="flex-1">
+              
               <PasoCantidad
                 adults={adults}
                 children={children}

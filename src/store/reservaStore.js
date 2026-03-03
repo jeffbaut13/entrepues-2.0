@@ -22,61 +22,37 @@ export const RESERVA_ZONAS_CONFIG = [
     id: "zona-1",
     nombre: "caribe",
     permiteMascotas: true,
-    mesaLayout: {
-      mesaCounts: { 4: 3, 6: 3 },
-      maxMesas: 6,
-      gridCols: { base: 2, md: 5 },
-    },
+    mesasBase: [4, 6],
   },
   {
     id: "zona-2",
     nombre: "pacifica",
     permiteMascotas: false,
-    mesaLayout: {
-      mesaCounts: { 4: 3, 6: 3 },
-      maxMesas: 6,
-      gridCols: { base: 2, md: 5 },
-    },
+    mesasBase: [4, 6],
   },
   {
     id: "zona-3",
     nombre: "amazonia",
     permiteMascotas: false,
-    mesaLayout: {
-      mesaCounts: { 4: 3, 6: 3 },
-      maxMesas: 6,
-      gridCols: { base: 2, md: 5 },
-    },
+    mesasBase: [4, 6],
   },
   {
     id: "zona-4",
     nombre: "insular",
     permiteMascotas: false,
-    mesaLayout: {
-      mesaCounts: { 4: 3, 6: 3 },
-      maxMesas: 6,
-      gridCols: { base: 2, md: 5 },
-    },
+    mesasBase: [4, 6],
   },
   {
     id: "zona-5",
     nombre: "orinoquia",
     permiteMascotas: false,
-    mesaLayout: {
-      mesaCounts: { 4: 3, 6: 3 },
-      maxMesas: 6,
-      gridCols: { base: 2, md: 5 },
-    },
+    mesasBase: [4, 6],
   },
   {
     id: "zona-6",
     nombre: "andina",
     permiteMascotas: false,
-    mesaLayout: {
-      mesaCounts: { 4: 3, 6: 3 },
-      maxMesas: 6,
-      gridCols: { base: 2, md: 5 },
-    },
+    mesasBase: [4, 6],
   },
 ];
 
@@ -106,196 +82,54 @@ const buildDetalleAsistentes = (reservaData = {}) => {
   };
 };
 
-const DEFAULT_MESA_GRID_COLS = { base: 2, md: 6 };
-
-const toPositiveNumber = (value, fallback = 0) => {
-  const numberValue = Number(value);
-  return Number.isFinite(numberValue) && numberValue > 0
-    ? numberValue
-    : fallback;
-};
-
-const buildMesaCountsFromMesasBase = (mesasBase = []) =>
-  (mesasBase || []).reduce((acc, capacidad) => {
-    const capacidadNum = Number(capacidad);
-    if (!Number.isFinite(capacidadNum) || capacidadNum <= 0) {
-      return acc;
-    }
-    acc[capacidadNum] = (acc[capacidadNum] || 0) + 1;
-    return acc;
-  }, {});
-
-const getZonaMesaLayout = (zona) => {
-  const fallbackCounts = buildMesaCountsFromMesasBase(zona?.mesasBase || []);
-  const layoutCountsRaw = zona?.mesaLayout?.mesaCounts || fallbackCounts;
-
-  const mesaCounts = Object.entries(layoutCountsRaw || {}).reduce(
-    (acc, [capacidad, cantidad]) => {
-      const capacidadNum = toPositiveNumber(capacidad, 0);
-      const cantidadNum = Math.floor(toPositiveNumber(cantidad, 0));
-      if (capacidadNum > 0 && cantidadNum > 0) {
-        acc[capacidadNum] = cantidadNum;
-      }
-      return acc;
-    },
-    {}
+const getNextCapacityInPlan = (mesasBase = [], capacidadActual) => {
+  const capacities = [...new Set((mesasBase || []).map(Number))].filter(
+    (value) => value > 0
   );
 
-  const totalMesasDisponibles = Object.values(mesaCounts).reduce(
-    (sum, qty) => sum + qty,
-    0
-  );
-
-  const maxMesasConfigured = Math.floor(
-    toPositiveNumber(zona?.mesaLayout?.maxMesas, totalMesasDisponibles)
-  );
-  const maxMesas = Math.max(
-    1,
-    Math.min(maxMesasConfigured, Math.max(1, totalMesasDisponibles))
-  );
-
-  return {
-    mesaCounts,
-    maxMesas,
-    gridCols: {
-      base: Math.floor(
-        toPositiveNumber(
-          zona?.mesaLayout?.gridCols?.base,
-          DEFAULT_MESA_GRID_COLS.base
-        )
-      ),
-      md: Math.floor(
-        toPositiveNumber(
-          zona?.mesaLayout?.gridCols?.md,
-          DEFAULT_MESA_GRID_COLS.md
-        )
-      ),
-    },
-  };
-};
-
-const expandMesasDisponibles = (mesaCounts = {}, maxMesas = Infinity) => {
-  const mesas = [];
-  const orderedCapacities = Object.keys(mesaCounts)
-    .map(Number)
-    .sort((a, b) => a - b);
-
-  for (const capacidad of orderedCapacities) {
-    const cantidad = Math.floor(toPositiveNumber(mesaCounts[capacidad], 0));
-    for (
-      let index = 0;
-      index < cantidad && mesas.length < maxMesas;
-      index += 1
-    ) {
-      mesas.push(capacidad);
-    }
-    if (mesas.length >= maxMesas) {
-      break;
-    }
-  }
-
-  return mesas;
-};
-
-const pickNextCapacity = ({
-  availableCounts,
-  capacities,
-  lastCapacity,
-  remaining,
-}) => {
-  if (capacities.length === 0) {
-    return null;
+  if (capacities.length <= 1) {
+    return capacidadActual;
   }
 
   if (capacities.includes(4) && capacities.includes(6)) {
-    const preferred = lastCapacity === 4 ? 6 : 4;
-    if ((availableCounts[preferred] || 0) > 0) {
-      return preferred;
-    }
-
-    const fallback = preferred === 4 ? 6 : 4;
-    if ((availableCounts[fallback] || 0) > 0) {
-      return fallback;
-    }
+    return capacidadActual === 4 ? 6 : capacidadActual === 6 ? 4 : 4;
   }
 
-  const closestFit = capacities
-    .filter((capacity) => (availableCounts[capacity] || 0) > 0)
-    .sort((a, b) => {
-      const aDiff = Math.abs(a - remaining);
-      const bDiff = Math.abs(b - remaining);
-      if (aDiff === bDiff) {
-        return a - b;
-      }
-      return aDiff - bDiff;
-    })[0];
-
-  return closestFit || null;
+  const fallback = capacities.find((value) => value !== capacidadActual);
+  return fallback || capacidadActual;
 };
 
 const buildMesasPlan = (zona, capacidadInicial, totalOcupacion) => {
-  const mesaLayout = getZonaMesaLayout(zona);
-  const availableCounts = { ...mesaLayout.mesaCounts };
-  const capacities = Object.keys(availableCounts)
-    .map(Number)
-    .filter((capacity) => capacity > 0)
-    .sort((a, b) => a - b);
-
-  if (capacities.length === 0) {
+  const capacidadesZona = (zona?.mesasBase || []).map(Number).filter((v) => v > 0);
+  if (capacidadesZona.length === 0) {
     return [];
   }
 
-  const objetivo = Math.max(
-    1,
-    Math.min(toPositiveNumber(totalOcupacion, 1), MAX_OCUPACION_TOTAL)
-  );
-
-  const plan = [];
-
-  const consume = (capacity) => {
-    if (!capacity || (availableCounts[capacity] || 0) <= 0) {
-      return false;
-    }
-    availableCounts[capacity] -= 1;
-    plan.push(capacity);
-    return true;
-  };
-
-  const initialCapacity = capacities.includes(capacidadInicial)
+  const capacidadBase = capacidadesZona.includes(capacidadInicial)
     ? capacidadInicial
-    : capacities[0];
+    : capacidadesZona[0];
 
-  if (!consume(initialCapacity)) {
-    const firstAvailable = capacities.find(
-      (capacity) => (availableCounts[capacity] || 0) > 0
-    );
-    if (!firstAvailable || !consume(firstAvailable)) {
-      return [];
-    }
+  const objetivo = Math.max(1, Math.min(totalOcupacion, MAX_OCUPACION_TOTAL));
+
+  // Regla esperada por UX:
+  // 1-4 => [4]
+  // 5-6 => [6]
+  // 7-10 => [6,4]
+  // 11-12 => [6,6]
+  if (capacidadesZona.includes(4) && capacidadesZona.includes(6)) {
+    if (objetivo <= 4) return [4];
+    if (objetivo <= 6) return [6];
+    if (objetivo <= 10) return [6, 4];
+    return [6, 6];
   }
 
-  let capacidadAcumulada = plan.reduce((sum, capacity) => sum + capacity, 0);
+  const plan = [capacidadBase];
+  let capacidadAcumulada = capacidadBase;
 
-  while (
-    capacidadAcumulada < objetivo &&
-    plan.length < mesaLayout.maxMesas &&
-    Object.values(availableCounts).some((count) => count > 0)
-  ) {
-    const remaining = objetivo - capacidadAcumulada;
-    const lastCapacity = plan[plan.length - 1];
-
-    const nextCapacity = pickNextCapacity({
-      availableCounts,
-      capacities,
-      lastCapacity,
-      remaining,
-    });
-
-    if (!nextCapacity || !consume(nextCapacity)) {
-      break;
-    }
-
-    capacidadAcumulada += nextCapacity;
+  while (capacidadAcumulada < objetivo) {
+    const siguiente = getNextCapacityInPlan(capacidadesZona, plan[plan.length - 1]);
+    plan.push(siguiente);
+    capacidadAcumulada += siguiente;
   }
 
   return plan;
@@ -304,22 +138,13 @@ const buildMesasPlan = (zona, capacidadInicial, totalOcupacion) => {
 const buildMesaOptions = (zona, totalOcupacion) => {
   if (!zona) return [];
 
-  const mesaLayout = getZonaMesaLayout(zona);
-  const mesasDisponibles = expandMesasDisponibles(
-    mesaLayout.mesaCounts,
-    mesaLayout.maxMesas
-  );
-
-  return mesasDisponibles.map((capacidadBase, index) => {
+  return (zona.mesasBase || []).map((capacidadBase) => {
     const mesasPlan = buildMesasPlan(zona, capacidadBase, totalOcupacion);
     const mesasUnidas = mesasPlan.length;
     const capacidadTotal = mesasPlan.reduce((sum, item) => sum + item, 0);
     const labelPlan = mesasPlan.join(" + ");
-    const optionId = `${zona.id}-mesa-${index + 1}`;
 
     return {
-      optionId,
-      mesaIndex: index + 1,
       capacidadBase,
       mesasUnidas,
       mesasPlan,
@@ -335,7 +160,7 @@ const buildMesaOptions = (zona, totalOcupacion) => {
 const buildZonaReservaData = (
   reservaData,
   selectedZoneId,
-  preferredMesaOptionId = null
+  preferredMesaBase = null
 ) => {
   const zonaSeleccionada =
     RESERVA_ZONAS_CONFIG.find((zona) => zona.id === selectedZoneId) ||
@@ -343,13 +168,9 @@ const buildZonaReservaData = (
 
   const totalOcupacion = getTotalOcupacion(reservaData);
   const opcionesMesa = buildMesaOptions(zonaSeleccionada, totalOcupacion);
-  const mesaLayout = getZonaMesaLayout(zonaSeleccionada);
 
   const mesaSeleccionada =
-    opcionesMesa.find((opcion) => opcion.optionId === preferredMesaOptionId) ||
-    opcionesMesa.find(
-      (opcion) => opcion.capacidadBase === preferredMesaOptionId
-    ) ||
+    opcionesMesa.find((opcion) => opcion.capacidadBase === preferredMesaBase) ||
     opcionesMesa[0] ||
     null;
 
@@ -358,7 +179,6 @@ const buildZonaReservaData = (
     selectedZoneId: zonaSeleccionada?.id || null,
     selectedZoneName: zonaSeleccionada?.nombre || null,
     permiteMascotas: Boolean(zonaSeleccionada?.permiteMascotas),
-    mesaGridCols: mesaLayout.gridCols,
     totalOcupacion,
     opcionesMesa,
     mesaSeleccionada,
@@ -429,9 +249,7 @@ export const useReservaStore = create(
           }
 
           const preferredMesaBase =
-            state.reservaZonaData?.mesaSeleccionada?.optionId ||
-            state.reservaZonaData?.mesaSeleccionada?.capacidadBase ||
-            null;
+            state.reservaZonaData?.mesaSeleccionada?.capacidadBase || null;
 
           return {
             reservaData: nextReservaData,
@@ -443,14 +261,14 @@ export const useReservaStore = create(
           };
         }),
 
-      seleccionarMesaBase: (mesaOptionId) =>
+      seleccionarMesaBase: (capacidadBase) =>
         set((state) => {
           const zonaId = state.reservaZonaData?.selectedZoneId || "zona-1";
           return {
             reservaZonaData: buildZonaReservaData(
               state.reservaData,
               zonaId,
-              mesaOptionId
+              capacidadBase
             ),
           };
         }),
@@ -528,9 +346,7 @@ export const useReservaStore = create(
           }
 
           const preferredMesaBase =
-            state.reservaZonaData?.mesaSeleccionada?.optionId ||
-            state.reservaZonaData?.mesaSeleccionada?.capacidadBase ||
-            null;
+            state.reservaZonaData?.mesaSeleccionada?.capacidadBase || null;
 
           return {
             reservaData: newData,
@@ -559,7 +375,21 @@ export const useReservaStore = create(
     }),
     {
       name: STORAGE_KEY,
-      version: 0,
+      version: 1,
+      partialize: (state) => {
+        const { isZonaExpanded, ...persistedState } = state;
+        return persistedState;
+      },
+      migrate: (persistedState, version) => {
+        if (!persistedState || typeof persistedState !== "object") {
+          return persistedState;
+        }
+        if (version < 1) {
+          const { isZonaExpanded, ...rest } = persistedState;
+          return rest;
+        }
+        return persistedState;
+      },
     }
   )
 );

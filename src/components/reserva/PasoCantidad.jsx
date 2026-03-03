@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, EffectFade } from "swiper/modules";
+import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
-import "swiper/css/effect-fade";
+import "swiper/css/pagination";
+import "swiper/css/navigation";
 import { IncremenAndDecrementComponent } from "../common/IncrementAndDrecrement";
 import { MesasSelectorx4, MesasSelectorx6 } from "../common/MesasSelector";
 import { Button } from "../ui/Button";
@@ -15,7 +17,6 @@ import { DontPet } from "../ui/DontPet";
 
 const MAX_OCUPACION_TOTAL = 12;
 const MAX_MASCOTAS = 4;
-
 
 const PasoCantidad = ({
   adults = 0,
@@ -33,7 +34,6 @@ const PasoCantidad = ({
     actualizarDetalleAsistentes,
     limpiarDetalleAsistentes,
     reservaZonaData,
-    seleccionarMesaBase,
     isZonaExpanded,
     seleccionarZona,
     setZonaExpanded,
@@ -51,7 +51,6 @@ const PasoCantidad = ({
     reservaZonaData?.selectedZoneName ||
     zonas.find((zona) => zona.id === selectedZoneId)?.nombre ||
     "";
-  const opcionesMesa = reservaZonaData?.opcionesMesa || [];
   const mesaSeleccionada = reservaZonaData?.mesaSeleccionada;
   const permiteMascotas = Boolean(reservaZonaData?.permiteMascotas);
 
@@ -76,11 +75,11 @@ const PasoCantidad = ({
   const renderMesaUnit = (
     capacidadBase,
     ocupadas,
-    size = "sm",
+    size,
     selected = false,
     petSeats = []
   ) => {
-    const className = selected ? "ring-2 ring-dark/30 rounded-md" : "";
+    const className = selected ? "" : "";
 
     if (capacidadBase <= 4) {
       return (
@@ -113,87 +112,66 @@ const PasoCantidad = ({
 
   const renderMesaGroup = (
     opcion,
-    size = "sm",
+    size,
     selected = false,
-    mesaState = null
+    ocupacionManual = null
   ) => {
-    const capacidadMesa = Number(opcion?.capacidadBase || 0);
-    const ocupadasMesa = Math.max(
-      0,
-      Math.min(capacidadMesa, Number(mesaState?.ocupadas || 0))
-    );
-    const personasEnMesa = Math.max(
-      0,
-      Math.min(ocupadasMesa, Number(mesaState?.personas || 0))
-    );
-    const mascotasEnMesa = Math.max(
-      0,
-      Math.min(ocupadasMesa - personasEnMesa, Number(mesaState?.mascotas || 0))
+    const mesasPlan =
+      opcion?.mesasPlan?.length > 0
+        ? opcion.mesasPlan
+        : Array.from(
+            { length: opcion.mesasUnidas || 1 },
+            () => opcion.capacidadBase
+          );
+
+    const ocupacionBase =
+      ocupacionManual !== null ? ocupacionManual : totalOcupacion;
+    const ocupacionAUsar = Math.min(ocupacionBase, opcion.capacidadTotal || 0);
+
+    let ocupacionRestante = ocupacionAUsar;
+    let personasRestantes = Math.min(totalPersonas, ocupacionAUsar);
+    let mascotasRestantes = Math.min(
+      mascotasNum,
+      Math.max(0, ocupacionAUsar - personasRestantes)
     );
 
-    const petSeats = Array.from(
-      { length: mascotasEnMesa },
-      (_, petIndex) => personasEnMesa + petIndex
-    );
+    return mesasPlan.map((capacidadMesa, idx) => {
+      const ocupadasMesa = Math.max(
+        0,
+        Math.min(capacidadMesa, ocupacionRestante)
+      );
+      ocupacionRestante = Math.max(0, ocupacionRestante - capacidadMesa);
 
-    return (
-      <div
-        key={`${opcion.optionId || opcion.capacidadBase}-${size}`}
-        className="flex items-center justify-center"
-      >
-        {renderMesaUnit(capacidadMesa, ocupadasMesa, size, selected, petSeats)}
-      </div>
-    );
+      const personasEnMesa = Math.min(personasRestantes, ocupadasMesa);
+      personasRestantes = Math.max(0, personasRestantes - personasEnMesa);
+
+      const mascotasEnMesa = Math.min(
+        mascotasRestantes,
+        Math.max(0, ocupadasMesa - personasEnMesa)
+      );
+      mascotasRestantes = Math.max(0, mascotasRestantes - mascotasEnMesa);
+
+      const petSeats = Array.from(
+        { length: mascotasEnMesa },
+        (_, petIndex) => personasEnMesa + petIndex
+      );
+
+      return (
+        <div
+          key={`${opcion.capacidadBase}-${capacidadMesa}-${size}-${idx}`}
+          className="flex items-center justify-center"
+        >
+          {renderMesaUnit(
+            capacidadMesa,
+            ocupadasMesa,
+            size,
+            selected && idx === 0,
+            petSeats
+          )}
+        </div>
+      );
+    });
   };
-
-  const buildOcupacionPorMesa = () => {
-    const selectedOptionId = mesaSeleccionada?.optionId;
-    if (!selectedOptionId || totalOcupacion <= 0) {
-      return {};
-    }
-
-    const selectedIndex = opcionesMesa.findIndex(
-      (opcion) => opcion.optionId === selectedOptionId
-    );
-    if (selectedIndex < 0) {
-      return {};
-    }
-
-    const distribucion = {};
-    let personasRestantes = totalPersonas;
-    let mascotasRestantes = mascotasNum;
-    let ocupacionRestante = totalOcupacion;
-
-    for (
-      let index = selectedIndex;
-      index < opcionesMesa.length && ocupacionRestante > 0;
-      index += 1
-    ) {
-      const opcion = opcionesMesa[index];
-      const capacidadMesa = Number(opcion?.capacidadBase || 0);
-      if (capacidadMesa <= 0) {
-        continue;
-      }
-
-      const ocupadas = Math.min(capacidadMesa, ocupacionRestante);
-      const personas = Math.min(personasRestantes, ocupadas);
-      const mascotas = Math.min(mascotasRestantes, ocupadas - personas);
-
-      distribucion[opcion.optionId] = {
-        ocupadas,
-        personas,
-        mascotas,
-      };
-
-      ocupacionRestante -= ocupadas;
-      personasRestantes -= personas;
-      mascotasRestantes -= mascotas;
-    }
-
-    return distribucion;
-  };
-
-  const ocupacionPorMesa = buildOcupacionPorMesa();
 
   useEffect(() => {
     syncAsistentes(adultsNum, childrenNum);
@@ -220,7 +198,10 @@ const PasoCantidad = ({
     <div className="w-full h-full overflow-hidden">
       <AnimatePresence mode="wait">
         {!isZonaExpanded ? (
-          <Mapa handleShowZone={pushZone} />
+          <div className="size-full flex justify-center items-center flex-col">
+            <h2 className="font-parkson !text-4xl">¿Dónde quieres comer?</h2>
+            <Mapa handleShowZone={pushZone} size={"w-full h-96 flex"} />
+          </div>
         ) : (
           <motion.div
             key="zona-map"
@@ -315,59 +296,59 @@ const PasoCantidad = ({
                       <DontPet size="w-6 h-auto" color="fill-dark/40" />
                     </>
                   )}
+                  {permiteMascotas && (
+                    <>
+                      <i className="w-6 h-fit inline-block mr-4">
+                        <img
+                          className="size-full object-contain inline-block"
+                          src="/iconos/zona-pet.svg"
+                          alt="Zona Pet"
+                        />
+                      </i>
+                      <span className="text-sm text-dark">Zona Pet</span>
+                    </>
+                  )}
                 </p>
                 <div className="w-full flex-1 min-h-0 flex gap-3 overflow-hidden">
                   <div
                     className={`w-1/2 border border-dark flex flex-wrap items-center justify-between h-full min-h-0 overflow-y-auto gap-3 pr-1`}
                   >
-                    {opcionesMesa.map((opcion) => {
-                      const isSelected =
-                        mesaSeleccionada?.optionId === opcion.optionId;
-
-                      return (
-                        <button
-                          key={opcion.optionId}
-                          type="button"
-                          onClick={() => seleccionarMesaBase(opcion.optionId)}
-                          className={`w-27 h-auto rounded-xl p-2 transition ${
-                            isSelected ? "bg-white" : "bg-white/40"
-                          }`}
-                        >
-                          <div className="flex flex-wrap items-center justify-center gap-2">
-                            {renderMesaGroup(
-                              opcion,
-                              "sm",
-                              isSelected,
-                              ocupacionPorMesa[opcion.optionId] || null
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })}
+                    {mesaSeleccionada && (
+                      <div className="w-full h-full rounded-xl p-2 bg-white/50 flex items-center justify-center">
+                        <div className="flex items-center justify-center gap-2">
+                          {renderMesaGroup(
+                            mesaSeleccionada,
+                            "lg",
+                            true,
+                            totalOcupacion
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex-1 h-full min-h-0 overflow-hidden">
-                    <RegionImageSlider />
+                    <RegionImageSlider selectedZoneName={selectedZoneName} />
                   </div>
                 </div>
               </div>
 
               <div className="rounded-2xl p-3 flex justify-center gap-3">
-                <button
+                {/*  <button
                   type="button"
                   onClick={() => setZonaExpanded(false)}
                   className="rounded-xl px-3 py-1.5 flex items-center gap-2"
                 >
                   <ChevronLeft size={16} />
                   Otra zona
-                </button>
+                </button> */}
 
                 <Button
                   onClick={onConfirm}
                   title="Confirmar"
                   type="button-dark"
                   width="min"
-                  customClass={`${
+                  customClass={`py-1.5 ${
                     canConfirm ? "" : "opacity-50 cursor-not-allowed"
                   }`}
                   disabled={!canConfirm}
@@ -381,41 +362,126 @@ const PasoCantidad = ({
   );
 };
 
-const RegionImageSlider = () => {
-  const slides = [
-    { src: "/imagenes/regiones/img-1.webp", alt: "Imagen región 1" },
-    { src: "/imagenes/regiones/img-2.webp", alt: "Imagen región 2" },
-    { src: "/imagenes/regiones/img-3.webp", alt: "Imagen región 3" },
-  ];
+const RegionImageSlider = ({ selectedZoneName }) => {
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [activeSlide, setActiveSlide] = useState(0);
+  const zoneSlug = (selectedZoneName || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-");
+
+  const slides = [1, 2, 3].map((index) => ({
+    src: `/imagenes/regiones/${zoneSlug}-${index}.webp`,
+    alt: `${selectedZoneName || "Region"} ${index}`,
+  }));
+  const navPrevClass = `gallery-prev-${zoneSlug || "default"}`;
+  const navNextClass = `gallery-next-${zoneSlug || "default"}`;
+
+  useEffect(() => {
+    setActiveSlide(0);
+  }, [zoneSlug]);
 
   return (
-    <div className="w-full h-full overflow-hidden relative bg-black/10">
-      <Swiper
-        modules={[Autoplay, EffectFade]}
-        effect="fade"
-        fadeEffect={{ crossFade: true }}
-        loop={true}
-        autoplay={{
-          delay: 2500,
-          disableOnInteraction: false,
-          pauseOnMouseEnter: false,
-        }}
-        speed={700}
-        className="w-full h-full"
-      >
-        {slides.map((slide) => (
-          <SwiperSlide key={slide.src} className="w-full h-full">
-            <img
-              src={slide.src}
-              alt={slide.alt}
-              className="w-full h-full object-cover"
-            />
-          </SwiperSlide>
-        ))}
-      </Swiper>
-    </div>
+    <>
+      <div className="w-full h-full overflow-hidden relative bg-dark/10 rounded-xl">
+        <Swiper
+          modules={[Autoplay, Pagination]}
+          loop={true}
+          slidesPerView={1}
+          centeredSlides={true}
+          spaceBetween={8}
+          pagination={{ clickable: true }}
+          autoplay={{
+            delay: 2800,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true,
+          }}
+          speed={650}
+          onSlideChange={(swiper) => setActiveSlide(swiper.realIndex)}
+          className="w-full h-full [&_.swiper-pagination]:!bottom-2 [&_.swiper-pagination-bullet]:!h-2.5 [&_.swiper-pagination-bullet]:!w-2.5 [&_.swiper-pagination-bullet]:!bg-secondary/70 [&_.swiper-pagination-bullet]:!opacity-100 [&_.swiper-pagination-bullet-active]:!bg-secondary [&_.swiper-pagination-bullet]:ring-2 [&_.swiper-pagination-bullet]:ring-dark/10"
+        >
+          {slides.map((slide, index) => (
+            <SwiperSlide key={slide.src} className="w-full h-full">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveSlide(index);
+                  setIsGalleryOpen(true);
+                }}
+                className="w-full h-full"
+              >
+                <img
+                  src={slide.src}
+                  alt={slide.alt}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </button>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </div>
+
+      {isGalleryOpen &&
+        createPortal(
+          <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
+            <button
+              type="button"
+              onClick={() => setIsGalleryOpen(false)}
+              className="absolute top-5 right-5 z-[10000] text-white bg-black/40 hover:bg-black/60 transition rounded-full p-2"
+              aria-label="Cerrar galeria"
+            >
+              <X size={24} />
+            </button>
+
+            <div className="w-full h-full max-h-[95vh]">
+              <button
+                type="button"
+                className={`${navPrevClass} absolute left-4 top-1/2 -translate-y-1/2 z-[10001] bg-dark/40 hover:bg-dark/60 text-secondary rounded-full p-2.5 transition`}
+                aria-label="Imagen anterior"
+              >
+                <ChevronLeft size={24} />
+              </button>
+
+              <button
+                type="button"
+                className={`${navNextClass} absolute right-4 top-1/2 -translate-y-1/2 z-[10001] bg-dark/40 hover:bg-dark/60 text-secondary rounded-full p-2.5 transition`}
+                aria-label="Imagen siguiente"
+              >
+                <ChevronRight size={24} />
+              </button>
+
+              <Swiper
+                modules={[Pagination, Navigation]}
+                loop={true}
+                initialSlide={activeSlide}
+                pagination={{ clickable: true }}
+                navigation={{
+                  prevEl: `.${navPrevClass}`,
+                  nextEl: `.${navNextClass}`,
+                }}
+                className="w-full h-full [&_.swiper-pagination]:!bottom-2 [&_.swiper-pagination-bullet]:!h-2.5 [&_.swiper-pagination-bullet]:!w-2.5 [&_.swiper-pagination-bullet]:!bg-secondary/70 [&_.swiper-pagination-bullet]:!opacity-100 [&_.swiper-pagination-bullet-active]:!bg-secondary [&_.swiper-pagination-bullet]:ring-2 [&_.swiper-pagination-bullet]:ring-dark/10"
+              >
+                {slides.map((slide) => (
+                  <SwiperSlide
+                    key={`gallery-${slide.src}`}
+                    className="w-full h-full flex items-center justify-center"
+                  >
+                    <img
+                      src={slide.src}
+                      alt={slide.alt}
+                      className="w-full h-full object-contain"
+                    />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
+          </div>,
+          document.body
+        )}
+    </>
   );
 };
-
 export default PasoCantidad;
-
