@@ -425,7 +425,8 @@ export default function PlatosSeleccion({
         type="button-secondary"
         Icon={ChevronLeft}
         title="Volver"
-        customClass={`!bg-transparent !border-none !text-xl !text-dark absolute left-2 top-2`}
+        fontSize="xl"
+        customClass={`absolute left-2 top-2`}
         onClick={Atras}
       />
       <div className="w-full h-full flex mx-auto items-center justify-center pt-6 px-4">
@@ -609,7 +610,6 @@ export default function PlatosSeleccion({
                           {asistenteActual >= 1 && (
                             <Button
                               type="just-icon"
-                              customClass="border border-dark/30 rounded-full p-2"
                               Icon={ChevronLeft}
                               disabled={guardando}
                               onClick={() =>
@@ -629,8 +629,7 @@ export default function PlatosSeleccion({
                                 : "Siguiente persona"
                             }
                             type="button-dark"
-                            width="full"
-                            customClass="py-1.5 px-6 max-w-xs"
+                            width="medio"
                             disabled={guardando}
                           />
                         </div>
@@ -690,7 +689,8 @@ const MenuSelected = ({
                       " "
                     )
                   )}
-                  customClass={`!text-2xl text-start ${
+                  fontSize="2xl"
+                  customClass={`text-start ${
                     categoriaActual === categoria.key
                       ? "opacity-100"
                       : "opacity-40 hover:opacity-80"

@@ -43,7 +43,7 @@ export const Title = ({
       case "h2":
         return "lg:!text-7xl lg:!leading-12 !text-5xl";
       case "h3":
-        return "lg:!text-5xl lg:!leading-10 !text-4xl";
+        return "lg:!text-5xl lg:!leading-4 !text-3xl";
       default:
         return "lg:!text-7xl lg:!leading-12 !text-5xl";
     }
@@ -54,9 +54,9 @@ export const Title = ({
       case "h1":
         return "lg:!text-5xl !text-3xl";
       case "h2":
-        return "lg:!text-5xl !text-4xl";
+        return "lg:!text-4xl !text-2xl";
       case "h3":
-        return "lg:!text-3xl !text-2xl";
+        return "lg:!text-xl !text-sm";
       default:
         return "lg:!text-2xl !text-xl";
     }

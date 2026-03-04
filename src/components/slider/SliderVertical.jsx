@@ -204,8 +204,8 @@ const ConfirmarPasoBoton = ({
       className="mt-6"
       title={texto}
       type="button-dark"
-      //width="min"
-      customClass={`min-w-80 py-1.5 ${
+      width="min"
+      customClass={` ${
         isDisabled ? "opacity-50 cursor-not-allowed" : ""
       }`}
       disabled={isDisabled}

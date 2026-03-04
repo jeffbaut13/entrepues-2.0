@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Pause, Play } from "lucide-react";
+import { Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import { Title } from "../ui/Title";
 import { Mapa } from "../ui/Mapa";
@@ -13,13 +13,13 @@ const TOUR_AUDIO_URL = "/audios/andina-musica.mp3.mpeg";
 const REGIONES = [
   {
     start: 0,
-    end: 2,
+    end: 1,
     title: "Bienvenido",
     description:
       "Honramos y exaltamos los sabores de nuestra tierra, por esa razon hemos creado un espacio por cada una de las regiones de nuestro pais. Conocelas deslizando hacia abajo.",
   },
   {
-    start: 2,
+    start: 1,
     end: 14,
     title: "andina",
     description:
@@ -56,7 +56,7 @@ const REGIONES = [
 ];
 
 export const VideoScrollComponent = () => {
-  const { onOpenReservePopup, setShowHeader } = useOutletContext();
+  const { onOpenReservePopup, setShowHeader, showHeader } = useOutletContext();
   const videoRef = useRef(null);
   const containerRef = useRef(null);
   const rafRef = useRef(null);
@@ -83,10 +83,8 @@ export const VideoScrollComponent = () => {
 
   const isReady = progress === 100;
 
-  
-  
   useEffect(() => {
-    !showScrollHint  ? setShowHeader(true) : setShowHeader(false);
+    !showScrollHint ? setShowHeader(true) : setShowHeader(false);
   }, [showScrollHint]);
 
   useEffect(() => {
@@ -174,8 +172,6 @@ export const VideoScrollComponent = () => {
         container.scrollTop = ratio * scrollRange;
       }
     }
-
-    setShowScrollHint(regionStart <= 10 / 1000);
   };
 
   useEffect(() => {
@@ -244,7 +240,7 @@ export const VideoScrollComponent = () => {
 
     const handleScroll = () => {
       const scrollTop = container.scrollTop;
-      setShowScrollHint(scrollTop <= 10);
+      setShowScrollHint(scrollTop <= 250);
 
       if (!video.duration) return;
 
@@ -253,17 +249,12 @@ export const VideoScrollComponent = () => {
       targetTimeRef.current = progressRatio * video.duration;
     };
 
-    const syncInitialHintVisibility = () => {
-      setShowScrollHint(container.scrollTop <= 10);
-    };
-
     if (video.readyState >= 1) {
       onReady();
     } else {
       video.addEventListener("loadedmetadata", onReady, { once: true });
     }
 
-    syncInitialHintVisibility();
     container.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
@@ -274,6 +265,15 @@ export const VideoScrollComponent = () => {
       video.pause();
     };
   }, []);
+
+  useEffect(() => {
+    if (!hasStartedExperience) return;
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.scrollTo({ top: 150, behavior: "smooth" });
+  }, [hasStartedExperience]);
 
   return (
     <>
@@ -301,48 +301,72 @@ export const VideoScrollComponent = () => {
           <AnimatePresence mode="wait">
             {activeTextIndex > 0 && (
               <motion.div
-                initial={{ opacity: 0, width: "0rem" }}
+                initial={{ opacity: 0, height: "0rem" }}
                 animate={{
                   opacity: 1,
-                  width: activeTextIndex > 0 ? "30rem" : "0rem",
+                  height: activeTextIndex > 0 ? "20rem" : "0rem",
                 }}
-                exit={{ opacity: 0, width: "0rem" }}
-                className="absolute h-screen bg-black/60 right-0 top-0"
+                exit={{ opacity: 0, height: "0rem" }}
+                className="w-full absolute bg-gradient-to-t from-black/80 via-black/60 right-0 bottom-0"
               >
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="size-full flex flex-col items-center justify-center"
+                  className="size-full flex flex-col items-center justify-center gap-4"
                 >
-                  {REGIONES.map((text, index) => {
-                    if (activeTextIndex === index) {
-                      return (
-                        <Title
+                  <div className="w-full flex justify-between max-w-3xl relative">
+                    {REGIONES.filter((text) => text.title !== "Bienvenido").map(
+                      (text, index) => (
+                        <Button
                           key={index}
-                          headContent={"Region"}
-                          content={text.title}
-                          theme="light"
+                          type="button-thirty"
+                          customClass={`hover:opacity-80 ${
+                            activeTextIndex ===
+                            REGIONES.findIndex(
+                              (region) => region.title === text.title
+                            )
+                              ? "opacity-100"
+                              : "opacity-40"
+                          } text-white`}
+                          title={
+                            <>
+                              <Title
+                                key={index}
+                                headContent={"Region"}
+                                content={text.title}
+                                theme="light"
+                                headingLevel="h3"
+                                className={`scale-75 transition-all duration-500 ${
+                                  activeTextIndex ===
+                                  REGIONES.findIndex(
+                                    (region) => region.title === text.title
+                                  )
+                                    ? "-translate-y-4"
+                                    : ""
+                                } `}
+                              />
+                              <span className="absolute -bottom-1 w-2 h-2 rounded-full bg-white">
+                                {text.subtitle}
+                              </span>
+                            </>
+                          }
+                          onClick={() => handleRegionSelect(text.title)}
+                          props={{
+                            "aria-label": `Seleccionar región ${text.title}`,
+                          }}
                         />
-                      );
-                    }
-                    return null;
-                  })}
-
-                  <div className="w-full px-14 py-12">
-                    <Mapa
-                      theme={"light"}
-                      regionActive={zoneActive}
-                      handleShowZone={handleRegionSelect}
-                      sizeText={"lg"}
-                    />
+                      )
+                    )}
+                    <span className="w-full h-px rounded-full bg-white absolute bottom-0" />
                   </div>
 
                   <div className="w-full flex justify-center">
                     <Button
                       title={"Reservar en esta region"}
-                      customClass="px-6 py-1.5"
-                      type="button-dark"
+                      width="min"
+                      type="button-primary"
+                      fontSize="2xl"
                       onClick={() => onOpenReservePopup?.(zoneActive)}
                     />
                   </div>
@@ -353,12 +377,14 @@ export const VideoScrollComponent = () => {
         </div>
 
         <div className="h-[500vh]"></div>
-
-        <ScrollDownLottie
-          color="#FFFFFF"
-          size={60}
-          showScrollHint={showScrollHint}
-        />
+        {hasStartedExperience && (
+          <ScrollDownLottie
+            color="#FFFFFF"
+            size={60}
+            showScrollHint={showScrollHint}
+            position="lg"
+          />
+        )}
       </div>
 
       {hasStartedExperience && (
@@ -368,7 +394,7 @@ export const VideoScrollComponent = () => {
           className="fixed bottom-6 right-6 z-[210] rounded-full bg-black/70 hover:bg-black/85 text-white p-3 transition"
           aria-label={isAudioPlaying ? "Pausar audio" : "Reproducir audio"}
         >
-          {isAudioPlaying ? <Pause size={22} /> : <Play size={22} />}
+          {isAudioPlaying ? <Volume2 size={22} /> : <VolumeX size={22} />}
         </button>
       )}
     </>

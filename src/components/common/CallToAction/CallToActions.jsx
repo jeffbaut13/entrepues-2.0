@@ -41,7 +41,7 @@ export const CallToActions = ({ site = "home" }) => {
           />
           <Button
             width="full"
-            customClass="order-1  md:order-2 !bg-secondary !text-brown !border !border-brown"
+            customClass="order-1 md:order-2"
             type="enlace"
             href={"/descubrenos"}
             title="Reservar"

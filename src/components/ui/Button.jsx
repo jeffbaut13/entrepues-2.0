@@ -22,7 +22,7 @@ export const Button = ({
         return "w-fit";
       case "full":
         return "w-full";
-      case "medio ":
+      case "medio":
       default:
         return "md:min-w-40 min-w-34";
     }
@@ -58,21 +58,18 @@ export const Button = ({
     }
   };
 
+  const transition = `transition-all ease-in-out duration-300`;
+  const baseStyle = `tracking-widest flex justify-center items-center gap-1 cursor-pointer text-center rounded-full py-1.5 pb-2 ${transition}`;
+  const primary = `${baseStyle} font-parkson bg-dark/40 backdrop-blur-md hover:bg-black text-secondary border border-secondary/40 hover:border-black px-6`;
   const listas = {
-    "button-primary":
-      "font-parkson tracking-widest flex justify-center items-center gap-1 cursor-pointer text-center bg-secondary text-brown border border-brown rounded-full py-1.5 pb-2 hover:opacity-65 ease-in-out duration-300",
-    enlace:
-      "font-parkson tracking-widest flex justify-center items-center gap-1 cursor-pointer text-center bg-brown/60 text-secondary border border-secondary/40 rounded-full py-1.5 pb-2 hover:opacity-65 ease-in-out duration-300",
-    "button-secondary":
-      "font-parkson tracking-widest flex justify-center items-center gap-1 cursor-pointer text-center bg-brown/60 text-secondary border border-secondary/40 rounded-full py-1.5 pb-2 hover:opacity-65 ease-in-out duration-300",
-    "button-thirty":
-      "font-light tracking-widest flex justify-center items-center gap-1 cursor-pointer text-center text-brown ease-in-out duration-300",
-    "button-dark":
-      "flex justify-center items-center gap-1 cursor-pointer text-center text-secondary bg-dark hover:bg-dark/80 rounded-full ease-in-out duration-300",
-    "just-icon":
-      "flex h-fit transition-opacity hover:opacity-70 ease-in-out duration-300",
-    "just-icon-rounded":
-      "cursor-pointer transition-opacity hover:opacity-70 rounded-full p-1 border border-white aspect-square ease-in-out duration-300",
+    "button-primary": primary,
+    enlace: primary,
+    "button-secondary": `${baseStyle} font-parkson bg-none text-dark  hover:opacity-60`,
+    "button-thirty": `${baseStyle} font-light text-dark`,
+    "button-dark": `${baseStyle} text-secondary bg-dark hover:bg-dark/80 px-6`,
+    "just-icon": `cursor-pointer flex h-fit ${transition} border border-dark/30 rounded-full p-2 hover:opacity-60 hover:bg-dark/20`,
+    "just-icon-dark": `cursor-pointer flex h-fit ${transition} rounded-full p-2 bg-dark/30 hover:opacity-60 hover:bg-dark/20`,
+    "just-icon-white": `cursor-pointer flex h-fit ${transition} rounded-full p-2 bg-white/30 text-white hover:opacity-60 hover:bg-dark/20`,
   };
 
   switch (type) {
@@ -163,7 +160,19 @@ export const Button = ({
           <Icon size={getIconSize(iconSize)} />
         </a>
       );
-    case "just-icon-rounded":
+    case "just-icon-dark":
+      return (
+        <a
+          target={target}
+          {...props}
+          href={href}
+          onClick={onClick ? onClick : null}
+          className={`${listas[type]} ${customClass}`}
+        >
+          <Icon size={getIconSize(iconSize)} />
+        </a>
+      );
+    case "just-icon-white":
       return (
         <a
           target={target}

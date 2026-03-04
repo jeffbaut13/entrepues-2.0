@@ -348,7 +348,7 @@ const PasoCantidad = ({
                   title="Confirmar"
                   type="button-dark"
                   width="min"
-                  customClass={`py-1.5 ${
+                  customClass={`${
                     canConfirm ? "" : "opacity-50 cursor-not-allowed"
                   }`}
                   disabled={!canConfirm}
@@ -426,7 +426,7 @@ const RegionImageSlider = ({ selectedZoneName }) => {
 
       {isGalleryOpen &&
         createPortal(
-          <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[119999] bg-black/60 flex items-center justify-center p-4">
             <button
               type="button"
               onClick={() => setIsGalleryOpen(false)}

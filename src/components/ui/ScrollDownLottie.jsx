@@ -51,12 +51,26 @@ export const ScrollDownLottie = ({
   size = 56,
   showScrollHint,
   fixed = true,
+  position = "sm",
 }) => {
   const animationData = useMemo(() => {
     const cloned = JSON.parse(JSON.stringify(scrollDownAnimation));
     recolorAnimation(cloned, hexToNormalizedRgb(color));
     return cloned;
   }, [color]);
+
+  const positionBottom = () => {
+    switch (position) {
+      case "sm":
+        return "bottom-6";
+      case "md":
+        return "bottom-12";
+      case "lg":
+        return "bottom-64";
+      default:
+        return "bottom-6";
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -68,7 +82,7 @@ export const ScrollDownLottie = ({
           transition={{ duration: 0.25, ease: "easeOut" }}
           className={`pointer-events-none ${
             fixed ? "fixed" : "absolute"
-          } bottom-6 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center justify-center ${
+          } ${positionBottom()} left-1/2 -translate-x-1/2 z-30 flex flex-col items-center justify-center ${
             className ? className : ""
           }`}
         >

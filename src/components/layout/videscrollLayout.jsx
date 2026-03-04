@@ -9,6 +9,7 @@ import { Header } from "../header/Header";
 import { CheckoutComponent } from "../Checkout/CheckoutComponent";
 import { CheckoutSuccesComponent } from "../Checkout/CheckoutSuccesComponent";
 import useCheckoutStore from "../../store/checkoutStore";
+import { Button } from "../ui/Button";
 
 const VideoScrollLayout = () => {
   const { isZonaExpanded, detalleAsistentes, pasosReserva, setPasoReserva } =
@@ -62,7 +63,11 @@ const VideoScrollLayout = () => {
     <>
       <Header loading={true} logo={showHeader} />
       <Outlet
-        context={{ onOpenReservePopup: openReservePopup, setShowHeader }}
+        context={{
+          onOpenReservePopup: openReservePopup,
+          setShowHeader,
+          showHeader,
+        }}
       />
 
       <AnimatePresence>
@@ -82,14 +87,15 @@ const VideoScrollLayout = () => {
               className="w-fit rounded-2xl relative overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <button
-                type="button"
+              <Button
+                type="just-icon"
                 onClick={closeReservePopup}
-                className="rounded-full p-2 bg-dark/80 text-white hover:bg-dark/40 transition absolute right-2 top-2 z-20"
-                aria-label="Cerrar popup de reserva"
-              >
-                <X size={18} />
-              </button>
+                Icon={X}
+                iconSize="small"
+                customClass="absolute right-2 top-2 z-20"
+                props={{ "aria-label": "Cerrar popup de reserva" }}
+              />
+
               <motion.div
                 className="flex-1 h-full mx-auto flex items-center justify-center bg-secondary rounded-2xl"
                 initial={{

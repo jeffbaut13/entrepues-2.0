@@ -28,7 +28,7 @@ export default function PasoHora({ hour, minute, setHour, setMinute }) {
               type="just-icon"
               onClick={() => incrementarHora(hourStr, setHour)}
               Icon={ChevronUp}
-              customClass="col-start-2"
+              customClass="col-start-2 !border-0"
             />
           )}
 
@@ -36,7 +36,7 @@ export default function PasoHora({ hour, minute, setHour, setMinute }) {
             type="just-icon"
             onClick={() => incrementarMinuto(minuteStr, setMinute)}
             Icon={ChevronUp}
-            customClass="col-start-4"
+            customClass="col-start-4 !border-0"
           />
         </div>
 
@@ -159,7 +159,7 @@ export default function PasoHora({ hour, minute, setHour, setMinute }) {
               type="just-icon"
               onClick={() => decrementarHora(hourStr, setHour)}
               Icon={ChevronDown}
-              customClass="col-start-2"
+              customClass="col-start-2 !border-0"
             />
           ) : (
             <div />
@@ -169,7 +169,7 @@ export default function PasoHora({ hour, minute, setHour, setMinute }) {
             type="just-icon"
             onClick={() => decrementarMinuto(minuteStr, setMinute)}
             Icon={ChevronDown}
-            customClass="col-start-4"
+            customClass="col-start-4 !border-0"
           />
         </div>
       </div>
