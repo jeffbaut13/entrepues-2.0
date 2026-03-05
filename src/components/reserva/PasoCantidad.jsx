@@ -22,6 +22,8 @@ const PasoCantidad = ({
   adults = 0,
   children = 0,
   mascotas = 0,
+  isZonaExpanded = false,
+  setZonaExpanded = () => {},
   setAdults,
   setChildren,
   setMascotas,
@@ -34,9 +36,7 @@ const PasoCantidad = ({
     actualizarDetalleAsistentes,
     limpiarDetalleAsistentes,
     reservaZonaData,
-    isZonaExpanded,
     seleccionarZona,
-    setZonaExpanded,
   } = useReservaStore();
 
   const adultsNum = Math.max(0, Number(adults) || 0);
@@ -334,20 +334,20 @@ const PasoCantidad = ({
               </div>
 
               <div className="rounded-2xl p-3 flex justify-center gap-3">
-                {/*  <button
-                  type="button"
+                <Button
                   onClick={() => setZonaExpanded(false)}
-                  className="rounded-xl px-3 py-1.5 flex items-center gap-2"
-                >
-                  <ChevronLeft size={16} />
-                  Otra zona
-                </button> */}
-
+                  type="button-secondary"
+                  iconSize="lg"
+                  fontSize="xl"
+                  title={<>Otra región</>}
+                  Icon={ChevronLeft}
+                />
                 <Button
                   onClick={onConfirm}
                   title="Confirmar"
                   type="button-dark"
                   width="min"
+                  fontSize="xl"
                   customClass={`${
                     canConfirm ? "" : "opacity-50 cursor-not-allowed"
                   }`}

@@ -1,4 +1,5 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
@@ -9,11 +10,16 @@ import PasoFecha from "../reserva/datepicker/PasoFecha";
 import PasoHora from "../reserva/PasoHoraMain";
 import PasoCantidad from "../reserva/PasoCantidad";
 import { Button } from "../ui/Button";
-import { useNavigate } from "react-router-dom";
+import { BanknoteArrowUp, ChevronLeft, X } from "lucide-react";
 
-export default function SliderVertical() {
-  const navigate = useNavigate();
+export default function SliderVertical({
+  isZonaExpanded = false,
+  setZonaExpanded = () => {},
+  onReservaSinMenuCheckout = () => {},
+}) {
   const swiperRef = useRef(null);
+  const [isPreparingWithoutMenu, setIsPreparingWithoutMenu] = useState(false);
+  const [showMenuConfirmPopup, setShowMenuConfirmPopup] = useState(false);
 
   const {
     currentStep,
@@ -24,7 +30,6 @@ export default function SliderVertical() {
     reservaData,
     reservaZonaData,
     updateReservaData,
-    setZonaExpanded,
     setDatosReservaCompletados,
   } = useReservaStore();
 
@@ -90,7 +95,63 @@ export default function SliderVertical() {
     setCompletedSteps(newCompleted);
     marcarPasoComoConfirmado(2);
     setDatosReservaCompletados(true);
-    
+  };
+
+  const handleOpenMenuConfirm = () => {
+    setShowMenuConfirmPopup(true);
+  };
+
+  const handleCancelMenuConfirm = () => {
+    setShowMenuConfirmPopup(false);
+  };
+
+  const handleContinueMenuConfirm = async () => {
+    setShowMenuConfirmPopup(false);
+    await handleElegirMenu();
+  };
+
+  const handleReservarSinMenu = async () => {
+    if (isPreparingWithoutMenu) return;
+
+    setIsPreparingWithoutMenu(true);
+
+    try {
+      const checkoutDataSinMenu = {
+        id: `temp-sin-menu-${Date.now()}`,
+        fechaCreacion: new Date().toISOString(),
+        estado: "temporal",
+        datosReserva: {
+          reservaData,
+          reservaZonaData: {
+            selectedZoneId: reservaZonaData?.selectedZoneId || null,
+            selectedZoneName: reservaZonaData?.selectedZoneName || null,
+          },
+          platosSeleccionados: [],
+        },
+        uiState: { showMenu: false, withoutMenu: true },
+        validado: true,
+      };
+
+      try {
+        localStorage.setItem(
+          "checkout:reserva:temp",
+          JSON.stringify(checkoutDataSinMenu.datosReserva)
+        );
+      } catch (_) {}
+
+      const newCompleted = [...safeCompletedSteps];
+      newCompleted[2] = true;
+      setCompletedSteps(newCompleted);
+      marcarPasoComoConfirmado(2);
+      setPasoReserva("platos", { habilitado: false, completado: false });
+      setDatosReservaCompletados(true);
+
+      onReservaSinMenuCheckout(checkoutDataSinMenu.datosReserva);
+    } catch (error) {
+      alert(error?.message || "Error preparando checkout sin menu");
+    } finally {
+      setIsPreparingWithoutMenu(false);
+    }
   };
 
   const confirmarPaso = async () => {
@@ -122,74 +183,128 @@ export default function SliderVertical() {
   };
 
   return (
-    <Swiper
-      ref={swiperRef}
-      direction="vertical"
-      pagination={false}
-      modules={[]}
-      className="mySwiper"
-      onSlideChange={handleSlideChange}
-      initialSlide={currentStep}
-      allowTouchMove={false}
-      simulateTouch={false}
-      keyboard={false}
-    >
-      {/* PASO 0: Fecha */}
-      <SwiperSlide className="size-full">
-        <div className="w-full h-full flex flex-col items-center justify-center">
-          <div className="w-full flex-1 flex flex-col">
-            <div className="flex-1">
-              
-              <PasoCantidad
-                adults={adults}
-                children={children}
-                mascotas={mascotas}
-                setAdults={setAdults}
-                setChildren={setChildren}
-                setMascotas={setMascotas}
-                onConfirm={confirmarPaso}
-                canConfirm={canContinueFromCantidad}
-              />
+    <>
+      <Swiper
+        ref={swiperRef}
+        direction="vertical"
+        pagination={false}
+        modules={[]}
+        className="mySwiper"
+        onSlideChange={handleSlideChange}
+        initialSlide={currentStep}
+        allowTouchMove={false}
+        simulateTouch={false}
+        keyboard={false}
+      >
+        {/* PASO 0: Fecha */}
+        <SwiperSlide className="size-full">
+          <div className="w-full h-full flex flex-col items-center justify-center">
+            <div className="w-full flex-1 flex flex-col">
+              <div className="flex-1">
+                <PasoCantidad
+                  adults={adults}
+                  children={children}
+                  mascotas={mascotas}
+                  isZonaExpanded={isZonaExpanded}
+                  setZonaExpanded={setZonaExpanded}
+                  setAdults={setAdults}
+                  setChildren={setChildren}
+                  setMascotas={setMascotas}
+                  onConfirm={confirmarPaso}
+                  canConfirm={canContinueFromCantidad}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      </SwiperSlide>
+        </SwiperSlide>
 
-      {/* PASO 1: Hora */}
-      <SwiperSlide className="size-full">
-        <div className="w-full h-full flex flex-col items-center justify-center py-8">
-          <div className="w-full max-w-lg flex-1 flex flex-col">
-            <div className="flex-1 flex items-center justify-center">
-              <PasoFecha
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
-              />
+        {/* PASO 1: Hora */}
+        <SwiperSlide className="size-full">
+          <div className="w-full h-full flex flex-col items-center justify-center py-8">
+            <div className="w-full max-w-lg flex-1 flex flex-col">
+              <div className="flex-1 flex items-center justify-center">
+                <PasoFecha
+                  selectedDate={selectedDate}
+                  setSelectedDate={setSelectedDate}
+                />
+              </div>
             </div>
+            <ConfirmarPasoBoton confirmarPaso={confirmarPaso} />
           </div>
-          <ConfirmarPasoBoton confirmarPaso={confirmarPaso} />
-        </div>
-      </SwiperSlide>
+        </SwiperSlide>
 
-      {/* PASO 2: Cantidad de personas */}
-      <SwiperSlide className="slide-content">
-        <div className="w-full h-full flex flex-col items-center justify-center py-8">
-          <div className="w-full max-w-sm flex-1 flex flex-col">
-            <div className="flex-1 flex items-center justify-center">
-              <PasoHora
-                hour={hour}
-                minute={minute}
-                setHour={setHour}
-                setMinute={setMinute}
-              />
+        {/* PASO 2: Cantidad de personas */}
+        <SwiperSlide className="slide-content">
+          <div className="w-full h-full flex flex-col items-center justify-center py-8">
+            <div className="w-full max-w-sm flex-1 flex flex-col">
+              <div className="flex-1 flex items-center justify-center">
+                <PasoHora
+                  hour={hour}
+                  minute={minute}
+                  setHour={setHour}
+                  setMinute={setMinute}
+                />
+              </div>
             </div>
+            <ConfirmarPasoBoton
+              confirmarPaso={handleOpenMenuConfirm}
+              texto="Reservar con platos"
+            />
+            <ConfirmarPasoBoton
+              confirmarPaso={handleReservarSinMenu}
+              texto={
+                isPreparingWithoutMenu ? "Preparando..." : "Reservar solo mesa"
+              }
+              isDisabled={isPreparingWithoutMenu}
+              variantType="button-secondary"
+            />
           </div>
-          <ConfirmarPasoBoton
-            confirmarPaso={handleElegirMenu}
-            texto="Seleccionar platos"
-          />
-        </div>
-      </SwiperSlide>
-    </Swiper>
+        </SwiperSlide>
+      </Swiper>
+
+      <AnimatePresence>
+        {showMenuConfirmPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[30000] bg-black/60 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 16, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.98 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="w-full max-w-lg bg-[#faf6ef] rounded-2xl p-6"
+            >
+              <BanknoteArrowUp size={62} className="mx-auto mb-6" />
+              <p className="text-center mb-6">
+                Para continuar deberás seleccionar{" "}
+                <br className=" hidden md:block " /> y pagar los platos de tu
+                reserva
+              </p>
+              <div className="w-full flex justify-center gap-3">
+                <Button
+                  onClick={handleCancelMenuConfirm}
+                  title="Cancelar"
+                  Icon={X}
+                  type="button-secondary"
+                  width="min"
+                  fontSize="xl"
+                />
+                <Button
+                  onClick={handleContinueMenuConfirm}
+                  title="Continuar"
+                  type="button-dark"
+                  width="min"
+                  fontSize="xl"
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -197,17 +312,16 @@ const ConfirmarPasoBoton = ({
   confirmarPaso,
   texto = "Continuar",
   isDisabled = false,
+  variantType = "button-dark",
 }) => {
   return (
     <Button
       onClick={confirmarPaso}
-      className="mt-6"
       title={texto}
-      type="button-dark"
+      type={variantType}
+      fontSize="xl"
       width="min"
-      customClass={` ${
-        isDisabled ? "opacity-50 cursor-not-allowed" : ""
-      }`}
+      customClass={`mt-4 ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
       disabled={isDisabled}
     />
   );

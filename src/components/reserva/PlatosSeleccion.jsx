@@ -630,6 +630,7 @@ export default function PlatosSeleccion({
                             }
                             type="button-dark"
                             width="medio"
+                            fontSize="xl"
                             disabled={guardando}
                           />
                         </div>

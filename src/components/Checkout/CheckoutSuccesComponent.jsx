@@ -19,7 +19,6 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
         onFinalizar();
         return;
       }
-      navigate("/checkout");
     }
   }, [reserva, navigate, onFinalizar]);
 
@@ -29,7 +28,6 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
       onFinalizar();
       return;
     }
-    navigate("/");
   };
 
   const numeroReserva = reserva?.["numero-de-reserva"] || "----";
@@ -79,8 +77,8 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
               onClick={handleFinalizar}
               title="Finalizar"
               type="button-dark"
-              customClass="px-16 py-3"
-              fontSize="xl"
+              customClass="px-16"
+              fontSize="2xl"
             />
           </motion.div>
         </motion.div>

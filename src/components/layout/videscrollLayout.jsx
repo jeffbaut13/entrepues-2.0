@@ -8,13 +8,16 @@ import PlatosSeleccion from "../reserva/PlatosSeleccion";
 import { Header } from "../header/Header";
 import { CheckoutComponent } from "../Checkout/CheckoutComponent";
 import { CheckoutSuccesComponent } from "../Checkout/CheckoutSuccesComponent";
-import useCheckoutStore from "../../store/checkoutStore";
 import { Button } from "../ui/Button";
 
 const VideoScrollLayout = () => {
-  const { isZonaExpanded, detalleAsistentes, pasosReserva, setPasoReserva } =
-    useReservaStore();
-  const resetCheckout = useCheckoutStore((state) => state.resetCheckout);
+  const {
+    detalleAsistentes,
+    currentStep,
+    pasosReserva,
+    setPasoReserva,
+    setCurrentStep,
+  } = useReservaStore();
 
   const [isReservePopupOpen, setIsReservePopupOpen] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState("");
@@ -22,21 +25,30 @@ const VideoScrollLayout = () => {
   const [checkoutResultado, setCheckoutResultado] = useState(null);
   const [checkoutVisible, setCheckoutVisible] = useState(false);
   const [checkoutSuccessVisible, setCheckoutSuccessVisible] = useState(false);
+  const [checkoutSinMenu, setCheckoutSinMenu] = useState(false);
+  const [checkoutOrigin, setCheckoutOrigin] = useState(null);
 
   const openReservePopup = (regionName = "") => {
     setSelectedRegion(regionName || "");
     setCheckoutResultado(null);
     setCheckoutVisible(false);
     setCheckoutSuccessVisible(false);
+    setCheckoutSinMenu(false);
+    setCheckoutOrigin(null);
+
+    // Abre en Visitantes sin resetear la data ya diligenciada.
+    setCurrentStep(0);
+
     setIsReservePopupOpen(true);
   };
 
   const closeReservePopup = () => {
-    resetCheckout();
     setIsReservePopupOpen(false);
     setCheckoutResultado(null);
     setCheckoutVisible(false);
     setCheckoutSuccessVisible(false);
+    setCheckoutSinMenu(false);
+    setCheckoutOrigin(null);
   };
 
   const platosHabilitado = pasosReserva.platos.habilitado;
@@ -46,6 +58,8 @@ const VideoScrollLayout = () => {
   const handleCheckoutReady = (resultado) => {
     setCheckoutResultado(resultado || null);
     setPasoReserva("platos", { habilitado: false, completado: true });
+    setCheckoutSinMenu(false);
+    setCheckoutOrigin("menu");
     setCheckoutVisible(true);
     setCheckoutSuccessVisible(false);
   };
@@ -55,8 +69,34 @@ const VideoScrollLayout = () => {
     setCheckoutSuccessVisible(true);
   };
 
+  const handleReservaSinMenuCheckout = (resultado) => {
+    setCheckoutResultado(resultado || null);
+    setCheckoutSinMenu(true);
+    setCheckoutOrigin("sin_menu");
+    setCheckoutVisible(false);
+    setCheckoutVisible(true);
+    setCheckoutSuccessVisible(false);
+  };
+
   const handleCheckoutFinalizar = () => {
     closeReservePopup();
+  };
+
+  const handleCheckoutBackToMenu = () => {
+    setCheckoutVisible(false);
+    setCheckoutSuccessVisible(false);
+
+    if (checkoutOrigin === "menu") {
+      setCheckoutSinMenu(false);
+      setCheckoutResultado(null);
+      setPasoReserva("platos", { habilitado: true, completado: false });
+      return;
+    }
+
+    setCheckoutSinMenu(false);
+    setCheckoutResultado(null);
+    setPasoReserva("platos", { habilitado: false, completado: false });
+    setCurrentStep(2);
   };
 
   return (
@@ -107,9 +147,11 @@ const VideoScrollLayout = () => {
                 animate={{
                   opacity: 1,
                   y: 0,
-                  width: isZonaExpanded
+                  width: currentStep === 0
                     ? "70rem"
-                    : mostrarPlatos || checkoutVisible
+                    : checkoutVisible
+                    ? "40rem"
+                    : mostrarPlatos
                     ? "80rem"
                     : "64rem",
                   height:
@@ -121,7 +163,10 @@ const VideoScrollLayout = () => {
               >
                 <AnimatePresence mode="wait">
                   <div key="reserva-base" className="size-full relative z-0">
-                    <ReservaComponent region={selectedRegion} />
+                    <ReservaComponent
+                      region={selectedRegion}
+                      onReservaSinMenuCheckout={handleReservaSinMenuCheckout}
+                    />
                   </div>
                   {mostrarPlatos && (
                     <motion.div
@@ -149,6 +194,8 @@ const VideoScrollLayout = () => {
                     >
                       <CheckoutComponent
                         reservaResultado={checkoutResultado}
+                        isSinMenuFlow={checkoutSinMenu}
+                        onBackToMenu={handleCheckoutBackToMenu}
                         onSuccess={handleCheckoutSuccess}
                       />
                     </motion.div>

@@ -434,6 +434,11 @@ export const crearReservaPendienteDesdeCheckout = async ({
   impuestos,
   montoFinal,
   transaccion,
+  estadoReserva = "pending",
+  servicioReserva = "checkout_onepage",
+  estadoPasarela = "disabled",
+  estadoCheckout = "pending",
+  estadoTransaccion = "pending",
 }) => {
   try {
     if (!datosReserva?.reservaData) {
@@ -484,39 +489,45 @@ export const crearReservaPendienteDesdeCheckout = async ({
     const numeroReserva = await obtenerSiguienteNumeroReserva();
     const numeroReservaFormateado = String(numeroReserva).padStart(4, "0");
     const ahora = new Date().toISOString();
+    const regionSeleccionada =
+      datosReserva?.reservaZonaData?.selectedZoneName ||
+      reservaData?.selectedZoneName ||
+      "";
 
     const payload = {
       "numero-de-reserva": numeroReservaFormateado,
       nombre: datosContacto?.nombre || reservaData.name || "",
       email: datosContacto?.email || reservaData.email || "",
       whatsapp: datosContacto?.whatsapp || reservaData.whatsapp || "",
+      region: String(regionSeleccionada || "").trim(),
       fecha: fechaFormateada,
       hora: horaFormateada,
       adultos,
       ninos,
       mascotas,
-      estado: "pending",
+      estado: estadoReserva,
       fechaCreacion: ahora,
       fechaActualizacion: ahora,
-      servicio: "checkout_onepage",
+      servicio: servicioReserva,
       observaciones: datosContacto?.notas || "",
       metodoPago: metodoPago || "tarjeta",
       pasarela: {
         habilitada: false,
         proveedor: null,
-        estado: "disabled",
+        estado: estadoPasarela,
       },
       checkout: {
         subtotal: Number(montoTotal || 0),
         impuestos: Number(impuestos || 0),
         total: Number(montoFinal || 0),
         currency: "COP",
+        estado: estadoCheckout,
       },
       transaccion: {
         id: transaccion?.id || `TXN-${Date.now()}`,
         referencia: transaccion?.referencia || `REF-${Date.now()}`,
-        estado: "pending",
-        pasarela: "disabled",
+        estado: estadoTransaccion,
+        pasarela: estadoPasarela,
       },
       productos: {
         totalProductos,

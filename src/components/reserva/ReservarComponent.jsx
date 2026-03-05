@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Calendar, Timer, User } from "lucide-react";
@@ -52,7 +52,7 @@ export const ReservarComponent = () => {
   );
 };
 
-export const ReservaComponent = ({ region }) => {
+export const ReservaComponent = ({ region, onReservaSinMenuCheckout }) => {
   const [searchParams] = useSearchParams();
 
   // Estados derivados del store
@@ -65,12 +65,12 @@ export const ReservaComponent = ({ region }) => {
     setCurrentStep,
     pasosReserva,
     reservaData,
-    isZonaExpanded,
     seleccionarZona,
-    setZonaExpanded,
   } = useReservaStore();
 
-  const regionFromUrl = searchParams.get("region") || region || "andina";
+  const [isZonaExpanded, setZonaExpanded] = useState(false);
+
+  const regionFromUrl = searchParams.get("region") || region || null;
  
 
   // Estados derivados del store
@@ -128,6 +128,8 @@ export const ReservaComponent = ({ region }) => {
   ];
 
   useEffect(() => {
+    if (regionFromUrl) return;
+
     try {
       const raw = localStorage.getItem("checkout:reserva:temp");
       if (!raw) return;
@@ -145,7 +147,7 @@ export const ReservaComponent = ({ region }) => {
         error
       );
     }
-  }, [setCurrentStep]);
+  }, [regionFromUrl, setCurrentStep]);
 
   useEffect(() => {
     if (!regionFromUrl) return;
@@ -156,24 +158,18 @@ export const ReservaComponent = ({ region }) => {
     seleccionarZona(regionToSelect);
   }, [regionFromUrl, seleccionarZona]);
 
-  const debeInicializarEnVisitantes =
-    !pasosReserva.visitantes.completado &&
-    !pasosReserva.fecha.completado &&
-    !pasosReserva.hora.completado &&
-    !pasosReserva.platos.habilitado;
-
   useEffect(() => {
     if (!regionFromUrl) return;
-    if (debeInicializarEnVisitantes) {
-      setZonaExpanded(true);
-      setCurrentStep(0);
+
+    setZonaExpanded(true);
+  }, [regionFromUrl, setZonaExpanded]);
+
+  useEffect(() => {
+    // Mantener expansión de zona solo en el paso Visitantes.
+    if (currentStep !== 0 && isZonaExpanded) {
+      setZonaExpanded(false);
     }
-  }, [
-    regionFromUrl,
-    debeInicializarEnVisitantes,
-    setZonaExpanded,
-    setCurrentStep,
-  ]);
+  }, [currentStep, isZonaExpanded, setZonaExpanded]);
 
   return (
     <>
@@ -253,7 +249,11 @@ export const ReservaComponent = ({ region }) => {
           } transition-all duration-500 ease-in-out`}
         >
           <div className="size-full bg-[#faf7f1]">
-            <SliderVertical />
+            <SliderVertical
+              isZonaExpanded={isZonaExpanded}
+              setZonaExpanded={setZonaExpanded}
+              onReservaSinMenuCheckout={onReservaSinMenuCheckout}
+            />
           </div>
         </div>
         {/* Slider Vertical con Swiper */}

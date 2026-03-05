@@ -7,6 +7,7 @@ export const VideoScrollLoader = ({
   progress = 0,
   isReady,
   onStart,
+  onOpenReservePopup,
 }) => {
   const videoRef = useRef(null);
   const [delayedReady, setDelayedReady] = useState(false);
@@ -65,6 +66,7 @@ export const VideoScrollLoader = ({
                   <Button
                     type="button-primary"
                     fontSize="2xl"
+                    onClick={() => onOpenReservePopup(null)}
                     title={"Reservar ahora"}
                   />
                 </motion.div>
@@ -77,12 +79,12 @@ export const VideoScrollLoader = ({
                   transition={{ duration: 0.45, ease: "easeOut" }}
                   className="size-full flex items-center justify-center flex-col bg-[#f4eee5]"
                 >
-                  <div className="relative size-82 mx-auto">
+                  <div className="relative size-72 mx-auto">
                     <video
                       ref={videoRef}
                       defaultMuted={true}
                       muted={true}
-                      className="size-full object-cover"
+                      className="size-full object-cover "
                       autoPlay
                       loop
                       playsInline

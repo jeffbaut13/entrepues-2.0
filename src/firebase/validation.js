@@ -172,6 +172,7 @@ export const sanitizeReservaPayload = (payload) => {
     nombre: String(payload.nombre || "").trim(),
     email: String(payload.email || "").trim().toLowerCase(),
     whatsapp: String(payload.whatsapp || "").trim(),
+    ...(payload.region !== undefined && { region: String(payload.region || "").trim() }),
     fecha: String(payload.fecha || "").trim(),
     hora: String(payload.hora || "").trim(),
     adultos: Number(payload.adultos) || 0,
@@ -187,5 +188,9 @@ export const sanitizeReservaPayload = (payload) => {
     fechaCreacion: payload.fechaCreacion || new Date().toISOString(),
     // Opcional: servicio si existe
     ...(payload.servicio && { servicio: String(payload.servicio).trim() }),
+    ...(payload.metodoPago && { metodoPago: String(payload.metodoPago).trim() }),
+    ...(payload.checkout && { checkout: payload.checkout }),
+    ...(payload.pasarela && { pasarela: payload.pasarela }),
+    ...(payload.transaccion && { transaccion: payload.transaccion }),
   };
 };

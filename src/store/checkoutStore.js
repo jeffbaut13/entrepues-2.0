@@ -239,7 +239,7 @@ export const useCheckoutStore = create(
       /**
        * Iniciar proceso de pago
        */
-      iniciarPago: async () => {
+      iniciarPago: async ({ sinMenu = false } = {}) => {
         const validacion = get().validarDatos();
 
         if (!validacion.valido) {
@@ -248,9 +248,9 @@ export const useCheckoutStore = create(
         }
 
         const transaccionInicial = {
-          id: `TXN-${Date.now()}`,
-          estado: "pending",
-          referencia: `REF-${Date.now()}`,
+          id: sinMenu ? `TXN-SINMENU-${Date.now()}` : `TXN-${Date.now()}`,
+          estado: sinMenu ? "no_aplica" : "pending",
+          referencia: sinMenu ? `SINMENU-${Date.now()}` : `REF-${Date.now()}`,
           fechaCreacion: new Date().toISOString(),
           fechaActualizacion: new Date().toISOString(),
         };
@@ -274,11 +274,16 @@ export const useCheckoutStore = create(
           const guardado = await crearReservaPendienteDesdeCheckout({
             datosReserva,
             datosContacto,
-            metodoPago,
-            montoTotal,
-            impuestos,
-            montoFinal,
+            metodoPago: sinMenu ? "sin_pago" : metodoPago,
+            montoTotal: sinMenu ? 0 : montoTotal,
+            impuestos: sinMenu ? 0 : impuestos,
+            montoFinal: sinMenu ? 0 : montoFinal,
             transaccion: transaccionInicial,
+            estadoReserva: sinMenu ? "sin_seleccion_platos" : "pending",
+            servicioReserva: sinMenu ? "reserva_sin_menu" : "checkout_onepage",
+            estadoPasarela: sinMenu ? "no_aplica" : "disabled",
+            estadoCheckout: sinMenu ? "omitido" : "pending",
+            estadoTransaccion: sinMenu ? "no_aplica" : "pending",
           });
 
           if (!guardado.ok) {
@@ -304,7 +309,7 @@ export const useCheckoutStore = create(
             reservaGuardada: reservaPersistida,
             transaccion: {
               ...state.transaccion,
-              estado: "pending",
+              estado: sinMenu ? "no_aplica" : "pending",
               firestoreId: guardado.id,
               fechaActualizacion: new Date().toISOString(),
             },
@@ -314,7 +319,7 @@ export const useCheckoutStore = create(
             ok: true,
             firestoreId: guardado.id,
             data: guardado.data,
-            status: "pending",
+            status: sinMenu ? "sin_seleccion_platos" : "pending",
             paymentDisabled: true,
           };
         } catch (error) {

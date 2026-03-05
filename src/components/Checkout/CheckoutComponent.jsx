@@ -7,13 +7,19 @@ import {
   LoaderIcon,
   X,
   BookCheck,
+  ChevronLeft,
 } from "lucide-react";
 
 import { Button } from "../ui/Button";
 import useCheckoutStore from "../../store/checkoutStore";
 import useReservaStore from "../../store/reservaStore";
 
-export const CheckoutComponent = ({ reservaResultado = null, onSuccess }) => {
+export const CheckoutComponent = ({
+  reservaResultado = null,
+  isSinMenuFlow = false,
+  onBackToMenu,
+  onSuccess,
+}) => {
   const navigate = useNavigate();
   const [activeCollapse, setActiveCollapse] = useState(1);
   const { limpiarDatosCheckout, resetReserva } = useReservaStore();
@@ -53,7 +59,7 @@ export const CheckoutComponent = ({ reservaResultado = null, onSuccess }) => {
 
   const handlePagar = async () => {
     clearError();
-    const resultado = await iniciarPago();
+    const resultado = await iniciarPago({ sinMenu: isSinMenuFlow });
     if (resultado.ok) {
       limpiarDatosCheckout();
       resetReserva();
@@ -110,6 +116,17 @@ export const CheckoutComponent = ({ reservaResultado = null, onSuccess }) => {
     return `${String(hour12).padStart(2, "0")}:${minuto} ${period}`;
   };
 
+  const hasSelectedDishes = Array.isArray(datosReserva?.platosSeleccionados)
+    ? datosReserva.platosSeleccionados.some(
+        (asistente) =>
+          Array.isArray(asistente?.platos) && asistente.platos.length > 0
+      )
+    : false;
+
+  const regionSeleccionada =
+    datosReserva?.reservaZonaData?.selectedZoneName ||
+    datosReserva?.reservaData?.selectedZoneName ||
+    null;
   if (!datosReserva) {
     return (
       <div className="size-full flex items-center justify-center">
@@ -128,6 +145,17 @@ export const CheckoutComponent = ({ reservaResultado = null, onSuccess }) => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}
     >
+      {typeof onBackToMenu === "function" && (
+        <Button
+          type="button-secondary"
+          Icon={ChevronLeft}
+          title="Volver"
+          fontSize="xl"
+          customClass="absolute left-2 top-2 z-10"
+          onClick={onBackToMenu}
+        />
+      )}
+
       <main className="w-full max-w-md mx-auto pt-12 relative">
         <motion.div
           className="bg-[#faf6ef] text-dark rounded-2xl flex flex-col justify-between overflow-hidden"
@@ -240,13 +268,14 @@ export const CheckoutComponent = ({ reservaResultado = null, onSuccess }) => {
                 disabled={pagoEnProceso}
                 type="button-dark"
                 width="full"
-                customClass="disabled:opacity-50 disabled:cursor-not-allowed py-3"
+                fontSize="2xl"
+                customClass="disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
                 title={
                   <>
                     {pagoEnProceso ? (
                       <div className="flex items-center justify-center space-x-2">
                         <LoaderIcon className="w-5 h-5 animate-spin" />
-                        <span>Procesando Pago...</span>
+                        <span>Guardando reserva...</span>
                       </div>
                     ) : (
                       `Reservar`
@@ -256,7 +285,7 @@ export const CheckoutComponent = ({ reservaResultado = null, onSuccess }) => {
               />
 
               <p className="!text-sm text-center">
-                Al hacer clic en pagar aceptas nuestros terminos y condiciones.
+                Al confirmar aceptas los terminos y condiciones.
               </p>
             </div>
           </div>
@@ -307,6 +336,14 @@ export const CheckoutComponent = ({ reservaResultado = null, onSuccess }) => {
                             datosReserva.reservaData?.minute
                           )}
                         </p>
+
+                        {regionSeleccionada && (
+                          <p className="font-bold mt-4">
+                            Region:{" "}
+                            {regionSeleccionada.charAt(0).toUpperCase() +
+                              regionSeleccionada.slice(1)}
+                          </p>
+                        )}
                         <p>
                           {datosReserva.reservaData?.adults} adulto(s)
                           {datosReserva.reservaData?.children > 0 &&
@@ -316,53 +353,61 @@ export const CheckoutComponent = ({ reservaResultado = null, onSuccess }) => {
                     </div>
                   </div>
 
-                  <div className="mb-6">
-                    <h3 className="font-bold mb-3">Platos Seleccionados</h3>
-                    <div className="bg-dark/5 rounded-lg p-4">
-                      {datosReserva.platosSeleccionados?.map(
-                        (asistente, index) => (
-                          <div key={index} className="mb-3 last:mb-0">
-                            <p className="font-medium mb-2">
-                              {asistente.nombre}
-                            </p>
-                            {asistente.platos?.map((plato, platoIndex) => (
-                              <div
-                                key={platoIndex}
-                                className="[&>span]:!text-base flex justify-between items-center py-1"
-                              >
-                                <span>
-                                  {plato.cantidad}x {plato.nombre}
-                                </span>
-                                <span className="font-bold">
-                                  ${plato.precio * plato.cantidad}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        )
-                      )}
+                  {hasSelectedDishes && (
+                    <div className="mb-6">
+                      <h3 className="font-bold mb-3">Platos Seleccionados</h3>
+                      <div className="bg-dark/5 rounded-lg p-4">
+                        {datosReserva.platosSeleccionados?.map(
+                          (asistente, index) => (
+                            <div key={index} className="mb-3 last:mb-0">
+                              <p className="font-medium mb-2">
+                                {asistente.nombre}
+                              </p>
+                              {asistente.platos?.map((plato, platoIndex) => (
+                                <div
+                                  key={platoIndex}
+                                  className="[&>span]:!text-base flex justify-between items-center py-1"
+                                >
+                                  <span>
+                                    {plato.cantidad}x {plato.nombre}
+                                  </span>
+                                  <span className="font-bold">
+                                    ${plato.precio * plato.cantidad}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="py-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>Subtotal</span>
-                        <span className="font-medium">
-                          ${montoTotal?.toLocaleString()}
-                        </span>
+                    {isSinMenuFlow ? (
+                      <p className="text-center font-medium text-dark/80">
+                        Esta reserva no genera costo
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span>Subtotal</span>
+                          <span className="font-medium">
+                            ${montoTotal?.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between border-b border-dark/20">
+                          <span>IVA (19%)</span>
+                          <span className="font-medium">
+                            ${impuestos?.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-lg font-bold pt-2">
+                          <span>Total</span>
+                          <span>${montoFinal?.toLocaleString()}</span>
+                        </div>
                       </div>
-                      <div className="flex justify-between border-b border-dark/20">
-                        <span>IVA (19%)</span>
-                        <span className="font-medium">
-                          ${impuestos?.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-lg font-bold pt-2">
-                        <span>Total</span>
-                        <span>${montoFinal?.toLocaleString()}</span>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </motion.div>

@@ -66,7 +66,7 @@ export const Button = ({
     enlace: primary,
     "button-secondary": `${baseStyle} font-parkson bg-none text-dark  hover:opacity-60`,
     "button-thirty": `${baseStyle} font-light text-dark`,
-    "button-dark": `${baseStyle} text-secondary bg-dark hover:bg-dark/80 px-6`,
+    "button-dark": `${baseStyle} font-parkson text-secondary bg-dark hover:bg-dark/80 px-6`,
     "just-icon": `cursor-pointer flex h-fit ${transition} border border-dark/30 rounded-full p-2 hover:opacity-60 hover:bg-dark/20`,
     "just-icon-dark": `cursor-pointer flex h-fit ${transition} rounded-full p-2 bg-dark/30 hover:opacity-60 hover:bg-dark/20`,
     "just-icon-white": `cursor-pointer flex h-fit ${transition} rounded-full p-2 bg-white/30 text-white hover:opacity-60 hover:bg-dark/20`,

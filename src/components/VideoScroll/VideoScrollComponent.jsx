@@ -282,6 +282,7 @@ export const VideoScrollComponent = () => {
         progress={progress}
         isReady={isReady}
         onStart={handleStartExperience}
+        onOpenReservePopup={onOpenReservePopup}
       />
 
       <div
@@ -361,9 +362,9 @@ export const VideoScrollComponent = () => {
                     <span className="w-full h-px rounded-full bg-white absolute bottom-0" />
                   </div>
 
-                  <div className="w-full flex justify-center">
+                  <div className="w-full flex justify-center mt-4">
                     <Button
-                      title={"Reservar en esta region"}
+                      title={"Reservar en esta región"}
                       width="min"
                       type="button-primary"
                       fontSize="2xl"

@@ -95,7 +95,7 @@ const HeaderTheme = ({ darkTheme, logo }) => {
           type="enlace"
           href={"/"}
           Icon={Home}
-          customClass={`!bg-transparent !border-none ${
+          customClass={`!backdrop-blur-none !bg-transparent !border-none  ${
             darkTheme ? "!text-dark" : "!text-white"
           }`}
         />
@@ -104,9 +104,7 @@ const HeaderTheme = ({ darkTheme, logo }) => {
           type="button-secondary"
           Icon={ChevronLeft}
           title="Volver"
-          customClass={`!bg-transparent !border-none ${
-            darkTheme ? "!text-dark" : "!text-white"
-          }`}
+          customClass={`${darkTheme ? "!text-dark" : "!text-white"}`}
           onClick={() => navigate(-1)}
         />
       </motion.div>

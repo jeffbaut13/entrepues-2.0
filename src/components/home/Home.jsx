@@ -34,7 +34,7 @@ export const HomeComponent = () => {
         color="#FFFFFF"
         size={60}
         showScrollHint={showScrollHint}
-        className="!bottom-34"
+        className="!bottom-38"
       />
       
     </>

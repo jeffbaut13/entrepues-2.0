@@ -274,12 +274,16 @@ export const useReservaStore = create(
         }),
 
       prepararDatosCheckout: (platosSeleccionados) => {
-        const { reservaData } = get();
+        const { reservaData, reservaZonaData } = get();
         const checkoutData = {
           id: `temp-${Date.now()}`,
           fechaCreacion: new Date().toISOString(),
           estado: "temporal",
           reservaData,
+          reservaZonaData: {
+            selectedZoneId: reservaZonaData?.selectedZoneId || null,
+            selectedZoneName: reservaZonaData?.selectedZoneName || null,
+          },
           platosSeleccionados,
           uiState: { showMenu: true },
           validado: true,
