@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
+import { ChevronLeft, X } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import { Autoplay, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
@@ -11,6 +11,7 @@ import { IncremenAndDecrementComponent } from "../common/IncrementAndDrecrement"
 import { MesasSelectorx4, MesasSelectorx6 } from "../common/MesasSelector";
 import { Button } from "../ui/Button";
 import useReservaStore from "../../store/reservaStore";
+import regionesFotos from "../../data/regionesFotos";
 
 import { Mapa } from "../ui/Mapa";
 import { DontPet } from "../ui/DontPet";
@@ -68,7 +69,7 @@ const PasoCantidad = ({
 
   const showMaxAsistentesError = () => {
     setErrorAsistentes(
-      `Has alcanzado el máximo de ${MAX_OCUPACION_TOTAL} asistentes.`
+      `Has alcanzado el máximo de ${MAX_OCUPACION_TOTAL} asistentes.`,
     );
   };
 
@@ -77,7 +78,7 @@ const PasoCantidad = ({
     ocupadas,
     size,
     selected = false,
-    petSeats = []
+    petSeats = [],
   ) => {
     const className = selected ? "" : "";
 
@@ -114,14 +115,14 @@ const PasoCantidad = ({
     opcion,
     size,
     selected = false,
-    ocupacionManual = null
+    ocupacionManual = null,
   ) => {
     const mesasPlan =
       opcion?.mesasPlan?.length > 0
         ? opcion.mesasPlan
         : Array.from(
             { length: opcion.mesasUnidas || 1 },
-            () => opcion.capacidadBase
+            () => opcion.capacidadBase,
           );
 
     const ocupacionBase =
@@ -132,13 +133,13 @@ const PasoCantidad = ({
     let personasRestantes = Math.min(totalPersonas, ocupacionAUsar);
     let mascotasRestantes = Math.min(
       mascotasNum,
-      Math.max(0, ocupacionAUsar - personasRestantes)
+      Math.max(0, ocupacionAUsar - personasRestantes),
     );
 
     return mesasPlan.map((capacidadMesa, idx) => {
       const ocupadasMesa = Math.max(
         0,
-        Math.min(capacidadMesa, ocupacionRestante)
+        Math.min(capacidadMesa, ocupacionRestante),
       );
       ocupacionRestante = Math.max(0, ocupacionRestante - capacidadMesa);
 
@@ -147,13 +148,13 @@ const PasoCantidad = ({
 
       const mascotasEnMesa = Math.min(
         mascotasRestantes,
-        Math.max(0, ocupadasMesa - personasEnMesa)
+        Math.max(0, ocupadasMesa - personasEnMesa),
       );
       mascotasRestantes = Math.max(0, mascotasRestantes - mascotasEnMesa);
 
       const petSeats = Array.from(
         { length: mascotasEnMesa },
-        (_, petIndex) => personasEnMesa + petIndex
+        (_, petIndex) => personasEnMesa + petIndex,
       );
 
       return (
@@ -166,7 +167,7 @@ const PasoCantidad = ({
             ocupadasMesa,
             size,
             selected && idx === 0,
-            petSeats
+            petSeats,
           )}
         </div>
       );
@@ -195,7 +196,7 @@ const PasoCantidad = ({
   };
 
   return (
-    <div className="w-full h-full overflow-hidden">
+    <div className="w-full h-full">
       <AnimatePresence mode="wait">
         {!isZonaExpanded ? (
           <div className="size-full flex justify-center items-center flex-col">
@@ -210,6 +211,19 @@ const PasoCantidad = ({
             transition={{ duration: 0.25 }}
             className="w-full h-full min-h-0 rounded-2xl flex flex-col gap-3"
           >
+            <Button
+              type="button-secondary"
+              onClick={() => setZonaExpanded(false)}
+              Icon={ChevronLeft}
+              title="Volver"
+              fontSize="xl"
+              customClass="absolute -left-2 -top-2 z-20"
+            />
+            <h2 className="font-parkson mb-4 !text-4xl">
+              {permiteMascotas
+                ? "¿Cuántos niños y perras?"
+                : "¿Cuántos nos visitarán?"}
+            </h2>
             {/* Increment and decrement */}
             <div className="w-full flex justify-center gap-12">
               <div className="flex justify-between flex-col items-center gap-3">
@@ -286,8 +300,8 @@ const PasoCantidad = ({
             {/* Mesas y botones */}
             <div className="size-full min-h-0 flex flex-col justify-between bg-white/40 rounded-2xl overflow-hidden">
               <div />
-              <div className="w-full h-100 min-h-0 rounded-2xl p-3 relative flex flex-col justify-start items-stretch overflow-hidden">
-                <p className="w-full text-center !text-5xl font-parkson mb-4">
+              <div className="w-full h-96 min-h-0 rounded-2xl p-3 relative flex flex-col justify-start items-stretch overflow-hidden">
+                <p className="w-full text-center !text-4xl font-parkson mb-4">
                   {selectedZoneName}
                 </p>
                 <p className="text-end mb-2  absolute right-2 top-2">
@@ -309,9 +323,9 @@ const PasoCantidad = ({
                     </>
                   )}
                 </p>
-                <div className="w-full flex-1 min-h-0 flex gap-3 overflow-hidden">
+                <div className="w-full flex-1 min-h-0 flex justify-center gap-4 overflow-hidden">
                   <div
-                    className={`w-1/2 border border-dark flex flex-wrap items-center justify-between h-full min-h-0 overflow-y-auto gap-3 pr-1`}
+                    className={`flex-1 border border-dark rounded-xl flex flex-wrap items-center justify-between h-full min-h-0 overflow-y-auto`}
                   >
                     {mesaSeleccionada && (
                       <div className="w-full h-full rounded-xl p-2 bg-white/50 flex items-center justify-center">
@@ -320,7 +334,7 @@ const PasoCantidad = ({
                             mesaSeleccionada,
                             "lg",
                             true,
-                            totalOcupacion
+                            totalOcupacion,
                           )}
                         </div>
                       </div>
@@ -333,24 +347,13 @@ const PasoCantidad = ({
                 </div>
               </div>
 
-              <div className="rounded-2xl p-3 flex justify-center gap-3">
-                <Button
-                  onClick={() => setZonaExpanded(false)}
-                  type="button-secondary"
-                  iconSize="lg"
-                  fontSize="xl"
-                  title={<>Otra región</>}
-                  Icon={ChevronLeft}
-                />
+              <div className="rounded-2xl p-3 flex justify-center">
                 <Button
                   onClick={onConfirm}
                   title="Confirmar"
                   type="button-dark"
                   width="min"
                   fontSize="xl"
-                  customClass={`${
-                    canConfirm ? "" : "opacity-50 cursor-not-allowed"
-                  }`}
                   disabled={!canConfirm}
                 />
               </div>
@@ -364,7 +367,28 @@ const PasoCantidad = ({
 
 const RegionImageSlider = ({ selectedZoneName }) => {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
-  const [activeSlide, setActiveSlide] = useState(0);
+  const [selectedImageSrc, setSelectedImageSrc] = useState(null);
+  const gridScrollRef = useRef(null);
+  const savedScrollTopRef = useRef(0);
+
+  const normalizeRegionKey = (value = "") =>
+    String(value)
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toUpperCase()
+      .trim();
+
+  const normalizedZone = normalizeRegionKey(selectedZoneName);
+
+  const normalizedRegionesFotos = Object.fromEntries(
+    Object.entries(regionesFotos).map(([key, value]) => [
+      normalizeRegionKey(key),
+      value,
+    ]),
+  );
+
+  const regionImages = normalizedRegionesFotos[normalizedZone] || [];
+
   const zoneSlug = (selectedZoneName || "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -372,16 +396,56 @@ const RegionImageSlider = ({ selectedZoneName }) => {
     .trim()
     .replace(/\s+/g, "-");
 
-  const slides = [1, 2, 3].map((index) => ({
-    src: `/imagenes/regiones/${zoneSlug}-${index}.webp`,
-    alt: `${selectedZoneName || "Region"} ${index}`,
+  const slides = regionImages.map((src, index) => ({
+    src,
+    alt: `${selectedZoneName || "Región"} ${index}`,
   }));
-  const navPrevClass = `gallery-prev-${zoneSlug || "default"}`;
-  const navNextClass = `gallery-next-${zoneSlug || "default"}`;
+  const selectedSlide = slides.find((slide) => slide.src === selectedImageSrc);
+  const fastSpring = {
+    type: "spring",
+    stiffness: 420,
+    damping: 34,
+    mass: 0.32,
+  };
 
   useEffect(() => {
-    setActiveSlide(0);
-  }, [zoneSlug]);
+    setSelectedImageSrc(null);
+    savedScrollTopRef.current = 0;
+    if (gridScrollRef.current) {
+      gridScrollRef.current.scrollTop = 0;
+    }
+  }, [zoneSlug, selectedZoneName]);
+
+  const handleSelectImage = (src) => {
+    if (selectedImageSrc === src) {
+      setSelectedImageSrc(null);
+      requestAnimationFrame(() => {
+        if (gridScrollRef.current) {
+          gridScrollRef.current.scrollTop = savedScrollTopRef.current;
+        }
+      });
+      return;
+    }
+
+    if (gridScrollRef.current) {
+      savedScrollTopRef.current = gridScrollRef.current.scrollTop;
+    }
+    setSelectedImageSrc(src);
+    requestAnimationFrame(() => {
+      if (gridScrollRef.current) {
+        gridScrollRef.current.scrollTop = 0;
+      }
+    });
+  };
+
+  const handleBackToGrid = () => {
+    setSelectedImageSrc(null);
+    requestAnimationFrame(() => {
+      if (gridScrollRef.current) {
+        gridScrollRef.current.scrollTop = savedScrollTopRef.current;
+      }
+    });
+  };
 
   return (
     <>
@@ -399,15 +463,13 @@ const RegionImageSlider = ({ selectedZoneName }) => {
             pauseOnMouseEnter: true,
           }}
           speed={650}
-          onSlideChange={(swiper) => setActiveSlide(swiper.realIndex)}
           className="w-full h-full [&_.swiper-pagination]:!bottom-2 [&_.swiper-pagination-bullet]:!h-2.5 [&_.swiper-pagination-bullet]:!w-2.5 [&_.swiper-pagination-bullet]:!bg-secondary/70 [&_.swiper-pagination-bullet]:!opacity-100 [&_.swiper-pagination-bullet-active]:!bg-secondary [&_.swiper-pagination-bullet]:ring-2 [&_.swiper-pagination-bullet]:ring-dark/10"
         >
-          {slides.map((slide, index) => (
+          {slides.map((slide) => (
             <SwiperSlide key={slide.src} className="w-full h-full">
               <button
                 type="button"
                 onClick={() => {
-                  setActiveSlide(index);
                   setIsGalleryOpen(true);
                 }}
                 className="w-full h-full"
@@ -426,7 +488,7 @@ const RegionImageSlider = ({ selectedZoneName }) => {
 
       {isGalleryOpen &&
         createPortal(
-          <div className="fixed inset-0 z-[119999] bg-black/60 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[119999] bg-black/80 p-4 md:p-6">
             <button
               type="button"
               onClick={() => setIsGalleryOpen(false)}
@@ -436,50 +498,109 @@ const RegionImageSlider = ({ selectedZoneName }) => {
               <X size={24} />
             </button>
 
-            <div className="w-full h-full max-h-[95vh]">
-              <button
-                type="button"
-                className={`${navPrevClass} absolute left-4 top-1/2 -translate-y-1/2 z-[10001] bg-dark/40 hover:bg-dark/60 text-secondary rounded-full p-2.5 transition`}
-                aria-label="Imagen anterior"
-              >
-                <ChevronLeft size={24} />
-              </button>
-
-              <button
-                type="button"
-                className={`${navNextClass} absolute right-4 top-1/2 -translate-y-1/2 z-[10001] bg-dark/40 hover:bg-dark/60 text-secondary rounded-full p-2.5 transition`}
-                aria-label="Imagen siguiente"
-              >
-                <ChevronRight size={24} />
-              </button>
-
-              <Swiper
-                modules={[Pagination, Navigation]}
-                loop={true}
-                initialSlide={activeSlide}
-                pagination={{ clickable: true }}
-                navigation={{
-                  prevEl: `.${navPrevClass}`,
-                  nextEl: `.${navNextClass}`,
-                }}
-                className="w-full h-full [&_.swiper-pagination]:!bottom-2 [&_.swiper-pagination-bullet]:!h-2.5 [&_.swiper-pagination-bullet]:!w-2.5 [&_.swiper-pagination-bullet]:!bg-secondary/70 [&_.swiper-pagination-bullet]:!opacity-100 [&_.swiper-pagination-bullet-active]:!bg-secondary [&_.swiper-pagination-bullet]:ring-2 [&_.swiper-pagination-bullet]:ring-dark/10"
-              >
-                {slides.map((slide) => (
-                  <SwiperSlide
-                    key={`gallery-${slide.src}`}
-                    className="w-full h-full flex items-center justify-center"
+            <div className="w-full max-w-4xl mx-auto h-full max-h-[95vh] overflow-hidden rounded-2xl  ">
+              <div className="sticky top-0 z-20  backdrop-blur-sm px-5 py-4">
+                <h3 className="text-secondary !text-4xl font-parkson text-center">
+                  Región {selectedZoneName}
+                </h3>
+              </div>
+              {selectedImageSrc && (
+                <div className="w-full flex justify-center">
+                  <Button
+                    type="button-secondary"
+                    Icon={X}
+                    onClick={handleBackToGrid}
+                    customClass="absolute bottom-12 text-white flex-col items-center justify-center z-100"
+                    title={"cerrar"}
+                    fontSize={"md"}
                   >
-                    <img
-                      src={slide.src}
-                      alt={slide.alt}
-                      className="w-full h-full object-contain"
-                    />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
+                    Ver todas las fotos
+                  </Button>
+                </div>
+              )}
+              <div
+                ref={gridScrollRef}
+                className={`h-[calc(95vh-5.5rem)] py-4 md:py-5 no-scrollbar ${
+                  selectedImageSrc ? "overflow-hidden" : "overflow-y-auto"
+                }`}
+              >
+                {slides.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-secondary/80">
+                    No hay fotos disponibles para esta zona.
+                  </div>
+                ) : (
+                  <LayoutGroup id={`zone-gallery-${zoneSlug || "default"}`}>
+                    <div className="relative h-full">
+                      <motion.div
+                        layout
+                        animate={{ opacity: selectedImageSrc ? 0 : 1 }}
+                        transition={{ duration: 0.15, ease: "easeOut" }}
+                        className={`grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-[18rem] ${
+                          selectedImageSrc ? "pointer-events-none" : ""
+                        }`}
+                      >
+                        {slides.map((slide, index) => {
+                          const tilePattern = [
+                            "md:row-span-2",
+                            "md:row-span-1",
+                            "md:row-span-1",
+                            "md:col-span-2 md:row-span-2",
+                            "md:row-span-2",
+                            "md:row-span-1",
+                          ];
+
+                          return (
+                            <motion.button
+                              layout
+                              type="button"
+                              onClick={() => handleSelectImage(slide.src)}
+                              key={`gallery-grid-${slide.src}`}
+                              initial={{ opacity: 0.9, scale: 0.99 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ duration: 0.1, ease: "easeOut" }}
+                              className={`relative overflow-hidden rounded-xl bg-secondary/10 ${tilePattern[index % tilePattern.length]}`}
+                            >
+                              <motion.img
+                                layoutId={`gallery-image-${slide.src}`}
+                                src={slide.src}
+                                alt={slide.alt}
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                                transition={fastSpring}
+                              />
+                            </motion.button>
+                          );
+                        })}
+                      </motion.div>
+
+                      <AnimatePresence initial={false}>
+                        {selectedImageSrc && selectedSlide ? (
+                          <motion.div
+                            key="selected-image"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.1, ease: "easeOut" }}
+                            className="absolute inset-0 z-10 flex items-center justify-center"
+                          >
+                            <motion.img
+                              layoutId={`gallery-image-${selectedSlide.src}`}
+                              src={selectedSlide.src}
+                              alt={selectedSlide.alt}
+                              className="max-w-full max-h-full w-auto h-auto object-contain rounded-xl border border-secondary/30 bg-black"
+                              transition={fastSpring}
+                              onClick={handleBackToGrid}
+                            />
+                          </motion.div>
+                        ) : null}
+                      </AnimatePresence>
+                    </div>
+                  </LayoutGroup>
+                )}
+              </div>
             </div>
           </div>,
-          document.body
+          document.body,
         )}
     </>
   );

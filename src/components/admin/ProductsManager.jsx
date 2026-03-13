@@ -482,7 +482,7 @@ export default function ProductsManager() {
                           onKeyDown={(e) => {
                             if (e.key === "Enter") { e.preventDefault(); addCustomField(); }
                           }}
-                          placeholder="Nombre del campo (ej: region, alergenos, tipo...)"
+                          placeholder="Nombre del campo (ej: región, alérgenos, tipo...)"
                           className="flex-1 bg-[#1a1412] border border-dashed border-[#352821]/40 rounded-lg px-3 py-2 text-sm text-[#fff6ea] placeholder:text-[#fff6ea]/20 focus:outline-none focus:border-amber-500/40"
                         />
                         <button

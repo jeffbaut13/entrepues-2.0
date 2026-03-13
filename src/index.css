@@ -29,24 +29,30 @@
 }
 
 html {
-  @apply xl:text-[0.8333339vw] max-sm:text-[3.5vw] sm:text-[1.5vw] lg:text-[1vw];
+  @apply xl:text-[0.8333339vw] max-sm:text-[3.5vw] sm:text-[1.5vw] lg:text-[1vw] h-dvh;
 
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
   /* @apply overflow-x-hidden xl:text-[16px] max-sm:text-[4vw] sm:text-[1.5vw] lg:text-[1vw] scroll-smooth bg-black; */
 }
 
 body {
-  @apply overflow-x-hidden bg-secondary text-brown;
+  @apply overflow-x-hidden bg-secondary text-brown h-dvh;
+  overflow-y: auto;
+  overscroll-behavior: none;
 
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
 
   font-family: "Helvetica-Regular", sans-serif;
   /* Scroll para Webkit (Chrome, Safari, Edge) */
   scrollbar-width: thin;
 }
+html.not_scroll,
+body.not_scroll {
+  @apply overflow-hidden bg-black;
+}
 
 #root {
-  @apply w-full h-full;
+  @apply w-full h-dvh;
 }
 
 /* Webkit scrollbar (Chrome, Safari, Edge) */
@@ -118,7 +124,9 @@ h4 {
   background-color: var(--hover-color); /* usa la variable personalizada */
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.4s ease, background-color 0.3s ease;
+  transition:
+    transform 0.4s ease,
+    background-color 0.3s ease;
 }
 
 .button-underline-animated:hover::after {
@@ -136,7 +144,9 @@ h4 {
   background-color: var(--hover-color);
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.4s ease, background-color 0.3s ease;
+  transition:
+    transform 0.4s ease,
+    background-color 0.3s ease;
 }
 
 /* Aplica la animación SOLO si no está activa */
@@ -202,4 +212,8 @@ header.active {
   .animate-mouse-float {
     animation: mouse-float 3.2s ease-out infinite;
   }
+}
+
+.overlay {
+  @apply bg-gradient-to-b to-black/50 absolute inset-0 pointer-events-none;
 }

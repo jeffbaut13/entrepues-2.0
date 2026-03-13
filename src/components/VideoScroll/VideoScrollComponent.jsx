@@ -1,331 +1,290 @@
-import React, { useRef, useEffect, useState, useMemo } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
-import { Title } from "../ui/Title";
-import { Mapa } from "../ui/Mapa";
 import { Button } from "../ui/Button";
 import { ScrollDownLottie } from "../ui/ScrollDownLottie";
 import { VideoScrollLoader } from "./VideoScrollLoader";
+import { useIsMobile } from "../../hooks/useIsMobile";
+import { Title } from "../ui/Title";
+import { Volume2, VolumeX } from "lucide-react";
 
-const TOUR_AUDIO_URL = "/audios/andina-musica.mp3.mpeg";
+const AUDIO_URL = "/audios/audio.mp3";
 
 const REGIONES = [
-  {
-    start: 0,
-    end: 1,
-    title: "Bienvenido",
-    description:
-      "Honramos y exaltamos los sabores de nuestra tierra, por esa razon hemos creado un espacio por cada una de las regiones de nuestro pais. Conocelas deslizando hacia abajo.",
-  },
-  {
-    start: 1,
-    end: 14,
-    title: "andina",
-    description:
-      "Hemos querido capturar un poco de la magia de la montana andina, por eso te encontraras con detalles unicos, como las ceramicas de Carmen de Viboral, el barro de Raquira, las ollas de La Chamba, el fique y las ruanas de Boyaca.",
-  },
-  {
-    start: 14,
-    end: 35,
-    title: "orinoquia",
-    description:
-      "Aqui podrias sentir la belleza de los llanos y sus horizontes, con sus sombreros en palma de moriche, artesanias en madera y chinchorros tejidos. El lugar perfecto para pedir una buena carne a la llanera.",
-  },
-  {
-    start: 35,
-    end: 40,
-    title: "pacifica",
-    description:
-      "Nos trajimos los miles de colores del Pacifico, un bar que fue disenado con detalles de cesteria en werregue y fibras de coco, que le dan una identidad propia. Si estas sentado en este lugar, lo mejor es que te pidas un buen coctel.",
-  },
-  {
-    start: 40,
-    end: 46,
-    title: "amazonia",
-    description:
-      "Esta es la amazonia, un lugar donde casi no hay personas, pero si mucha naturaleza, ambientado con tejidos en chambira, bejuco y cumare que honran nuestra raiz indigena. Es un espacio para respirar naturaleza y dejar que sus sabores te sorprendan.",
-  },
-  {
-    start: 46,
-    end: 56,
-    title: "caribe",
-    description:
-      "La alegria del caribe en un espacio que se viste con yute, cana flecha y palma de seje, perfecto para disfrutar de un buen pescado frito con arroz de coco.",
-  },
+  { start: 0, title: "Bienvenido" },
+  { start: 2, title: "andina" },
+  { start: 14, title: "orinoquía" },
+  { start: 35, title: "pacífica" },
+  { start: 40, title: "amazonía" },
+  { start: 46, title: "caribe" },
 ];
 
+const SCROLL_AREA = 6000;
+
 export const VideoScrollComponent = () => {
-  const { onOpenReservePopup, setShowHeader, showHeader } = useOutletContext();
-  const videoRef = useRef(null);
-  const containerRef = useRef(null);
-  const rafRef = useRef(null);
-  const targetTimeRef = useRef(0);
-  const currentTimeRef = useRef(0);
-  const seekingRef = useRef(false);
-  const directionRef = useRef(0);
-
-  const audioRef = useRef(null);
-  const [audioReady, setAudioReady] = useState(false);
-  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
-
   const [activeTextIndex, setActiveTextIndex] = useState(0);
   const [showScrollHint, setShowScrollHint] = useState(true);
+  const { onOpenReservePopup, setShowHeader } = useOutletContext();
+
+  const videoRef = useRef(null);
+  const audioRef = useRef(null);
+  const containerRef = useRef(null);
+  const lastProgressRef = useRef(0);
+
+  const progressRef = useRef(0);
+  const targetProgressRef = useRef(0);
+  const animationRef = useRef(null);
+
+  const isMobile = useIsMobile();
+  const VIDEO_URL = `/video/recorrido/recorrido${isMobile ? "M" : ""}.mp4`;
+
   const [videoReady, setVideoReady] = useState(false);
   const [hasStartedExperience, setHasStartedExperience] = useState(false);
+  const [activeRegion, setActiveRegion] = useState(0);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
 
   const zoneActive = REGIONES[activeTextIndex]?.title || REGIONES[0].title;
 
-  const progress = useMemo(() => {
-    const loaded = Number(videoReady) + Number(audioReady);
-    return Math.round((loaded / 2) * 100);
-  }, [videoReady, audioReady]);
+  const updateRegion = (time) => {
+    const OFFSET = 0.15;
 
-  const isReady = progress === 100;
+    for (let i = REGIONES.length - 1; i >= 0; i--) {
+      if (time >= REGIONES[i].start - OFFSET) {
+        setActiveRegion(i);
+        setActiveTextIndex(i);
 
-  useEffect(() => {
-    !showScrollHint ? setShowHeader(true) : setShowHeader(false);
-  }, [showScrollHint]);
+        return;
+      }
+    }
+  };
 
-  useEffect(() => {
-    const audio = new Audio(TOUR_AUDIO_URL);
-    audio.preload = "auto";
-    audio.loop = true;
+  const SMOOTHING = 0.09;
+  const MAX_SPEED = 0.03;
 
-    const markAudioReady = () => setAudioReady(true);
+  const animationLoop = () => {
+    const video = videoRef.current;
+    if (!video) return;
 
-    audio.addEventListener("canplaythrough", markAudioReady, { once: true });
-    audio.addEventListener("loadeddata", markAudioReady, { once: true });
-    audio.addEventListener("error", markAudioReady, { once: true });
+    const duration = video.duration || 60;
 
-    audioRef.current = audio;
+    let diff = targetProgressRef.current - progressRef.current;
 
-    return () => {
-      audio.pause();
-      audioRef.current = null;
-    };
-  }, []);
+    let step = diff * SMOOTHING;
 
-  const startAudio = async () => {
+    if (step > MAX_SPEED) step = MAX_SPEED;
+    if (step < -MAX_SPEED) step = -MAX_SPEED;
+
+    progressRef.current += step;
+
+    const time = progressRef.current * duration;
+    setShowHeader(time > 1.5);
+    setShowScrollHint(time < 3);
+
+    video.currentTime = time;
+
+    updateRegion(time);
+
+    animationRef.current = requestAnimationFrame(animationLoop);
+  };
+
+  const handleScroll = () => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const scrollTop = container.scrollTop;
+    const maxScroll = SCROLL_AREA - window.innerHeight;
+
+    let nextProgress = scrollTop / maxScroll;
+
+    // limitar salto máximo por evento de scroll
+    const MAX_SCROLL_DELTA = 0.05;
+
+    const diff = nextProgress - lastProgressRef.current;
+
+    if (Math.abs(diff) > MAX_SCROLL_DELTA) {
+      nextProgress =
+        lastProgressRef.current + Math.sign(diff) * MAX_SCROLL_DELTA;
+    }
+
+    lastProgressRef.current = nextProgress;
+
+    targetProgressRef.current = nextProgress;
+  };
+
+  const handleRegionSelect = (regionName) => {
+    const video = videoRef.current;
+    const container = containerRef.current;
+
+    if (!video || !container) return;
+
+    const regionIndex = REGIONES.findIndex(
+      (region) => region.title === regionName,
+    );
+
+    if (regionIndex < 0) return;
+
+    const region = REGIONES[regionIndex];
+
+    const duration = video.duration || 60;
+
+    const progress = region.start / duration;
+
+    targetProgressRef.current = progress;
+
+    const maxScroll = SCROLL_AREA - window.innerHeight;
+
+    container.scrollTo({
+      top: progress * maxScroll,
+      behavior: "smooth",
+    });
+  };
+
+  const tryPlayAudio = async () => {
     const audio = audioRef.current;
     if (!audio) return;
 
     try {
       await audio.play();
       setIsAudioPlaying(true);
-    } catch (error) {
+    } catch {
       setIsAudioPlaying(false);
     }
   };
 
-  const toggleAudio = async () => {
+  const toggleAudio = () => {
     const audio = audioRef.current;
     if (!audio) return;
 
     if (audio.paused) {
-      try {
-        await audio.play();
-        setIsAudioPlaying(true);
-      } catch (error) {
-        setIsAudioPlaying(false);
-      }
-      return;
-    }
-
-    audio.pause();
-    setIsAudioPlaying(false);
-  };
-
-  const handleStartExperience = async () => {
-    await startAudio();
-    setHasStartedExperience(true);
-  };
-
-  const handleRegionSelect = (regionName) => {
-    const regionIndex = REGIONES.findIndex(
-      (region) => region.title === regionName
-    );
-
-    if (regionIndex < 0) return;
-
-    const regionStart = REGIONES[regionIndex].start || 0;
-    targetTimeRef.current = regionStart;
-    currentTimeRef.current = regionStart;
-    setActiveTextIndex(regionIndex);
-
-    if (videoRef.current) {
-      videoRef.current.pause();
-      videoRef.current.currentTime = regionStart;
-
-      const container = containerRef.current;
-      const scrollRange =
-        (container?.scrollHeight || 0) - (container?.clientHeight || 0);
-      const videoDuration = videoRef.current.duration;
-      const fallbackDuration = REGIONES[REGIONES.length - 1]?.end || 1;
-      const duration =
-        Number.isFinite(videoDuration) && videoDuration > 0
-          ? videoDuration
-          : fallbackDuration;
-
-      if (container && scrollRange > 0 && duration > 0) {
-        const ratio = Math.min(Math.max(regionStart / duration, 0), 1);
-        container.scrollTop = ratio * scrollRange;
-      }
+      audio.play();
+      setIsAudioPlaying(true);
+    } else {
+      audio.pause();
+      setIsAudioPlaying(false);
     }
   };
 
-  useEffect(() => {
+  const startExperience = async () => {
     const video = videoRef.current;
     const container = containerRef.current;
 
     if (!video || !container) return;
 
-    const onSeeked = () => {
-      seekingRef.current = false;
-      currentTimeRef.current = video.currentTime;
-    };
-    video.addEventListener("seeked", onSeeked);
+    setHasStartedExperience(true);
 
-    const getActiveIndex = (time) => {
-      for (let i = REGIONES.length - 1; i >= 0; i -= 1) {
-        if (time >= REGIONES[i].start) return i;
-      }
-      return 0;
-    };
+    requestAnimationFrame(animationLoop);
 
-    const onReady = () => {
+    await tryPlayAudio();
+
+    const startSecond = 2;
+    const duration = video.duration || 60;
+
+    const progress = startSecond / duration;
+
+    targetProgressRef.current = progress;
+
+    const maxScroll = SCROLL_AREA - window.innerHeight;
+
+    container.scrollTo({
+      top: progress * maxScroll,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleReady = () => {
       video.pause();
-      video.currentTime = 0;
-      currentTimeRef.current = 0;
       setVideoReady(true);
-
-      const tick = () => {
-        const target = targetTimeRef.current;
-        const current = currentTimeRef.current;
-        const diff = target - current;
-
-        if (Math.abs(diff) < 0.03) {
-          if (!video.paused) video.pause();
-          directionRef.current = 0;
-        } else if (diff > 0) {
-          directionRef.current = 1;
-          const speed = Math.min(Math.max(diff * 3, 0.25), 4);
-          video.playbackRate = speed;
-          if (video.paused) video.play().catch(() => {});
-          currentTimeRef.current = video.currentTime;
-        } else {
-          directionRef.current = -1;
-          if (!video.paused) video.pause();
-
-          if (!seekingRef.current) {
-            seekingRef.current = true;
-            const step = Math.max(Math.abs(diff) * 0.15, 1 / 30);
-            const newTime = Math.max(0, current - step);
-            video.currentTime = newTime;
-          }
-        }
-
-        if (!video.paused) {
-          currentTimeRef.current = video.currentTime;
-        }
-
-        const newIndex = getActiveIndex(currentTimeRef.current);
-        setActiveTextIndex((prev) => (prev !== newIndex ? newIndex : prev));
-
-        rafRef.current = requestAnimationFrame(tick);
-      };
-
-      rafRef.current = requestAnimationFrame(tick);
     };
 
-    const handleScroll = () => {
-      const scrollTop = container.scrollTop;
-      setShowScrollHint(scrollTop <= 250);
+    // escuchar varios eventos porque mobile es inconsistente
+    video.addEventListener("loadeddata", handleReady);
+    video.addEventListener("canplay", handleReady);
+    video.addEventListener("canplaythrough", handleReady);
 
-      if (!video.duration) return;
-
-      const scrollHeight = container.scrollHeight - container.clientHeight;
-      const progressRatio = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
-      targetTimeRef.current = progressRatio * video.duration;
-    };
-
-    if (video.readyState >= 1) {
-      onReady();
-    } else {
-      video.addEventListener("loadedmetadata", onReady, { once: true });
-    }
-
-    container.addEventListener("scroll", handleScroll, { passive: true });
+    // 🔴 fuerza carga cuando vienes de refresh
+    video.load();
 
     return () => {
-      container.removeEventListener("scroll", handleScroll);
-      video.removeEventListener("loadedmetadata", onReady);
-      video.removeEventListener("seeked", onSeeked);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      video.pause();
+      video.removeEventListener("loadeddata", handleReady);
+      video.removeEventListener("canplay", handleReady);
+      video.removeEventListener("canplaythrough", handleReady);
     };
   }, []);
 
   useEffect(() => {
-    if (!hasStartedExperience) return;
-
     const container = containerRef.current;
     if (!container) return;
 
-    container.scrollTo({ top: 150, behavior: "smooth" });
-  }, [hasStartedExperience]);
+    container.addEventListener("scroll", handleScroll);
+
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    };
+  }, []);
 
   return (
     <>
+      <audio ref={audioRef} src={AUDIO_URL} preload="auto" loop />
+
       <VideoScrollLoader
         visible={!hasStartedExperience}
-        progress={progress}
-        isReady={isReady}
-        onStart={handleStartExperience}
+        progress={videoReady ? 100 : 0}
+        isReady={true}
+        onStart={startExperience}
         onOpenReservePopup={onOpenReservePopup}
       />
 
       <div
         ref={containerRef}
-        className="w-full h-screen overflow-y-scroll overflow-x-hidden"
+        className="w-full h-dvh overflow-y-auto overflow-x-hidden"
       >
-        <div className="sticky top-0 w-full h-screen flex items-center justify-center bg-white">
+        <div className="sticky top-0 h-dvh w-full">
           <video
             ref={videoRef}
-            src="/video/recorrido/recorrido-cortado.mp4"
+            src={VIDEO_URL}
             className="w-full h-full object-cover"
             preload="auto"
-            muted
             playsInline
+            muted
+            webkit-playsinline="true"
+            disablePictureInPicture
           />
 
-          <AnimatePresence mode="wait">
-            {activeTextIndex > 0 && (
-              <motion.div
-                initial={{ opacity: 0, height: "0rem" }}
-                animate={{
-                  opacity: 1,
-                  height: activeTextIndex > 0 ? "20rem" : "0rem",
-                }}
-                exit={{ opacity: 0, height: "0rem" }}
-                className="w-full absolute bg-gradient-to-t from-black/80 via-black/60 right-0 bottom-0"
-              >
+          <AnimatePresence>
+            {activeRegion > 0 && (
+              <>
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="size-full flex flex-col items-center justify-center gap-4"
+                  className="overlay absolute"
+                />
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute md:bottom-6 bottom-6 w-full flex flex-col items-center gap-6 "
                 >
-                  <div className="w-full flex justify-between max-w-3xl relative">
+                  <div className="w-full grid grid-cols-5 md:max-w-2xl max-w-sm relative">
                     {REGIONES.filter((text) => text.title !== "Bienvenido").map(
                       (text, index) => (
                         <Button
                           key={index}
                           type="button-thirty"
-                          customClass={`hover:opacity-80 ${
+                          customClass={`relative hover:opacity-80 ${
                             activeTextIndex ===
                             REGIONES.findIndex(
-                              (region) => region.title === text.title
+                              (region) => region.title === text.title,
                             )
                               ? "opacity-100"
                               : "opacity-40"
@@ -333,51 +292,44 @@ export const VideoScrollComponent = () => {
                           title={
                             <>
                               <Title
-                                key={index}
-                                headContent={"Region"}
+                                headContent={"Región"}
                                 content={text.title}
                                 theme="light"
                                 headingLevel="h3"
-                                className={`scale-75 transition-all duration-500 ${
+                                className={`md:scale-75 transition-all duration-500 ${
                                   activeTextIndex ===
                                   REGIONES.findIndex(
-                                    (region) => region.title === text.title
+                                    (region) => region.title === text.title,
                                   )
                                     ? "-translate-y-4"
                                     : ""
-                                } `}
+                                }`}
                               />
-                              <span className="absolute -bottom-1 w-2 h-2 rounded-full bg-white">
-                                {text.subtitle}
-                              </span>
+                              <span className="w-2 h-2 inline-block bg-secondary rounded-full absolute left-1/2 -translate-x-1/2 -bottom-1" />
                             </>
                           }
                           onClick={() => handleRegionSelect(text.title)}
-                          props={{
-                            "aria-label": `Seleccionar región ${text.title}`,
-                          }}
                         />
-                      )
+                      ),
                     )}
                     <span className="w-full h-px rounded-full bg-white absolute bottom-0" />
                   </div>
 
-                  <div className="w-full flex justify-center mt-4">
-                    <Button
-                      title={"Reservar en esta región"}
-                      width="min"
-                      type="button-primary"
-                      fontSize="2xl"
-                      onClick={() => onOpenReservePopup?.(zoneActive)}
-                    />
-                  </div>
+                  <Button
+                    title={"Reservar en esta región"}
+                    width="min"
+                    type="button-primary"
+                    fontSize="2xl"
+                    onClick={() => onOpenReservePopup?.(zoneActive)}
+                  />
                 </motion.div>
-              </motion.div>
+              </>
             )}
           </AnimatePresence>
         </div>
 
-        <div className="h-[500vh]"></div>
+        <div style={{ height: `${SCROLL_AREA}px` }} />
+
         {hasStartedExperience && (
           <ScrollDownLottie
             color="#FFFFFF"
@@ -390,10 +342,8 @@ export const VideoScrollComponent = () => {
 
       {hasStartedExperience && (
         <button
-          type="button"
           onClick={toggleAudio}
-          className="fixed bottom-6 right-6 z-[210] rounded-full bg-black/70 hover:bg-black/85 text-white p-3 transition"
-          aria-label={isAudioPlaying ? "Pausar audio" : "Reproducir audio"}
+          className="fixed bottom-6 right-6 z-[210] rounded-full bg-black/70 hover:bg-black/85 text-white p-3"
         >
           {isAudioPlaying ? <Volume2 size={22} /> : <VolumeX size={22} />}
         </button>

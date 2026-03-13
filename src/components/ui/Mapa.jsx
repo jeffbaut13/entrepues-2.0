@@ -90,7 +90,7 @@ export const Mapa = ({
               textAnchor="middle"
               dominantBaseline="middle"
               className={`${getRegionLabelClass(
-                "caribe"
+                "caribe",
               )} font-parkson ${fontSize()} transition-colors duration-300 ease-in-out`}
             >
               {REGION_LABELS.caribe}
@@ -123,13 +123,13 @@ export const Mapa = ({
             </g> */}
           </g>
 
-          <g data-name="pacifica" className="group cursor-pointer">
+          <g data-name="pacífica" className="group cursor-pointer">
             <rect
               x="99.73"
               y="32.63"
               width="156.26"
               height="85.15"
-              className={getRegionShapeClass("pacifica")}
+              className={getRegionShapeClass("pacífica")}
               style={{ strokeMiterlimit: 10 }}
             />
             <text
@@ -138,20 +138,20 @@ export const Mapa = ({
               textAnchor="middle"
               dominantBaseline="middle"
               className={`${getRegionLabelClass(
-                "pacifica"
+                "pacífica",
               )} font-parkson ${fontSize()} transition-colors duration-300 ease-in-out`}
             >
               {REGION_LABELS.pacifica}
             </text>
           </g>
 
-          <g data-name="amazonia" className="group cursor-pointer">
+          <g data-name="Amazonía" className="group cursor-pointer">
             <rect
               x="99.48"
               y="117.86"
               width="151.66"
               height="260"
-              className={getRegionShapeClass("amazonia")}
+              className={getRegionShapeClass("Amazonía")}
               style={{ strokeMiterlimit: 10 }}
             />
             <text
@@ -160,20 +160,20 @@ export const Mapa = ({
               textAnchor="middle"
               dominantBaseline="middle"
               className={`${getRegionLabelClass(
-                "amazonia"
+                "Amazonía",
               )} font-parkson ${fontSize()} transition-colors duration-300 ease-in-out`}
             >
               {REGION_LABELS.amazonia}
             </text>
           </g>
 
-          <g data-name="orinoquia" className="group cursor-pointer">
+          <g data-name="orinoquía" className="group cursor-pointer">
             <rect
               x="251.05"
               y="232.73"
               width="196.94"
               height="144"
-              className={getRegionShapeClass("orinoquia")}
+              className={getRegionShapeClass("orinoquía")}
               style={{ strokeMiterlimit: 10 }}
             />
             <text
@@ -182,7 +182,7 @@ export const Mapa = ({
               textAnchor="middle"
               dominantBaseline="middle"
               className={`${getRegionLabelClass(
-                "orinoquia"
+                "orinoquía",
               )} font-parkson ${fontSize()} transition-colors duration-300 ease-in-out`}
             >
               {REGION_LABELS.orinoquia}
@@ -201,7 +201,7 @@ export const Mapa = ({
               textAnchor="middle"
               dominantBaseline="middle"
               className={`${getRegionLabelClass(
-                "andina"
+                "andina",
               )} font-parkson ${fontSize()} transition-colors duration-300 ease-in-out`}
             >
               {REGION_LABELS.andina}

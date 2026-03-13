@@ -26,13 +26,13 @@ export const RESERVA_ZONAS_CONFIG = [
   },
   {
     id: "zona-2",
-    nombre: "pacifica",
+    nombre: "pacífica",
     permiteMascotas: false,
     mesasBase: [4, 6],
   },
   {
     id: "zona-3",
-    nombre: "amazonia",
+    nombre: "amazonía",
     permiteMascotas: false,
     mesasBase: [4, 6],
   },
@@ -44,7 +44,7 @@ export const RESERVA_ZONAS_CONFIG = [
   },
   {
     id: "zona-5",
-    nombre: "orinoquia",
+    nombre: "orinoquía",
     permiteMascotas: false,
     mesasBase: [4, 6],
   },

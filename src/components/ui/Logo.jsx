@@ -15,6 +15,8 @@ export const Logo = ({ color = "white", size = "xl", customClass = "" }) => {
     switch (size) {
       case "xs":
         return "w-16";
+      case "sm":
+        return "w-28";
       case "lg":
         return "w-52";
       case "xl":

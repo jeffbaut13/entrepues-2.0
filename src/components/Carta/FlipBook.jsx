@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import HTMLFlipBook from "react-pageflip";
 import { AnimatePresence, motion } from "framer-motion";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 const buildPagePath = (index) => {
   const page = String(index).padStart(2, "0");
@@ -15,11 +16,20 @@ const PAGES = Array.from({ length: 25 }, (_, index) => ({
 export const Flipbook = () => {
   const videoRef = useRef(null);
   const flipBookRef = useRef(null);
+  const isMobile = useIsMobile();
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const [isZoomed, setIsZoomed] = useState(false);
   const [videoFinished, setVideoFinished] = useState(false);
   const [showQuickFlipButton, setShowQuickFlipButton] = useState(true);
   const [viewport, setViewport] = useState({
     width: typeof window === "undefined" ? 1280 : window.innerWidth,
     height: typeof window === "undefined" ? 720 : window.innerHeight,
+  });
+  const touchGestureRef = useRef({
+    startX: 0,
+    startY: 0,
+    tracking: false,
+    multiTouch: false,
   });
 
   useEffect(() => {
@@ -37,8 +47,22 @@ export const Flipbook = () => {
     const vw = viewport.width;
     const vh = viewport.height;
 
+    const pageAspect = 0.69;
+
+    if (isMobile) {
+      const maxPageWidth = vw * 0.92;
+      const maxPageHeight = vh * 0.82;
+      const pageHeight = Math.max(
+        420,
+        Math.round(Math.min(maxPageHeight, maxPageWidth / pageAspect))
+      );
+      const pageWidth = Math.max(280, Math.round(pageHeight * pageAspect));
+
+      return { width: pageWidth, height: pageHeight };
+    }
+
     // Aspect ratio de doble pagina: 2 * (width/height) con pagina aprox 0.69
-    const spreadAspect = 1.38;
+    const spreadAspect = pageAspect * 2;
     const maxSpreadWidth = vw * 0.96;
     const maxSpreadHeight = vh * 0.9;
     const spreadHeight = Math.min(
@@ -46,10 +70,10 @@ export const Flipbook = () => {
       maxSpreadWidth / spreadAspect
     );
     const pageHeight = Math.max(420, Math.round(spreadHeight));
-    const pageWidth = Math.max(280, Math.round(pageHeight * 0.69));
+    const pageWidth = Math.max(280, Math.round(pageHeight * pageAspect));
 
     return { width: pageWidth, height: pageHeight };
-  }, [viewport]);
+  }, [isMobile, viewport]);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -58,12 +82,132 @@ export const Flipbook = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (!isMobile || typeof window === "undefined" || !window.visualViewport) {
+      setIsZoomed(false);
+      return;
+    }
+
+    const syncZoomState = () => {
+      setIsZoomed(window.visualViewport.scale > 1.01);
+    };
+
+    syncZoomState();
+    window.visualViewport.addEventListener("resize", syncZoomState);
+    window.visualViewport.addEventListener("scroll", syncZoomState);
+
+    return () => {
+      window.visualViewport?.removeEventListener("resize", syncZoomState);
+      window.visualViewport?.removeEventListener("scroll", syncZoomState);
+    };
+  }, [isMobile]);
+
   const handleQuickFlip = () => {
     const flipApi = flipBookRef.current?.pageFlip?.();
     if (flipApi) {
-      flipApi.flipNext();
+      flipApi.turnToNextPage();
     }
     setShowQuickFlipButton(false);
+  };
+
+  const goToPreviousPage = () => {
+    const flipApi = flipBookRef.current?.pageFlip?.();
+    if (!flipApi || currentPageIndex <= 0) return;
+
+    flipApi.turnToPrevPage();
+    setShowQuickFlipButton(false);
+  };
+
+  const goToNextPage = () => {
+    const flipApi = flipBookRef.current?.pageFlip?.();
+    if (!flipApi || currentPageIndex >= PAGES.length - 1) return;
+
+    flipApi.turnToNextPage();
+    setShowQuickFlipButton(false);
+  };
+
+  const handleMobileTouchStart = (event) => {
+    if (!isMobile) return;
+
+    if (isZoomed) {
+      touchGestureRef.current = {
+        startX: 0,
+        startY: 0,
+        tracking: false,
+        multiTouch: false,
+      };
+      return;
+    }
+
+    if (event.touches.length !== 1) {
+      touchGestureRef.current = {
+        startX: 0,
+        startY: 0,
+        tracking: false,
+        multiTouch: true,
+      };
+      return;
+    }
+
+    const touch = event.touches[0];
+    touchGestureRef.current = {
+      startX: touch.clientX,
+      startY: touch.clientY,
+      tracking: true,
+      multiTouch: false,
+    };
+  };
+
+  const handleMobileTouchMove = (event) => {
+    if (!isMobile) return;
+
+    if (isZoomed || event.touches.length > 1) {
+      touchGestureRef.current.multiTouch = true;
+      touchGestureRef.current.tracking = false;
+    }
+  };
+
+  const handleMobileTouchEnd = (event) => {
+    if (!isMobile) return;
+
+    const gesture = touchGestureRef.current;
+
+    if (
+      isZoomed ||
+      !gesture.tracking ||
+      gesture.multiTouch ||
+      event.changedTouches.length !== 1
+    ) {
+      touchGestureRef.current = {
+        startX: 0,
+        startY: 0,
+        tracking: false,
+        multiTouch: false,
+      };
+      return;
+    }
+
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - gesture.startX;
+    const deltaY = touch.clientY - gesture.startY;
+    const minSwipeDistance = 60;
+
+    if (Math.abs(deltaX) > minSwipeDistance && Math.abs(deltaY) < 50) {
+      const viewportMidpoint = viewport.width / 2;
+
+      if (gesture.startX >= viewportMidpoint) {
+        goToNextPage();
+      } else {
+        goToPreviousPage();
+      }
+    }
+
+    touchGestureRef.current = {
+      startX: 0,
+      startY: 0,
+      tracking: false,
+      multiTouch: false,
+    };
   };
 
   return (
@@ -108,47 +252,83 @@ export const Flipbook = () => {
                   <span className="rounded-full bg-amber-600 w-10 h-10 inline-flex animate-pulse" />
                 </button>
               )}
-              <HTMLFlipBook
-                ref={flipBookRef}
-                width={bookSize.width}
-                height={bookSize.height}
-                size="stretch"
-                minWidth={bookSize.width}
-                maxWidth={1400}
-                minHeight={bookSize.height}
-                maxHeight={2200}
-                maxShadowOpacity={0.35}
-                showCover={true}
-                mobileScrollSupport={true}
-                className="bg-transparent"
-                style={{ backgroundColor: "transparent" }}
-                startPage={0}
-                drawShadow={true}
-                flippingTime={900}
-                usePortrait={false}
-                startZIndex={0}
-                autoSize={true}
-                clickEventForward={true}
-                useMouseEvents={true}
-                swipeDistance={30}
-                showPageCorners={true}
-                disableFlipByClick={false}
+              <div
+                className="relative flex flex-col items-center gap-4"
+                style={{
+                  touchAction: isMobile ? "auto" : undefined,
+                }}
+                onTouchStart={handleMobileTouchStart}
+                onTouchMove={handleMobileTouchMove}
+                onTouchEnd={handleMobileTouchEnd}
               >
-                {PAGES.map((page) => (
-                  <div
-                    key={page.id}
-                    className="w-full h-full bg-transparent select-none"
-                  >
-                    <img
-                      src={page.src}
-                      alt={`Pagina ${page.id}`}
-                      loading={page.id <= 4 ? "eager" : "lazy"}
-                      className="w-full h-full object-cover pointer-events-none"
-                      draggable={false}
-                    />
+                <HTMLFlipBook
+                  key={isMobile ? "mobile" : "desktop"}
+                  ref={flipBookRef}
+                  width={bookSize.width}
+                  height={bookSize.height}
+                  size="stretch"
+                  minWidth={bookSize.width}
+                  maxWidth={1400}
+                  minHeight={bookSize.height}
+                  maxHeight={2200}
+                  maxShadowOpacity={0.35}
+                  showCover={true}
+                  mobileScrollSupport={true}
+                  className="bg-transparent"
+                  style={{
+                    backgroundColor: "transparent",
+                    touchAction: isMobile ? "auto" : "pan-y",
+                  }}
+                  startPage={0}
+                  drawShadow={true}
+                  flippingTime={900}
+                  usePortrait={isMobile}
+                  startZIndex={0}
+                  autoSize={true}
+                  clickEventForward={true}
+                  useMouseEvents={!isMobile}
+                  swipeDistance={isMobile ? 60 : 30}
+                  showPageCorners={true}
+                  disableFlipByClick={isMobile}
+                  onInit={(event) => setCurrentPageIndex(event.data.page)}
+                  onFlip={(event) => setCurrentPageIndex(event.data)}
+                >
+                  {PAGES.map((page) => (
+                    <div
+                      key={page.id}
+                      className="w-full h-full bg-transparent select-none"
+                    >
+                      <img
+                        src={page.src}
+                        alt={`Pagina ${page.id}`}
+                        loading={page.id <= 4 ? "eager" : "lazy"}
+                        className="w-full h-full object-cover pointer-events-none"
+                        draggable={false}
+                      />
+                    </div>
+                  ))}
+                </HTMLFlipBook>
+                {isMobile && (
+                  <div className="flex items-center gap-3 absolute bottom-0 z-20 pointer-events-auto">
+                    <button
+                      type="button"
+                      onClick={goToPreviousPage}
+                      disabled={currentPageIndex <= 0}
+                      className="rounded-full bg-stone-900/80 px-4 py-2 text-sm text-stone-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Anterior
+                    </button>
+                    <button
+                      type="button"
+                      onClick={goToNextPage}
+                      disabled={currentPageIndex >= PAGES.length - 1}
+                      className="rounded-full bg-stone-900/80 px-4 py-2 text-sm text-stone-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Siguiente
+                    </button>
                   </div>
-                ))}
-              </HTMLFlipBook>
+                )}
+              </div>
             </motion.div>
           </motion.div>
         )}

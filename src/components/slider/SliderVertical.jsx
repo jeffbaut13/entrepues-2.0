@@ -20,6 +20,8 @@ export default function SliderVertical({
   const swiperRef = useRef(null);
   const [isPreparingWithoutMenu, setIsPreparingWithoutMenu] = useState(false);
   const [showMenuConfirmPopup, setShowMenuConfirmPopup] = useState(false);
+  const [hasUserSelectedDate, setHasUserSelectedDate] = useState(false);
+  const [hasUserSelectedTime, setHasUserSelectedTime] = useState(false);
 
   const {
     currentStep,
@@ -27,6 +29,7 @@ export default function SliderVertical({
     completedSteps,
     setCompletedSteps,
     setPasoReserva,
+    pasosReserva,
     reservaData,
     reservaZonaData,
     updateReservaData,
@@ -45,6 +48,15 @@ export default function SliderVertical({
     Boolean(reservaZonaData?.selectedZoneId) &&
     Boolean(reservaZonaData?.mesaSeleccionada) &&
     Number(adults || 0) > 0;
+  const isNonDefaultTime =
+    String(hour || "09").padStart(2, "0") !== "09" ||
+    String(minute || "00").padStart(2, "0") !== "00";
+  const canContinueFromFecha =
+    hasUserSelectedDate || Boolean(pasosReserva?.fecha?.completado);
+  const canContinueFromHora =
+    hasUserSelectedTime ||
+    Boolean(pasosReserva?.hora?.completado) ||
+    isNonDefaultTime;
   const safeCompletedSteps = Array.isArray(completedSteps)
     ? completedSteps
     : [false, false, false, false];
@@ -69,11 +81,18 @@ export default function SliderVertical({
   };
 
   const setSelectedDate = (date) => {
+    setHasUserSelectedDate(true);
     const isoString = date instanceof Date ? date.toISOString() : date;
     updateReservaField("selectedDate", isoString);
   };
-  const setHour = (hour) => updateReservaField("hour", hour);
-  const setMinute = (minute) => updateReservaField("minute", minute);
+  const setHour = (hour) => {
+    setHasUserSelectedTime(true);
+    updateReservaField("hour", hour);
+  };
+  const setMinute = (minute) => {
+    setHasUserSelectedTime(true);
+    updateReservaField("minute", minute);
+  };
   const setAdults = (adults) => updateReservaField("adults", adults);
   const setChildren = (children) => updateReservaField("children", children);
   const setMascotas = (mascotas) => updateReservaField("mascotas", mascotas);
@@ -84,6 +103,16 @@ export default function SliderVertical({
       swiperRef.current.swiper.slideTo(currentStep);
     }
   }, [currentStep]);
+
+  useEffect(() => {
+    if (pasosReserva?.fecha?.completado) {
+      setHasUserSelectedDate(true);
+    }
+
+    if (pasosReserva?.hora?.completado || isNonDefaultTime) {
+      setHasUserSelectedTime(true);
+    }
+  }, [pasosReserva?.fecha?.completado, pasosReserva?.hora?.completado, isNonDefaultTime]);
 
   const handleSlideChange = (swiper) => {
     setCurrentStep(swiper.activeIndex);
@@ -135,7 +164,7 @@ export default function SliderVertical({
       try {
         localStorage.setItem(
           "checkout:reserva:temp",
-          JSON.stringify(checkoutDataSinMenu.datosReserva)
+          JSON.stringify(checkoutDataSinMenu.datosReserva),
         );
       } catch (_) {}
 
@@ -160,6 +189,16 @@ export default function SliderVertical({
       return;
     }
 
+    if (currentStep === 1 && !canContinueFromFecha) {
+      alert("Selecciona una fecha para continuar");
+      return;
+    }
+
+    if (currentStep === 2 && !canContinueFromHora) {
+      alert("Selecciona una hora para continuar");
+      return;
+    }
+
     const newCompleted = [...safeCompletedSteps];
     newCompleted[currentStep] = true;
     marcarPasoComoConfirmado(currentStep);
@@ -180,6 +219,11 @@ export default function SliderVertical({
     }
 
     setCompletedSteps(newCompleted);
+  };
+
+  const goToPreviousStep = () => {
+    if (currentStep <= 0) return;
+    setCurrentStep(currentStep - 1);
   };
 
   return (
@@ -222,6 +266,9 @@ export default function SliderVertical({
         <SwiperSlide className="size-full">
           <div className="w-full h-full flex flex-col items-center justify-center py-8">
             <div className="w-full max-w-lg flex-1 flex flex-col">
+              <h2 className="font-parkson !text-4xl">
+                Elige la fecha de tu reserva
+              </h2>
               <div className="flex-1 flex items-center justify-center">
                 <PasoFecha
                   selectedDate={selectedDate}
@@ -229,7 +276,17 @@ export default function SliderVertical({
                 />
               </div>
             </div>
-            <ConfirmarPasoBoton confirmarPaso={confirmarPaso} />
+            <div className="flex w-full max-w-lg justify-center gap-6">
+              <ConfirmarPasoBoton
+                confirmarPaso={goToPreviousStep}
+                texto="Anterior"
+                variantType="button-secondary"
+              />
+              <ConfirmarPasoBoton
+                confirmarPaso={confirmarPaso}
+                isDisabled={!canContinueFromFecha}
+              />
+            </div>
           </div>
         </SwiperSlide>
 
@@ -237,6 +294,7 @@ export default function SliderVertical({
         <SwiperSlide className="slide-content">
           <div className="w-full h-full flex flex-col items-center justify-center py-8">
             <div className="w-full max-w-sm flex-1 flex flex-col">
+              <h2 className="font-parkson !text-4xl">¿A qué hora te esperamos?</h2>
               <div className="flex-1 flex items-center justify-center">
                 <PasoHora
                   hour={hour}
@@ -246,18 +304,18 @@ export default function SliderVertical({
                 />
               </div>
             </div>
-            <ConfirmarPasoBoton
-              confirmarPaso={handleOpenMenuConfirm}
-              texto="Reservar con platos"
-            />
-            <ConfirmarPasoBoton
-              confirmarPaso={handleReservarSinMenu}
-              texto={
-                isPreparingWithoutMenu ? "Preparando..." : "Reservar solo mesa"
-              }
-              isDisabled={isPreparingWithoutMenu}
-              variantType="button-secondary"
-            />
+            <div className="flex w-full max-w-lg justify-center gap-6">
+              <ConfirmarPasoBoton
+                confirmarPaso={goToPreviousStep}
+                texto="Anterior"
+                variantType="button-secondary"
+              />
+              <ConfirmarPasoBoton
+                confirmarPaso={handleContinueMenuConfirm}
+                texto="Continuar"
+                isDisabled={!canContinueFromHora}
+              />
+            </div>
           </div>
         </SwiperSlide>
       </Swiper>
@@ -317,11 +375,12 @@ const ConfirmarPasoBoton = ({
   return (
     <Button
       onClick={confirmarPaso}
-      title={texto}
+      title={texto === "Anterior" ? "Volver" : texto}
+      Icon={texto === "Anterior" ? ChevronLeft : null}
       type={variantType}
       fontSize="xl"
-      width="min"
-      customClass={`mt-4 ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+      width={texto === "Anterior" ? "" : "min"}
+      customClass={`mt-4`}
       disabled={isDisabled}
     />
   );

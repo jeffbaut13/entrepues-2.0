@@ -1,3 +1,4 @@
+import { use } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 
@@ -5,30 +6,46 @@ import { Button } from "../../ui/Button";
 import { redes } from "../../../constants/redesSociales";
 import { useObserverVisibility } from "../../../hooks/useObserverVisibility";
 import { useLoaderContext } from "../../../context/LoaderContext";
+import { useIsMobile } from "../../../hooks/useIsMobile";
 
-export const CallToActions = ({ site = "home" }) => {
+export const CallToActions = ({ onOpenReservePopup }) => {
   const isSectionVisible = useObserverVisibility(".hide-logo-section");
   const { loadingComplete } = useLoaderContext();
+  const isMobile = useIsMobile();
 
-  // Los delays se calculan desde el final del loader (2s) + delay adicional
-  // Los delays originales se mantienen sumando 2s
   const getAnimationDelay = (originalDelay) => {
     return loadingComplete ? originalDelay : 2 + originalDelay;
   };
 
+  const visibleMobile = isMobile && isSectionVisible;
   return (
-    <div className="fixed bottom-0 size-full z-[51] flex flex-col items-center justify-end pb-6">
-      <div className="md:max-w-md max-w-sm w-full flex flex-col md:gap-6 gap-4 text-2xl z-20">
+    <div
+      className={`fixed bottom-0 size-full z-[51] flex flex-col items-center justify-end pb-6 ${visibleMobile ? "hidden" : ""}`}
+    >
+      <div className="md:max-w-2xl max-w-sm w-full flex flex-col md:gap-6 gap-4 text-2xl z-20">
         <div className="w-full flex md:flex-row flex-col justify-center items-center gap-4 overflow-hidden">
           <Button
-            width="full"
-            customClass={`order-2 ${
-              site == "home" ? "md:order-1" : "md:order-3"
-            }`}
+            width={isMobile ? "medio" : "full"}
             type="enlace"
             fontSize="2xl"
             href={"/carta"}
             title="Menú"
+            motionProps={{
+              initial: { y: 100 },
+              animate: { y: 0 },
+              transition: {
+                delay: getAnimationDelay(0.8),
+                ease: "easeInOut",
+                duration: 1,
+              },
+            }}
+          />
+          <Button
+            width={isMobile ? "medio" : "full"}
+            type="button-primary"
+            title="Reservar"
+            onClick={()=>onOpenReservePopup(null)}
+            fontSize="2xl"
             motionProps={{
               initial: { y: 100 },
               animate: { y: 0 },
@@ -40,17 +57,16 @@ export const CallToActions = ({ site = "home" }) => {
             }}
           />
           <Button
-            width="full"
-            customClass="order-1 md:order-2"
+            width={isMobile ? "medio" : "full"}
             type="enlace"
             href={"/descubrenos"}
-            title="Reservar"
+            title="Recorre EntrePues"
             fontSize="2xl"
             motionProps={{
               initial: { y: 100 },
               animate: { y: 0 },
               transition: {
-                delay: getAnimationDelay(0.8),
+                delay: getAnimationDelay(1.6),
                 ease: "easeInOut",
                 duration: 1,
               },
@@ -62,7 +78,7 @@ export const CallToActions = ({ site = "home" }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{
-            delay: getAnimationDelay(1.5),
+            delay: getAnimationDelay(2.0),
             ease: "easeInOut",
             duration: 1,
           }}

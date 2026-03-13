@@ -10,14 +10,14 @@ import useCartStore from "../store/cartStore";
  * Uso:
  * En el componente más alto que envuelve los modales (MainLayout)
  */
-export const useScrollLock = () => {
+export const useScrollLock = (isReservePopupOpen) => {
   // Suscribirse a los cambios de los stores
   const isBookingOpen = useReservaStore((state) => state.isBookingOpen);
   const isMenuOpen = useMenuStore((state) => state.isMenuOpen);
   const isCartOpen = useCartStore((state) => state.isCartOpen);
 
   // Detectar si algún modal está abierto
-  const isAnyModalOpen = isBookingOpen || isMenuOpen || isCartOpen;
+  const isAnyModalOpen = isBookingOpen || isMenuOpen || isCartOpen || isReservePopupOpen;
 
   useEffect(() => {
     if (isAnyModalOpen) {

@@ -6,13 +6,17 @@ import ArcScrollReveal from "../ScrollSvg";
 import { Title } from "../ui/Title";
 import { IconoSeparador } from "../ui/IconoSeparador";
 import { ScrollDownLottie } from "../ui/ScrollDownLottie";
+import { useIsMobile } from "../../hooks/useIsMobile";
+import { useOutletContext } from "react-router-dom";
 
 export const HomeComponent = () => {
   const [showScrollHint, setShowScrollHint] = useState(false);
+  const isMobile = useIsMobile();
+  const { onOpenReservePopup } = useOutletContext();
 
   useEffect(() => {
     const handleScroll = () => {
-      setShowScrollHint(window.scrollY < 7068);
+      setShowScrollHint(window.scrollY < 1068);
     };
 
     handleScroll();
@@ -25,30 +29,33 @@ export const HomeComponent = () => {
 
   return (
     <>
-      <CallToActions />
+      <CallToActions onOpenReservePopup={onOpenReservePopup}/>
       <ArcScrollReveal />
-      <SectionTwo />
-      <SectionThree />
-      <Footer />
+      <div className="hide-logo-section">
+        <SectionTwo isMobile={isMobile} />
+        <SectionThree isMobile={isMobile} />
+        <Footer isMobile={isMobile} />
+      </div>
       <ScrollDownLottie
         color="#FFFFFF"
-        size={60}
+        size={isMobile ? 40 : 60}
         showScrollHint={showScrollHint}
-        className="!bottom-38"
+        className={`${isMobile ? "!bottom-70" : "!bottom-38"}`}
       />
-      
     </>
   );
 };
 
-const SectionTwo = () => {
+const SectionTwo = ({ isMobile }) => {
   return (
     <>
       <section
-        className="hide-logo-section h-screen w-full bg-cover bg-center"
-        style={{ backgroundImage: "url('/imagenes/backgroundTwo.webp')" }}
+        className="h-dvh w-full bg-cover bg-center md:py-0 py-24"
+        style={{
+          backgroundImage: `url('/imagenes/backgroundTwo${isMobile ? "M" : ""}.webp')`,
+        }}
       >
-        <div className="w-1/2 h-full flex justify-center items-center">
+        <div className="md:w-1/2 w-full md:h-full h-1/2 flex justify-center items-center">
           <motion.div
             className="max-w-lg text-center"
             initial="hidden"
@@ -73,7 +80,7 @@ const SectionTwo = () => {
             </motion.div>
             <IconoSeparador />
             <motion.p
-              className="text-center text-2xl "
+              className="text-center max-lg:px-4"
               variants={{
                 hidden: { opacity: 0, y: 18 },
                 visible: { opacity: 1, y: 0 },
@@ -93,12 +100,12 @@ const SectionTwo = () => {
             </motion.p>
           </motion.div>
         </div>
-        <div className="w-1/2"></div>
+        <div className="w-full md:w-1/2 h-1/2 md:h-full"></div>
       </section>
     </>
   );
 };
-const SectionThree = () => {
+const SectionThree = ({ isMobile }) => {
   const imagenes = [
     {
       url: 0,
@@ -119,7 +126,7 @@ const SectionThree = () => {
   return (
     <>
       <section
-        className="hide-logo-section h-screen w-full bg-cover bg-center bg-no-repeat"
+        className="h-dvh w-full bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url('/imagenes/background_texture.webp')" }}
       >
         <div className="w-full h-full flex flex-col justify-center gap-4 items-center">
@@ -137,7 +144,7 @@ const SectionThree = () => {
             }}
           >
             <motion.h2
-              className="text-8xl font-parkson pt-16"
+              className="md:text-8xl text-6xl font-parkson pt-16"
               variants={{
                 hidden: { opacity: 0, y: 24 },
                 visible: { opacity: 1, y: 0 },
@@ -158,7 +165,7 @@ const SectionThree = () => {
             </motion.p>
           </motion.div>
           <motion.div
-            className="flex-1 w-full flex justify-between relative"
+            className="flex-1 w-full md:h-full flex md:flex-row flex-col justify-between relative"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.35 }}
@@ -170,13 +177,15 @@ const SectionThree = () => {
               },
             }}
           >
-            <picture className="absolute -top-8 left-0 w-full h-25 z-10">
-              <img
-                className="size-full inline-block"
-                src="/imagenes/divisor.webp"
-                alt=""
-              />
-            </picture>
+            {!isMobile && (
+              <picture className="absolute -top-8 left-0 w-full h-25 z-10">
+                <img
+                  className="size-full inline-block"
+                  src="/imagenes/divisor.webp"
+                  alt=""
+                />
+              </picture>
+            )}
             {imagenes.map((item, i) => (
               <motion.div
                 key={i}
@@ -184,8 +193,9 @@ const SectionThree = () => {
                   backgroundImage: `url(/imagenes/section-four/la-cocina-más-rica-del-país-${
                     i + 1
                   }.webp)`,
+                  zIndex: i + 1,
                 }}
-                className="bg-cover bg-center bg-no-repeat w-full h-full flex justify-center items-end pb-8 relative"
+                className={`md:h-full h-[13.67619rem] w-full max-lg:!bg-none bg-center bg-no-repeat flex justify-center items-end pb-8 relative ${i == 2 && isMobile ? "-translate-y-16" : i == 1 && isMobile ? "-translate-y-8" : ""}`}
                 variants={{
                   hidden: { opacity: 0, y: 24, scale: 0.98 },
                   visible: { opacity: 1, y: 0, scale: 1 },
@@ -193,14 +203,29 @@ const SectionThree = () => {
                 transition={{ duration: 0.7, ease: "easeOut" }}
                 whileHover={{ scale: 1.02 }}
               >
-                <div className="bg-gradient-to-t from-black/60 pointer-events-none absolute top-0 left-0 size-full" />
+                <div className="bg-gradient-to-t from-black/60 pointer-events-none absolute md:top-0 max-lg:bottom-0 left-0 size-full z-2 max-lg:translate-y-14 max-lg:from-70%" />
+                {isMobile && (
+                  <picture className={`w-full absolute top-0 left-0 z-1`}>
+                    <img
+                      className="size-full object-cover inline-block"
+                      src={`/imagenes/section-four/la-cocina-más-rica-del-país-${
+                        i + 1
+                      }${isMobile ? "M" : ""}.webp`}
+                      alt=""
+                    />
+                  </picture>
+                )}
                 <h4 className="max-w-xl flex flex-col font-parkson text-secondary text-center z-10 relative">
                   <span className="flex justify-center items-center gap-4">
                     <span className="flex-1 h-px rounded-full bg-secondary" />
-                    <span className="w-fit !text-4xl">{item.title}</span>
+                    <span className="w-fit md:!text-4xl !text-2xl">
+                      {item.title}
+                    </span>
                     <span className="flex-1 h-px rounded-full bg-secondary" />
                   </span>
-                  <span className="!text-7xl !leading-14">{item.content}</span>
+                  <span className="md:!text-7xl !text-5xl !leading-14">
+                    {item.content}
+                  </span>
                 </h4>
               </motion.div>
             ))}
@@ -210,16 +235,16 @@ const SectionThree = () => {
     </>
   );
 };
-const Footer = () => {
+const Footer = ({ isMobile }) => {
   return (
     <>
       <footer
-        className="hide-logo-section h-screen w-full bg-cover bg-center"
+        className="h-dvh w-full bg-cover bg-center"
         style={{ backgroundImage: "url('/imagenes/background_texture.webp')" }}
       >
         <div className="size-full flex justify-center items-center">
           <motion.div
-            className="max-w-2xl text-center space-y-14"
+            className="max-w-2xl text-center space-y-14 max-lg:px-4"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.4 }}
@@ -241,7 +266,7 @@ const Footer = () => {
               CHÍA, CUNDINAMARCA, 1987
             </motion.p>
             <motion.h2
-              className="text-8xl font-parkson"
+              className="md:text-8xl text-6xl font-parkson"
               variants={{
                 hidden: { opacity: 0, y: 24 },
                 visible: { opacity: 1, y: 0 },

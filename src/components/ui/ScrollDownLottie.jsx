@@ -66,7 +66,7 @@ export const ScrollDownLottie = ({
       case "md":
         return "bottom-12";
       case "lg":
-        return "bottom-64";
+        return "bottom-68";
       default:
         return "bottom-6";
     }
@@ -102,7 +102,7 @@ export const ScrollDownLottie = ({
               style={{ width: "100%", height: "100%" }}
             />
           </div>
-          <span className="text-white text-center font-parkson !text-3xl">
+          <span className="text-white text-center font-parkson lg:!text-3xl !text-2xl">
             Desliza
           </span>
         </motion.div>

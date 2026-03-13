@@ -119,7 +119,7 @@ export const CheckoutComponent = ({
   const hasSelectedDishes = Array.isArray(datosReserva?.platosSeleccionados)
     ? datosReserva.platosSeleccionados.some(
         (asistente) =>
-          Array.isArray(asistente?.platos) && asistente.platos.length > 0
+          Array.isArray(asistente?.platos) && asistente.platos.length > 0,
       )
     : false;
 
@@ -127,6 +127,7 @@ export const CheckoutComponent = ({
     datosReserva?.reservaZonaData?.selectedZoneName ||
     datosReserva?.reservaData?.selectedZoneName ||
     null;
+
   if (!datosReserva) {
     return (
       <div className="size-full flex items-center justify-center">
@@ -269,7 +270,7 @@ export const CheckoutComponent = ({
                 type="button-dark"
                 width="full"
                 fontSize="2xl"
-                customClass="disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
+                
                 title={
                   <>
                     {pagoEnProceso ? (
@@ -327,19 +328,19 @@ export const CheckoutComponent = ({
                       <div>
                         <p>
                           {formatearFecha(
-                            datosReserva.reservaData?.selectedDate
+                            datosReserva.reservaData?.selectedDate,
                           )}
                         </p>
                         <p>
                           {formatearHora(
                             datosReserva.reservaData?.hour,
-                            datosReserva.reservaData?.minute
+                            datosReserva.reservaData?.minute,
                           )}
                         </p>
 
                         {regionSeleccionada && (
                           <p className="font-bold mt-4">
-                            Region:{" "}
+                            Región:{" "}
                             {regionSeleccionada.charAt(0).toUpperCase() +
                               regionSeleccionada.slice(1)}
                           </p>
@@ -347,7 +348,7 @@ export const CheckoutComponent = ({
                         <p>
                           {datosReserva.reservaData?.adults} adulto(s)
                           {datosReserva.reservaData?.children > 0 &&
-                            `, ${datosReserva.reservaData.children} nino(s)`}
+                            `, ${datosReserva.reservaData.children} niño(s)`}
                         </p>
                       </div>
                     </div>
@@ -377,7 +378,7 @@ export const CheckoutComponent = ({
                                 </div>
                               ))}
                             </div>
-                          )
+                          ),
                         )}
                       </div>
                     </div>

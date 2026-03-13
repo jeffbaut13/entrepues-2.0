@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
 export const Button = ({
@@ -11,7 +11,7 @@ export const Button = ({
   target = "_self",
   href,
   width = "ajustado",
-  iconSize = "medio",
+  iconSize = "medium",
   fontSize = "lg",
   customClass = "",
   disabled = false,
@@ -22,6 +22,8 @@ export const Button = ({
         return "w-fit";
       case "full":
         return "w-full";
+      case "flex":
+        return "flex-1";
       case "medio":
       default:
         return "md:min-w-40 min-w-34";
@@ -59,7 +61,8 @@ export const Button = ({
   };
 
   const transition = `transition-all ease-in-out duration-300`;
-  const baseStyle = `tracking-widest flex justify-center items-center gap-1 cursor-pointer text-center rounded-full py-1.5 pb-2 ${transition}`;
+  const disabledStyle = `disabled:opacity-40 disabled:!cursor-not-allowed`;
+  const baseStyle = `tracking-widest flex justify-center items-center gap-1 cursor-pointer text-center rounded-full py-1.5 pb-2 ${transition} ${disabledStyle}`;
   const primary = `${baseStyle} font-parkson bg-dark/40 backdrop-blur-md hover:bg-black text-secondary border border-secondary/40 hover:border-black px-6`;
   const listas = {
     "button-primary": primary,
@@ -67,27 +70,34 @@ export const Button = ({
     "button-secondary": `${baseStyle} font-parkson bg-none text-dark  hover:opacity-60`,
     "button-thirty": `${baseStyle} font-light text-dark`,
     "button-dark": `${baseStyle} font-parkson text-secondary bg-dark hover:bg-dark/80 px-6`,
-    "just-icon": `cursor-pointer flex h-fit ${transition} border border-dark/30 rounded-full p-2 hover:opacity-60 hover:bg-dark/20`,
+    "just-icon": `cursor-pointer flex h-fit ${transition}   rounded-full p-2 hover:opacity-60 hover:bg-dark/20`,
     "just-icon-dark": `cursor-pointer flex h-fit ${transition} rounded-full p-2 bg-dark/30 hover:opacity-60 hover:bg-dark/20`,
     "just-icon-white": `cursor-pointer flex h-fit ${transition} rounded-full p-2 bg-white/30 text-white hover:opacity-60 hover:bg-dark/20`,
   };
 
+  const navigate = useNavigate();
+
+  const handleNavigate = (href) => {
+    href ? navigate(href) : null;
+    onClick ? onClick() : null;
+  };
   switch (type) {
     case "enlace":
       return (
-        <Link
+        <motion.button
+          disabled={disabled}
           to={href}
           target={target}
           className={`w-fit ${getWidthClass(width)} ${getFontSizeClass(
-            fontSize
+            fontSize,
           )} ${listas[type]} ${customClass}`}
           {...motionProps}
           {...props}
-          onClick={onClick ? onClick : null}
+          onClick={onClick ? onClick : () => handleNavigate(href)}
         >
-          {Icon && <Icon size={getIconSize(iconSize)} className="" />}
+          {Icon && <Icon size={getIconSize(iconSize)} />}
           {title}
-        </Link>
+        </motion.button>
       );
     case "button-primary":
       return (
@@ -113,8 +123,9 @@ export const Button = ({
             listas[type]
           } ${customClass}`}
           onClick={onClick}
+          disabled={disabled}
         >
-          {Icon && <Icon size={getIconSize(iconSize)} className="" />}
+          {Icon && <Icon size={getIconSize(iconSize)} />}
           {title}
         </motion.button>
       );
@@ -127,8 +138,9 @@ export const Button = ({
             listas[type]
           } ${customClass}`}
           onClick={onClick}
+          disabled={disabled}
         >
-          {Icon && <Icon size={getIconSize(iconSize)} className="" />}
+          {Icon && <Icon size={getIconSize(iconSize)} />}
           {title}
         </motion.button>
       );
@@ -141,14 +153,15 @@ export const Button = ({
             listas[type]
           } ${customClass}`}
           onClick={onClick}
+          disabled={disabled}
         >
-          {Icon && <Icon size={getIconSize(iconSize)} className="" />}
+          {Icon && <Icon size={getIconSize(iconSize)} />}
           {title}
         </motion.button>
       );
     case "just-icon":
       return (
-        <a
+        <motion.a
           target={target}
           {...props}
           href={href}
@@ -158,11 +171,11 @@ export const Button = ({
           } ${customClass} ${getWidthClass(width)}`}
         >
           <Icon size={getIconSize(iconSize)} />
-        </a>
+        </motion.a>
       );
     case "just-icon-dark":
       return (
-        <a
+        <motion.a
           target={target}
           {...props}
           href={href}
@@ -170,11 +183,11 @@ export const Button = ({
           className={`${listas[type]} ${customClass}`}
         >
           <Icon size={getIconSize(iconSize)} />
-        </a>
+        </motion.a>
       );
     case "just-icon-white":
       return (
-        <a
+        <motion.a
           target={target}
           {...props}
           href={href}
@@ -182,7 +195,7 @@ export const Button = ({
           className={`${listas[type]} ${customClass}`}
         >
           <Icon size={getIconSize(iconSize)} />
-        </a>
+        </motion.a>
       );
     default:
       return null;

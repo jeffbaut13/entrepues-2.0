@@ -1,20 +1,25 @@
 import React, { useLayoutEffect, useRef, useId, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function ArcScrollReveal() {
+  const isMobile = useIsMobile();
+
   const images = [
-    "/img_scroll/img-1.jpg",
-    "/img_scroll/img-2.jpg",
-    "/img_scroll/img-3.jpg",
-    "/img_scroll/img-4.jpg",
-    "/img_scroll/img-5.jpg",
+    `/img_scroll/img-1${isMobile ? "M" : ""}.webp`,
+    `/img_scroll/img-2${isMobile ? "M" : ""}.webp`,
+    `/img_scroll/img-3${isMobile ? "M" : ""}.webp`,
+    `/img_scroll/img-4${isMobile ? "M" : ""}.webp`,
+    `/img_scroll/img-5${isMobile ? "M" : ""}.webp`,
   ];
 
   const wrapRef = useRef(null);
   const pathRefs = useRef([]);
+  const lastWidthRef = useRef(0);
+  const refreshRafRef = useRef(null);
   const uid = useId();
 
   // viewBox dinámico para respetar el aspecto del contenedor
@@ -32,7 +37,7 @@ export default function ArcScrollReveal() {
     // p=0  -> capBaseY = h + r (todo fuera)
     // p=1  -> capBaseY = r     (puerta completa)
     // p=2  -> capBaseY = r - h (arco fuera por arriba)
-    const capBaseY = (h + r) - clamped * h;
+    const capBaseY = h + r - clamped * h;
 
     return `M 0 ${h} L ${w} ${h} L ${w} ${capBaseY} A ${r} ${r} 0 0 0 0 ${capBaseY} Z`;
   };
@@ -44,15 +49,42 @@ export default function ArcScrollReveal() {
     // medir contenedor y setear viewBox proporcional
     const ro = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect;
+      if (!width || !height) return;
+
+      const roundedWidth = Math.round(width);
+
+      // En mobile la barra del navegador cambia solo la altura del viewport.
+      // Ignoramos ese caso para no reiniciar el timeline en medio del scroll.
+      if (lastWidthRef.current === roundedWidth) return;
+      lastWidthRef.current = roundedWidth;
+
       // mantenemos un ancho fijo y calculamos alto según ratio real
       const w = 1000;
       const h = Math.max(1, Math.round((1000 * height) / width));
-      setVb({ w, h });
-      ScrollTrigger.refresh();
+
+      setVb((prev) => {
+        if (prev.w === w && prev.h === h) return prev;
+        return { w, h };
+      });
+
+      if (refreshRafRef.current) {
+        cancelAnimationFrame(refreshRafRef.current);
+      }
+
+      refreshRafRef.current = requestAnimationFrame(() => {
+        ScrollTrigger.refresh();
+        refreshRafRef.current = null;
+      });
     });
     ro.observe(wrap);
 
-    return () => ro.disconnect();
+    return () => {
+      ro.disconnect();
+      if (refreshRafRef.current) {
+        cancelAnimationFrame(refreshRafRef.current);
+        refreshRafRef.current = null;
+      }
+    };
   }, []);
 
   useLayoutEffect(() => {
@@ -80,9 +112,6 @@ export default function ArcScrollReveal() {
         },
       });
 
-      // Para cada imagen desde la 2da:
-      // 0->1 revela puerta
-      // 1->2 el arco se va por arriba y desaparece (queda full)
       for (let i = 1; i < images.length; i++) {
         const path = pathRefs.current[i];
         const prog = { p: 0 };
@@ -140,7 +169,7 @@ export default function ArcScrollReveal() {
             y="0"
             width={vb.w}
             height={vb.h}
-            preserveAspectRatio="xMidYMid slice" // ✅ CONTAIN (no crop)
+            preserveAspectRatio="xMidYMid slice"
             clipPath={`url(#clip-${uid}-${i})`}
           />
         </svg>
@@ -148,4 +177,3 @@ export default function ArcScrollReveal() {
     </section>
   );
 }
-

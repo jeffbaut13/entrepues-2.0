@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "../ui/Button";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 export const VideoScrollLoader = ({
   visible,
@@ -10,6 +11,7 @@ export const VideoScrollLoader = ({
   onOpenReservePopup,
 }) => {
   const videoRef = useRef(null);
+  const isMobile = useIsMobile();
   const [delayedReady, setDelayedReady] = useState(false);
 
   useEffect(() => {
@@ -54,10 +56,11 @@ export const VideoScrollLoader = ({
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.45, ease: "easeOut" }}
-                  className="size-full flex items-end justify-center gap-12 pb-24"
+                  className="size-full flex flex-col md:flex-row md:items-end items-center md:justify-center justify-end md:gap-12 gap-4 pb-24 max-lg:max-w-xs max-lg:mx-auto"
                 >
                   <Button
                     type="button-primary"
+                    width={`${isMobile ? "full" : "min"}`}
                     fontSize="2xl"
                     onClick={onStart}
                     title={"Explorar las regiones"}
@@ -65,6 +68,7 @@ export const VideoScrollLoader = ({
 
                   <Button
                     type="button-primary"
+                    width={`${isMobile ? "full" : "min"}`}
                     fontSize="2xl"
                     onClick={() => onOpenReservePopup(null)}
                     title={"Reservar ahora"}
@@ -82,7 +86,7 @@ export const VideoScrollLoader = ({
                   <div className="relative size-72 mx-auto">
                     <video
                       ref={videoRef}
-                      defaultMuted={true}
+                      defaultMuted
                       muted={true}
                       className="size-full object-cover "
                       autoPlay

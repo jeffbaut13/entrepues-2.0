@@ -20,7 +20,7 @@ const resolveRegionName = (value = "") => {
   const normalized = normalizeRegionParam(value);
 
   const aliases = {
-    pacifico: "pacifica",
+    pacifico: "pacífica",
   };
 
   return aliases[normalized] || normalized;
@@ -52,7 +52,12 @@ export const ReservarComponent = () => {
   );
 };
 
-export const ReservaComponent = ({ region, onReservaSinMenuCheckout }) => {
+export const ReservaComponent = ({
+  region,
+  onReservaSinMenuCheckout,
+  isZonaExpanded,
+  setZonaExpanded,
+}) => {
   const [searchParams] = useSearchParams();
 
   // Estados derivados del store
@@ -68,10 +73,7 @@ export const ReservaComponent = ({ region, onReservaSinMenuCheckout }) => {
     seleccionarZona,
   } = useReservaStore();
 
-  const [isZonaExpanded, setZonaExpanded] = useState(false);
-
-  const regionFromUrl = searchParams.get("region") || region || null;
- 
+  const regionFromUrl = searchParams.get("región") || region || null;
 
   // Estados derivados del store
   const selectedDate = reservaData.selectedDate
@@ -144,7 +146,7 @@ export const ReservaComponent = ({ region, onReservaSinMenuCheckout }) => {
     } catch (error) {
       console.error(
         "Error restaurando estado de menú desde checkout temp:",
-        error
+        error,
       );
     }
   }, [regionFromUrl, setCurrentStep]);
@@ -174,18 +176,18 @@ export const ReservaComponent = ({ region, onReservaSinMenuCheckout }) => {
   return (
     <>
       <motion.div
-        className="w-full lg:h-[40.2060625rem] h-full flex lg:flex-row flex-col items-stretch bg-white/20 text-dark rounded-xl lg:gap-6 gap-3 lg:p-6 p-3 md:py-4 overflow-hidden relative"
+        className="w-full lg:h-[40.2060625rem] h-full flex lg:flex-row flex-col items-stretch bg-white/20 text-dark rounded-xl lg:gap-6 gap-3 py-4 md:px-6 px-4 overflow-hidden relative"
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.7, delay: 0.5, ease: "easeOut" }}
       >
         <motion.div
-          className={`lg:w-1/3 w-full lg:h-full h-auto flex flex-col justify-start lg:justify-between overflow-y-auto lg:overflow-y-visible max-lg:gap-2 lg:py-8`}
+          className={`lg:w-1/3 w-full lg:h-full h-auto flex flex-col justify-start lg:justify-between overflow-y-auto lg:overflow-y-visible max-lg:gap-2 lg:py-24`}
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.7, ease: "easeOut" }}
         >
-          <motion.h2
+          {/* <motion.h2
             className="lg:pl-4 font-parkson lg:mb-8 mb-4 flex-shrink-0 lg:text-start text-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -196,7 +198,7 @@ export const ReservaComponent = ({ region, onReservaSinMenuCheckout }) => {
             <span className=" lg:!text-9xl lg:!leading-20 !text-5xl">
               reserva
             </span>
-          </motion.h2>
+          </motion.h2> */}
 
           <AnimatePresence>
             {pasos.map((paso, index) => {

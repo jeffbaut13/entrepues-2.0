@@ -41,9 +41,9 @@ export const Title = ({
       case "h1":
         return "lg:!text-9xl lg:!leading-20 !text-6xl";
       case "h2":
-        return "lg:!text-7xl lg:!leading-12 !text-5xl";
+        return "lg:!text-7xl lg:!leading-12 !text-6xl";
       case "h3":
-        return "lg:!text-5xl lg:!leading-4 !text-3xl";
+        return "lg:!text-5xl lg:!leading-10 !text-2xl";
       default:
         return "lg:!text-7xl lg:!leading-12 !text-5xl";
     }
@@ -54,7 +54,7 @@ export const Title = ({
       case "h1":
         return "lg:!text-5xl !text-3xl";
       case "h2":
-        return "lg:!text-4xl !text-2xl";
+        return "!text-4xl";
       case "h3":
         return "lg:!text-xl !text-sm";
       default:
@@ -64,18 +64,18 @@ export const Title = ({
 
   return (
     <div
-      className={`w-fit mx-auto lg:mb-8 mb-4 text-center ${
+      className={`w-fit mx-auto md:mb-0 mb-2 text-center ${
         themeClasses.text
       } ${className} ${animated ? "animate-fade-in" : ""}`}
       role="banner"
       aria-labelledby="title-heading"
     >
       {/* Decorative line with subtitle */}
-      <div className="flex justify-center items-center gap-4 mb-2">
-        <span
+      <div className="flex justify-center items-center gap-4">
+        {/* <span
           className={`flex-1 h-px transition-colors duration-300 ${themeClasses.bg}`}
           aria-hidden="true"
-        />
+        /> */}
         <span
           className={`font-amithen ${FontSizeSubtitle()}`}
           role="text"
@@ -83,10 +83,10 @@ export const Title = ({
         >
           {headContent}
         </span>
-        <span
+        {/* <span
           className={`flex-1 h-px transition-colors duration-300 ${themeClasses.bg}`}
           aria-hidden="true"
-        />
+        /> */}
       </div>
 
       {/* Main title */}

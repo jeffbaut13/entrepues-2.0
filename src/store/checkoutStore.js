@@ -46,7 +46,7 @@ const validateWhatsapp = (value) => {
   return "";
 };
 
-const buildCheckoutStateFromReserva = (datos) => {
+const buildCheckoutStateFromReserva = (datos, prevDatosContacto = {}) => {
   const subtotal =
     datos?.platosSeleccionados?.reduce((total, asistente) => {
       return (
@@ -66,10 +66,11 @@ const buildCheckoutStateFromReserva = (datos) => {
     impuestos,
     montoFinal,
     datosContacto: {
-      nombre: datos?.reservaData?.name || "",
-      email: datos?.reservaData?.email || "",
-      whatsapp: datos?.reservaData?.whatsapp || "",
-      notas: "",
+      nombre: prevDatosContacto?.nombre || datos?.reservaData?.name || "",
+      email: prevDatosContacto?.email || datos?.reservaData?.email || "",
+      whatsapp:
+        prevDatosContacto?.whatsapp || datos?.reservaData?.whatsapp || "",
+      notas: prevDatosContacto?.notas || "",
     },
   };
 };
@@ -126,7 +127,7 @@ export const useCheckoutStore = create(
           if (stored) {
             const datos = JSON.parse(stored);
 
-            set(buildCheckoutStateFromReserva(datos));
+            set(buildCheckoutStateFromReserva(datos, get().datosContacto));
 
             console.log("✅ Datos de reserva cargados:", datos);
             return { ok: true, data: datos };
@@ -146,7 +147,7 @@ export const useCheckoutStore = create(
             throw new Error("Resultado de reserva incompleto");
           }
 
-          set(buildCheckoutStateFromReserva(datos));
+          set(buildCheckoutStateFromReserva(datos, get().datosContacto));
           return { ok: true, data: datos };
         } catch (error) {
           set({ error: error.message });

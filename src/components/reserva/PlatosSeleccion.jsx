@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "../ui/Button";
 import { capitalizeFirst } from "../../constants/firsLetterUppercase";
 import {
@@ -13,8 +13,9 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
 import "../slider/styleVertical.css";
-import { ChevronLeft } from "lucide-react";
+import { BookCheck, ChevronLeft, X } from "lucide-react";
 import useReservaStore from "../../store/reservaStore";
+import useCheckoutStore from "../../store/checkoutStore";
 
 // ===========================
 // FUNCIONES UTILITARIAS
@@ -42,7 +43,7 @@ const generarJSON = (firestoreId, platosSeleccionados, asistentes) => {
         })),
         totalPlatos: platos.reduce((sum, p) => sum + p.cantidad, 0),
         totalPrecio: platos.reduce((sum, p) => sum + p.precio * p.cantidad, 0),
-      })
+      }),
     ),
   };
 };
@@ -57,7 +58,8 @@ const generarJSON = (firestoreId, platosSeleccionados, asistentes) => {
 export default function PlatosSeleccion({
   asistentes,
   firestoreId,
-  onCheckoutReady,
+  onBackToReserva,
+  onPagoSuccess,
 }) {
   // ===========================
   // ESTADOS
@@ -68,13 +70,26 @@ export default function PlatosSeleccion({
   const [catalogo, setCatalogo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [guardando, setGuardando] = useState(false);
+  const [showResumen, setShowResumen] = useState(false);
   const asistentesSwiperRef = useRef(null);
   const resumenSwiperRef = useRef(null);
   const swiperRef = useRef(null);
   const hydratedRef = useRef(false);
   const checkoutTempIdRef = useRef(null);
-  const { prepararDatosCheckout, setPasoReserva, setCurrentStep } =
-    useReservaStore();
+  const { prepararDatosCheckout } = useReservaStore();
+  const {
+    datosReserva,
+    datosContacto,
+    montoTotal,
+    impuestos,
+    montoFinal,
+    pagoEnProceso,
+    error: checkoutError,
+    cargarDatosReservaDesdeResultado,
+    iniciarPago,
+    clearError,
+  } = useCheckoutStore();
+ 
 
   const asistentesLista = useMemo(() => {
     if (Array.isArray(asistentes)) return asistentes;
@@ -89,11 +104,11 @@ export default function PlatosSeleccion({
 
       const asistentesAdultos = Array.from(
         { length: adultosCount },
-        (_, i) => `Adulto ${i + 1}`
+        (_, i) => `Adulto ${i + 1}`,
       );
       const asistentesNinos = Array.from(
         { length: ninosCount },
-        (_, i) => `Niño ${i + 1}`
+        (_, i) => `Niño ${i + 1}`,
       );
 
       return [...asistentesAdultos, ...asistentesNinos];
@@ -133,7 +148,7 @@ export default function PlatosSeleccion({
     if (categorias.length === 0) return;
 
     const existeCategoriaActual = categorias.some(
-      (categoria) => categoria.key === categoriaActual
+      (categoria) => categoria.key === categoriaActual,
     );
 
     if (!existeCategoriaActual) {
@@ -254,7 +269,7 @@ export default function PlatosSeleccion({
 
   const esPlatoSeleccionado = (platoId) => {
     return (platosSeleccionados[asistenteActual] || []).some(
-      (p) => p.id === platoId
+      (p) => p.id === platoId,
     );
   };
 
@@ -265,7 +280,7 @@ export default function PlatosSeleccion({
   // Manejar cambio de categoría y slider
   const handleCategoriaChange = (categoriaKey) => {
     const categoriaIndex = categorias.findIndex(
-      (categoria) => categoria.key === categoriaKey
+      (categoria) => categoria.key === categoriaKey,
     );
     setCategoriActual(categoriaKey);
 
@@ -326,11 +341,36 @@ export default function PlatosSeleccion({
   //Ir atras a datos dereserva
 
   const Atras = () => {
-    setPasoReserva("platos", { habilitado: false });
-    setCurrentStep(2);
+    onBackToReserva?.();
   };
-  const handleConfirmar = async () => {
-    // Validar que todos los asistentes tienen al menos un plato
+
+  const formatearFecha = (fechaISO) => {
+    if (!fechaISO) return "";
+    const fecha = new Date(fechaISO);
+    return fecha.toLocaleDateString("es-CO", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const formatearHora = (hora, minuto) => {
+    if (!hora || !minuto) return "";
+    const hour24 = parseInt(hora, 10);
+    let hour12 = hour24;
+    let period = "AM";
+
+    if (hour24 >= 12) {
+      period = "PM";
+      if (hour24 > 12) hour12 = hour24 - 12;
+    }
+    if (hour24 === 0) hour12 = 12;
+
+    return `${String(hour12).padStart(2, "0")}:${minuto} ${period}`;
+  };
+
+  const validarPlatosPorAsistente = () => {
     const asistentesSinPlatos = [];
     for (let i = 0; i < asistentesLista.length; i++) {
       if (!platosSeleccionados[i] || platosSeleccionados[i].length === 0) {
@@ -338,35 +378,83 @@ export default function PlatosSeleccion({
       }
     }
 
-    // Si hay asistentes sin platos, mostrar alerta
     if (asistentesSinPlatos.length > 0) {
       const asistentesTexto = asistentesSinPlatos.join(", ");
       alert(
-        `⚠️ Los siguientes asistentes no tienen platos seleccionados:\n\n${asistentesTexto}\n\nPor favor, agrega al menos un plato para cada asistente antes de continuar.`
+        `⚠️ Los siguientes asistentes no tienen platos seleccionados:\n\n${asistentesTexto}\n\nPor favor, agrega al menos un plato para cada asistente antes de continuar.`,
       );
-      return; // No continuar
+      return false;
     }
+
+    return true;
+  };
+
+  const prepararCheckoutDesdePlatos = () => {
+    const datosJSON = generarJSON(
+      firestoreId || checkoutTempIdRef.current || `temp-${Date.now()}`,
+      platosSeleccionados,
+      asistentesLista,
+    );
+
+    const resultado = prepararDatosCheckout(datosJSON.platosSeleccionados);
+    if (!resultado.ok) {
+      throw new Error(resultado.error || "No se pudieron preparar los datos");
+    }
+
+    const carga = cargarDatosReservaDesdeResultado(resultado.data);
+    if (!carga.ok) {
+      throw new Error(carga.error || "No se pudieron cargar datos de checkout");
+    }
+
+    return resultado.data;
+  };
+
+  const handleOpenResumen = () => {
+    if (!validarPlatosPorAsistente()) return;
+
+    try {
+      prepararCheckoutDesdePlatos();
+      setShowResumen(true);
+    } catch (error) {
+      console.error("Error preparando resumen:", error);
+      alert("No se pudo abrir el resumen. Intenta de nuevo.");
+    }
+  };
+
+  const handleConfirmar = async () => {
+    if (!validarPlatosPorAsistente()) return;
 
     setGuardando(true);
     try {
-      // Generar datos JSON para los platos seleccionados
-      const datosJSON = generarJSON(
-        firestoreId || checkoutTempIdRef.current || `temp-${Date.now()}`,
-        platosSeleccionados,
-        asistentesLista
-      );
+      clearError();
+      const checkoutData = prepararCheckoutDesdePlatos();
 
-      // Usar la función del store para preparar datos de checkout
-      const resultado = prepararDatosCheckout(datosJSON.platosSeleccionados);
+      const reservaSnapshot = useReservaStore.getState();
+      const checkoutSnapshot = useCheckoutStore.getState();
 
-      if (!resultado.ok) {
-        throw new Error(resultado.error || "No se pudieron preparar los datos");
+      console.log("[ReservaStore]", {
+        reservaData: reservaSnapshot.reservaData,
+        reservaZonaData: reservaSnapshot.reservaZonaData,
+        detalleAsistentes: reservaSnapshot.detalleAsistentes,
+      });
+      console.log("[CheckoutStore]", {
+        datosContacto: checkoutSnapshot.datosContacto,
+        montoTotal: checkoutSnapshot.montoTotal,
+        impuestos: checkoutSnapshot.impuestos,
+        montoFinal: checkoutSnapshot.montoFinal,
+      });
+      console.log("[CheckoutPayload]", checkoutData);
+
+      const pago = await iniciarPago({ sinMenu: false });
+      if (!pago.ok) {
+        throw new Error(pago.error || "No se pudo guardar la reserva");
       }
 
-      onCheckoutReady?.(resultado.data);
+      alert("Reserva guardada correctamente.");
+      onPagoSuccess?.(pago);
     } catch (error) {
-      console.error("Error al preparar datos para checkout:", error);
-      alert("Error al preparar la reserva. Por favor, intenta de nuevo.");
+      console.error("Error al procesar pago:", error);
+      alert("Error al guardar la reserva. Por favor, intenta de nuevo.");
     } finally {
       setGuardando(false);
     }
@@ -380,7 +468,7 @@ export default function PlatosSeleccion({
     (total, platos) =>
       total +
       platos.reduce((sum, plato) => sum + plato.precio * plato.cantidad, 0),
-    0
+    0,
   );
 
   const resumenAsistentes = useMemo(() => {
@@ -389,7 +477,7 @@ export default function PlatosSeleccion({
       const cantidad = platos.reduce((sum, plato) => sum + plato.cantidad, 0);
       const total = platos.reduce(
         (sum, plato) => sum + plato.precio * plato.cantidad,
-        0
+        0,
       );
 
       return {
@@ -404,9 +492,17 @@ export default function PlatosSeleccion({
 
   const ctaEsPago =
     asistentesLista.length > 0 && asistenteActual >= ultimoAsistenteIndex;
+  const todosConPlatos =
+    asistentesLista.length > 0 &&
+    asistentesLista.every((_, index) =>
+      Array.isArray(platosSeleccionados[index])
+        ? platosSeleccionados[index].length > 0
+        : false,
+    );
 
   const handleBottomCta = () => {
     if (ctaEsPago) {
+      if (!todosConPlatos) return;
       handleConfirmar();
       return;
     }
@@ -424,7 +520,7 @@ export default function PlatosSeleccion({
       <Button
         type="button-secondary"
         Icon={ChevronLeft}
-        title="Volver"
+        //title="Volver"
         fontSize="xl"
         customClass={`absolute left-2 top-2`}
         onClick={Atras}
@@ -458,9 +554,9 @@ export default function PlatosSeleccion({
                 className="flex-1 h-fit flex flex-col items-center justify-between"
               >
                 <div className="w-fit">
-                  <h2 className="text-start !text-5xl font-parkson">Hola,</h2>
                   <h4 className="text-start !text-8xl !leading-18 font-parkson font-bold">
-                    Elige tus platos <br /> desde ahora
+                    Selecciona <br />
+                    tus platos
                   </h4>
                   <h2 className="text-start mt-8 !text-xl">
                     Estarán 5 minutos después de que llegues a tu mesa
@@ -480,7 +576,7 @@ export default function PlatosSeleccion({
                       >
                         {asistentesLista.map((asistente, index) => {
                           const nombreAsistente = String(
-                            asistente || `Persona ${index + 1}`
+                            asistente || `Persona ${index + 1}`,
                           )
                             .replace(/_/g, " ")
                             .toUpperCase();
@@ -606,15 +702,17 @@ export default function PlatosSeleccion({
                         <span className="!text-2xl font-bold">
                           ${totalGeneralPrecio.toLocaleString("es-CO")}
                         </span>
-                        <div className="w-full flex justify-center items-center gap-4">
+                        <div className="w-full flex items-center gap-4 justify-around">
                           {asistenteActual >= 1 && (
                             <Button
-                              type="just-icon"
+                              type="button-secondary"
                               Icon={ChevronLeft}
                               disabled={guardando}
+                              title={`Anterior Persona`}
+                              fontSize="xl"
                               onClick={() =>
                                 handleSelectAsistente(
-                                  Math.max(asistenteActual - 1, 0)
+                                  Math.max(asistenteActual - 1, 0),
                                 )
                               }
                             />
@@ -622,18 +720,37 @@ export default function PlatosSeleccion({
                           <Button
                             onClick={handleBottomCta}
                             title={
-                              guardando
+                              guardando || pagoEnProceso
                                 ? "Guardando..."
                                 : ctaEsPago
-                                ? "Pagar"
-                                : "Siguiente persona"
+                                  ? "Pagar"
+                                  : "Siguiente persona"
                             }
                             type="button-dark"
                             width="medio"
                             fontSize="xl"
-                            disabled={guardando}
+                            disabled={
+                              guardando ||
+                              pagoEnProceso ||
+                              (ctaEsPago && !todosConPlatos)
+                            }
                           />
                         </div>
+                      </div>
+                      <div className="flex flex-col items-center justofy-center gap-2">
+
+                          {ctaEsPago && todosConPlatos && (
+                            <Button
+                              onClick={handleOpenResumen}
+                              title="Ver resumen"
+                              type="button-secondary"
+                              width="medio"
+                              fontSize="xl"
+                              Icon={BookCheck}
+                              disabled={guardando || pagoEnProceso}
+                            />
+                          )}
+                          <p className="!text-sm">Legal para avisar que debe pagar</p>
                       </div>
                     </>
                   }
@@ -643,6 +760,136 @@ export default function PlatosSeleccion({
           )}
         </div>
       </div>
+
+      <AnimatePresence>
+        {showResumen && (
+          <motion.div
+            className="fixed inset-0 z-[120] bg-black/60 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <div className="sticky top-0 bg-dark text-white px-6 py-4 flex items-center justify-between">
+                <h2 className="font-parkson">
+                  <span className="!text-3xl">Resumen de tu</span>
+                  <br />
+                  <span className="!text-6xl !leading-10">Reserva</span>
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setShowResumen(false)}
+                  className="inline-flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 p-2 transition"
+                  aria-label="Cerrar resumen"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="px-6 py-4">
+                {checkoutError && (
+                  <p className="text-red-600 !text-sm mb-4">{checkoutError}</p>
+                )}
+
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <p>
+                      {formatearFecha(datosReserva?.reservaData?.selectedDate)}
+                    </p>
+                    <p>
+                      {formatearHora(
+                        datosReserva?.reservaData?.hour,
+                        datosReserva?.reservaData?.minute,
+                      )}
+                    </p>
+                    {datosReserva?.reservaZonaData?.selectedZoneName && (
+                      <p className="font-bold mt-4">
+                        Región: {datosReserva.reservaZonaData.selectedZoneName}
+                      </p>
+                    )}
+                    <p>
+                      {datosReserva?.reservaData?.adults || 0} adulto(s)
+                      {Number(datosReserva?.reservaData?.children || 0) > 0
+                        ? `, ${datosReserva.reservaData.children} niño(s)`
+                        : ""}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <h3 className="font-bold mb-3">Platos Seleccionados</h3>
+                  <div className="bg-dark/5 rounded-lg p-4">
+                    {(datosReserva?.platosSeleccionados || []).map(
+                      (asistente, index) => (
+                        <div key={index} className="mb-3 last:mb-0">
+                          <p className="font-medium mb-2">
+                            {asistente.asistente || `Asistente ${index + 1}`}
+                          </p>
+                          {(asistente.platos || []).map((plato, platoIndex) => (
+                            <div
+                              key={platoIndex}
+                              className="[&>span]:!text-base flex justify-between items-center py-1"
+                            >
+                              <span>
+                                {plato.cantidad}x {plato.nombre}
+                              </span>
+                              <span className="font-bold">
+                                $
+                                {(plato.precio * plato.cantidad).toLocaleString(
+                                  "es-CO",
+                                )}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2 border-t border-dark/20 pt-4">
+                  <div className="flex justify-between">
+                    <span>Subtotal</span>
+                    <span className="font-medium">
+                      ${Number(montoTotal || 0).toLocaleString("es-CO")}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>IVA (19%)</span>
+                    <span className="font-medium">
+                      ${Number(impuestos || 0).toLocaleString("es-CO")}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-lg font-bold pt-2">
+                    <span>Total</span>
+                    <span>
+                      ${Number(montoFinal || 0).toLocaleString("es-CO")}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-4 p-3 bg-dark/5 rounded-lg">
+                  <p className="!text-sm font-semibold">Datos de contacto</p>
+                  <p className="!text-sm">
+                    Nombre: {datosContacto?.nombre || "-"}
+                  </p>
+                  <p className="!text-sm">
+                    Email: {datosContacto?.email || "-"}
+                  </p>
+                  <p className="!text-sm">
+                    WhatsApp: {datosContacto?.whatsapp || "-"}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
@@ -666,7 +913,7 @@ const MenuSelected = ({
   component,
 }) => {
   return (
-    <div className="w-full  h-full bg-white grid grid-rows-[auto minmax(0,1fr)] overflow-hidden rounded-3xl gap-4 px-4 py-6">
+    <div className="w-full  h-full bg-white grid grid-rows-[auto minmax(0,1fr)] overflow-hidden rounded-3xl gap-4 px-4 pt-4 pb-2">
       {/* <h3 className="text-xl px-4">Selecciona los platos por persona</h3> */}
       {/* Nombres de Categorías */}
       {categorias.length > 0 && (
@@ -687,8 +934,8 @@ const MenuSelected = ({
                   title={capitalizeFirst(
                     String(categoria.displayName || categoria.key).replace(
                       /_/g,
-                      " "
-                    )
+                      " ",
+                    ),
                   )}
                   fontSize="2xl"
                   customClass={`text-start ${
@@ -714,8 +961,8 @@ const MenuSelected = ({
           initialSlide={Math.max(
             0,
             categorias.findIndex(
-              (categoria) => categoria.key === categoriaActual
-            )
+              (categoria) => categoria.key === categoriaActual,
+            ),
           )}
           allowTouchMove={true}
           simulateTouch={true}
