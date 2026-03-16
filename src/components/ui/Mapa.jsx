@@ -5,6 +5,13 @@ export const Mapa = ({
   sizeText,
   size,
 }) => {
+  const normalizeRegionName = (value) =>
+    String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .toLowerCase();
+
   const fontSize = () => {
     switch (sizeText) {
       case "sm":
@@ -26,13 +33,14 @@ export const Mapa = ({
     andina: "ANDINA",
   };
 
-  const isRegionActive = (name) => regionActive === name;
+  const isRegionActive = (name) =>
+    normalizeRegionName(regionActive) === normalizeRegionName(name);
 
   const getRegionShapeClass = (name) => {
     const baseClass = "transition-all duration-300 ease-in-out";
 
     if (isRegionActive(name)) {
-      return `fill-secondary stroke-secondary opacity-100 ${baseClass}`;
+      return `fill-secondary/20 stroke-dark opacity-100 ${baseClass}`;
     }
 
     return theme === "light"

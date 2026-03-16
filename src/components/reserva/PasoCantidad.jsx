@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
-import { ChevronLeft, X } from "lucide-react";
+import { ChevronLeft, PanelLeftClose, PanelRightClose, X } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
 import "swiper/css";
@@ -15,6 +15,7 @@ import regionesFotos from "../../data/regionesFotos";
 
 import { Mapa } from "../ui/Mapa";
 import { DontPet } from "../ui/DontPet";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 const MAX_OCUPACION_TOTAL = 12;
 const MAX_MASCOTAS = 4;
@@ -32,7 +33,7 @@ const PasoCantidad = ({
   canConfirm = false,
 }) => {
   const [errorAsistentes, setErrorAsistentes] = useState("");
-
+  const isMobile = useIsMobile();
   const {
     actualizarDetalleAsistentes,
     limpiarDetalleAsistentes,
@@ -196,12 +197,16 @@ const PasoCantidad = ({
   };
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full lg:h-fit h-full">
       <AnimatePresence mode="wait">
         {!isZonaExpanded ? (
           <div className="size-full flex justify-center items-center flex-col">
-            <h2 className="font-parkson !text-4xl">¿Dónde quieres comer?</h2>
-            <Mapa handleShowZone={pushZone} size={"w-full h-96 flex"} />
+            <Mapa
+              handleShowZone={pushZone}
+              regionActive={reservaZonaData?.selectedZoneName || ""}
+              size={"w-full h-96 flex"}
+              sizeText={`${isMobile ? "lg" : "md"}`}
+            />
           </div>
         ) : (
           <motion.div
@@ -214,21 +219,22 @@ const PasoCantidad = ({
             <Button
               type="button-secondary"
               onClick={() => setZonaExpanded(false)}
-              Icon={ChevronLeft}
-              title="Volver"
+              Icon={PanelLeftClose}
+              //title=""
               fontSize="xl"
-              customClass="absolute -left-2 -top-2 z-20"
+              customClass="absolute -top-2 z-20"
             />
             <h2 className="font-parkson mb-4 !text-4xl">
               {permiteMascotas
-                ? "¿Cuántos niños y perras?"
+                ? "¿Cuántos nos visitarán? ¿Vendrás con mascotas?"
                 : "¿Cuántos nos visitarán?"}
             </h2>
             {/* Increment and decrement */}
-            <div className="w-full flex justify-center gap-12">
+            <div className="w-full flex justify-center lg:gap-12 gap-8">
               <div className="flex justify-between flex-col items-center gap-3">
                 <p>Adultos</p>
                 <IncremenAndDecrementComponent
+                  errorAsistentes={errorAsistentes}
                   item={adultsNum}
                   increaseQuantity={() => {
                     if (totalOcupacion >= MAX_OCUPACION_TOTAL) {
@@ -247,9 +253,10 @@ const PasoCantidad = ({
                 />
               </div>
 
-              <div className="flex justify-between flex-col items-center gap-3">
+              <div className="flex justify-between flex-col items-center lg:gap-3">
                 <p>Niños</p>
                 <IncremenAndDecrementComponent
+                  errorAsistentes={errorAsistentes}
                   item={childrenNum}
                   increaseQuantity={() => {
                     if (totalOcupacion >= MAX_OCUPACION_TOTAL) {
@@ -272,6 +279,7 @@ const PasoCantidad = ({
                 <div className="flex justify-between flex-col items-center gap-3">
                   <p>Mascotas</p>
                   <IncremenAndDecrementComponent
+                    errorAsistentes={errorAsistentes}
                     item={mascotasNum}
                     increaseQuantity={() => {
                       if (mascotasNum >= MAX_MASCOTAS) {
@@ -291,16 +299,10 @@ const PasoCantidad = ({
               )}
             </div>
 
-            {errorAsistentes && (
-              <p className="text-center text-sm text-red-500 px-3">
-                {errorAsistentes}
-              </p>
-            )}
-
             {/* Mesas y botones */}
             <div className="size-full min-h-0 flex flex-col justify-between bg-white/40 rounded-2xl overflow-hidden">
               <div />
-              <div className="w-full h-96 min-h-0 rounded-2xl p-3 relative flex flex-col justify-start items-stretch overflow-hidden">
+              <div className="w-full lg:h-96 h-full min-h-0 rounded-2xl p-3 relative flex flex-col justify-start items-stretch overflow-hidden">
                 <p className="w-full text-center !text-4xl font-parkson mb-4">
                   {selectedZoneName}
                 </p>
@@ -323,9 +325,9 @@ const PasoCantidad = ({
                     </>
                   )}
                 </p>
-                <div className="w-full flex-1 min-h-0 flex justify-center gap-4 overflow-hidden">
+                <div className="w-full flex-1 min-h-0 flex max-lg:flex-col-reverse justify-center gap-4">
                   <div
-                    className={`flex-1 border border-dark rounded-xl flex flex-wrap items-center justify-between h-full min-h-0 overflow-y-auto`}
+                    className={`max-lg:w-full lg:flex-1 border border-dark rounded-xl flex flex-wrap items-center justify-between min-h-0 overflow-y-auto`}
                   >
                     {mesaSeleccionada && (
                       <div className="w-full h-full rounded-xl p-2 bg-white/50 flex items-center justify-center">
@@ -341,7 +343,7 @@ const PasoCantidad = ({
                     )}
                   </div>
 
-                  <div className="flex-1 h-full min-h-0 overflow-hidden">
+                  <div className="max-lg:w-full lg:flex-1 max-lg:h-2/3 overflow-hidden">
                     <RegionImageSlider selectedZoneName={selectedZoneName} />
                   </div>
                 </div>
@@ -488,7 +490,7 @@ const RegionImageSlider = ({ selectedZoneName }) => {
 
       {isGalleryOpen &&
         createPortal(
-          <div className="fixed inset-0 z-[119999] bg-black/80 p-4 md:p-6">
+          <div className="fixed inset-0 z-[119999] bg-black/80 backdrop-blur-md p-4 md:p-6">
             <button
               type="button"
               onClick={() => setIsGalleryOpen(false)}
@@ -499,7 +501,7 @@ const RegionImageSlider = ({ selectedZoneName }) => {
             </button>
 
             <div className="w-full max-w-4xl mx-auto h-full max-h-[95vh] overflow-hidden rounded-2xl  ">
-              <div className="sticky top-0 z-20  backdrop-blur-sm px-5 py-4">
+              <div className="sticky top-0 z-20 px-5 py-4">
                 <h3 className="text-secondary !text-4xl font-parkson text-center">
                   Región {selectedZoneName}
                 </h3>

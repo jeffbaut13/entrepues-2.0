@@ -28,18 +28,16 @@ export const Datos = ({ onContinue }) => {
     updateDatosContacto({ [campo]: valor });
   };
 
- 
-  
   return (
     <motion.div
-      className="rounded-2xl flex flex-col justify-between overflow-hidden"
+      className="w-full rounded-2xl flex flex-col justify-between overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}
     >
       <h2
         type="button"
-        className="w-full px-6 flex flex-col justify-center items-center transition-all duration-200 py-4"
+        className="w-full lg:px-6 px-4 flex flex-col justify-center items-center transition-all duration-200 py-4"
       >
         <span className={`w-14 h-1 rounded-full inline-block`} />
         <span className="font-bold font-parkson !text-6xl leading-12 inline-block mb-4">
@@ -47,11 +45,11 @@ export const Datos = ({ onContinue }) => {
         </span>
       </h2>
 
-      <div className="px-6">
+      <div className="lg:px-6 px-4">
         <div className="w-full space-y-3">
           {error && (
             <motion.div
-              className="bg-red-50 border border-red-200 rounded-3xl p-4 flex items-center space-x-2"
+              className="w-full bg-red-50 border border-red-200 rounded-3xl p-4 flex items-center space-x-2"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
             >
@@ -68,7 +66,7 @@ export const Datos = ({ onContinue }) => {
               type="text"
               value={datosContacto.nombre}
               onChange={(e) => handleContactoChange("nombre", e.target.value)}
-              className="w-full px-3 py-4 border border-gray-300 rounded-3xl focus:outline-none focus:ring-2 focus:ring-dark focus:border-transparent"
+              className="w-full px-3 py-4 text-lg border border-gray-300 rounded-3xl focus:outline-none focus:ring-2 focus:ring-dark focus:border-transparent"
               placeholder="Tu nombre completo"
             />
           </div>
@@ -81,7 +79,7 @@ export const Datos = ({ onContinue }) => {
               type="email"
               value={datosContacto.email}
               onChange={(e) => handleContactoChange("email", e.target.value)}
-              className="w-full px-3 py-4 border border-gray-300 rounded-3xl focus:outline-none focus:ring-2 focus:ring-dark focus:border-transparent"
+              className="w-full px-3 py-4 text-lg border border-gray-300 rounded-3xl focus:outline-none focus:ring-2 focus:ring-dark focus:border-transparent"
               placeholder="tu@email.com"
             />
           </div>
@@ -94,7 +92,7 @@ export const Datos = ({ onContinue }) => {
               type="tel"
               value={datosContacto.whatsapp}
               onChange={(e) => handleContactoChange("whatsapp", e.target.value)}
-              className="w-full px-3 py-4 border border-gray-300 rounded-3xl focus:outline-none focus:ring-2 focus:ring-dark focus:border-transparent"
+              className="w-full px-3 py-4 text-lg border border-gray-300 rounded-3xl focus:outline-none focus:ring-2 focus:ring-dark focus:border-transparent"
               placeholder="+57 123 456 7890"
               maxLength={10}
             />
@@ -108,7 +106,7 @@ export const Datos = ({ onContinue }) => {
             <textarea
               value={datosContacto.notas}
               onChange={(e) => handleContactoChange("notas", e.target.value)}
-              className="w-full px-3 py-4 border border-gray-300 rounded-3xl focus:outline-none focus:ring-2 focus:ring-dark focus:border-transparent h-24 resize-none"
+              className="w-full px-3 py-4 text-lg border border-gray-300 rounded-3xl focus:outline-none focus:ring-2 focus:ring-dark focus:border-transparent h-24 resize-none"
               placeholder="Notas Especiales (Opcional), ej: Alergias, preferencias especiales, etc."
             />
           </div>
@@ -139,7 +137,7 @@ export const Datos = ({ onContinue }) => {
             }
           />
 
-          <p className="!text-sm text-center">
+          <p className="lg:!text-sm !text-base text-center">
             Al confirmar aceptas los términos y condiciones.
           </p>
         </div>

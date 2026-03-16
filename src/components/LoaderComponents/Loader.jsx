@@ -72,7 +72,7 @@ export const Loader = ({ onLoadingComplete }) => {
           }}
           transition={{ duration: 0.7, ease: "easeInOut" }}
         >
-          <Logo color="white" />
+          <Logo color="white" size="lg" />
         </motion.div>
       </motion.div>
     </motion.div>

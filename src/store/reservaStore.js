@@ -5,6 +5,13 @@ const STORAGE_KEY = "reserva:state:v1";
 const MAX_OCUPACION_TOTAL = 12;
 const MAX_MASCOTAS = 4;
 
+const normalizeZoneName = (value = "") =>
+  String(value)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+
 const DEFAULT_RESERVA_DATA = {
   selectedDate: new Date().toISOString(),
   hour: "09",
@@ -199,6 +206,9 @@ const INITIAL_PASOS_RESERVA = {
   platos: { completado: false, habilitado: false },
 };
 
+const FLOW_STEPS = ["datos", "reserva", "platos"];
+const FLOW_STEPS_VALID = [...FLOW_STEPS, "succes"];
+
 const buildFreshReservaData = () => ({
   ...DEFAULT_RESERVA_DATA,
   selectedDate: new Date().toISOString(),
@@ -208,6 +218,7 @@ export const useReservaStore = create(
   persist(
     (set, get) => ({
       isBookingOpen: false,
+      flowStep: "datos",
       currentStep: 0,
       completedSteps: [false, false, false, false],
       pasosReserva: INITIAL_PASOS_RESERVA,
@@ -235,8 +246,9 @@ export const useReservaStore = create(
 
       seleccionarZona: (zoneName) =>
         set((state) => {
+          const zoneNameNormalized = normalizeZoneName(zoneName);
           const zona = RESERVA_ZONAS_CONFIG.find(
-            (item) => item.nombre === zoneName
+            (item) => normalizeZoneName(item.nombre) === zoneNameNormalized
           );
           if (!zona) return state;
 
@@ -312,6 +324,54 @@ export const useReservaStore = create(
       openBookingWithOrigin: () => set({ isBookingOpen: true }),
       closeBooking: () => set({ isBookingOpen: false }),
 
+      setFlowStep: (step) => {
+        if (!FLOW_STEPS_VALID.includes(step)) return;
+        set({ flowStep: step });
+      },
+
+      goToNextFlowStep: () =>
+        set((state) => {
+          const currentIndex = FLOW_STEPS.indexOf(state.flowStep);
+          const safeIndex = currentIndex < 0 ? 0 : currentIndex;
+          const nextIndex = Math.min(safeIndex + 1, FLOW_STEPS.length - 1);
+          return { flowStep: FLOW_STEPS[nextIndex] };
+        }),
+
+      goToPrevFlowStep: () =>
+        set((state) => {
+          const currentIndex = FLOW_STEPS.indexOf(state.flowStep);
+          const safeIndex = currentIndex < 0 ? 0 : currentIndex;
+          const prevIndex = Math.max(safeIndex - 1, 0);
+          return { flowStep: FLOW_STEPS[prevIndex] };
+        }),
+
+      resetFlowStep: () => set({ flowStep: "datos" }),
+
+      resumeOrStartFlowStep: () =>
+        set((state) => {
+          const persistedFlowStep = FLOW_STEPS.includes(state.flowStep)
+            ? state.flowStep
+            : "datos";
+
+          const hasReservaProgress =
+            Boolean(state.pasosReserva?.visitantes?.completado) ||
+            Number(state.reservaData?.adults || 0) > 0 ||
+            Number(state.reservaData?.children || 0) > 0 ||
+            Number(state.reservaData?.mascotas || 0) > 0;
+
+          // Si retoma en Reserva y ya había progreso, abrimos selector de zona expandido.
+          if (persistedFlowStep === "reserva" && hasReservaProgress) {
+            return {
+              flowStep: persistedFlowStep,
+              isZonaExpanded: true,
+            };
+          }
+
+          return {
+            flowStep: persistedFlowStep,
+          };
+        }),
+
       setDatosReservaCompletados: (value) =>
         set({ isDatosReservaCompletados: Boolean(value) }),
 
@@ -366,6 +426,7 @@ export const useReservaStore = create(
         set(() => {
           const nextReservaData = buildFreshReservaData();
           return {
+            flowStep: "datos",
             currentStep: 0,
             completedSteps: [false, false, false, false],
             pasosReserva: INITIAL_PASOS_RESERVA,

@@ -5,11 +5,11 @@ import "swiper/css";
 import "swiper/css/pagination";
 import "./styleVertical.css";
 
-import useReservaStore from "../../store/reservaStore";
-import PasoFecha from "../reserva/datepicker/PasoFecha";
-import PasoHora from "../reserva/PasoHoraMain";
-import PasoCantidad from "../reserva/PasoCantidad";
-import { Button } from "../ui/Button";
+import useReservaStore from "../../../store/reservaStore";
+import PasoFecha from "../datepicker/PasoFecha";
+import PasoHora from "../PasoHoraMain";
+import PasoCantidad from "../PasoCantidad";
+import { Button } from "../../ui/Button";
 import { BanknoteArrowUp, ChevronLeft, X } from "lucide-react";
 
 export default function SliderVertical({
@@ -34,6 +34,8 @@ export default function SliderVertical({
     reservaZonaData,
     updateReservaData,
     setDatosReservaCompletados,
+    goToPrevFlowStep,
+    setFlowStep,
   } = useReservaStore();
 
   const selectedDate = reservaData.selectedDate
@@ -112,7 +114,11 @@ export default function SliderVertical({
     if (pasosReserva?.hora?.completado || isNonDefaultTime) {
       setHasUserSelectedTime(true);
     }
-  }, [pasosReserva?.fecha?.completado, pasosReserva?.hora?.completado, isNonDefaultTime]);
+  }, [
+    pasosReserva?.fecha?.completado,
+    pasosReserva?.hora?.completado,
+    isNonDefaultTime,
+  ]);
 
   const handleSlideChange = (swiper) => {
     setCurrentStep(swiper.activeIndex);
@@ -135,8 +141,10 @@ export default function SliderVertical({
   };
 
   const handleContinueMenuConfirm = async () => {
+    if (!canContinueFromHora) return;
     setShowMenuConfirmPopup(false);
     await handleElegirMenu();
+    setFlowStep("platos");
   };
 
   const handleReservarSinMenu = async () => {
@@ -243,21 +251,33 @@ export default function SliderVertical({
         {/* PASO 0: Fecha */}
         <SwiperSlide className="size-full">
           <div className="w-full h-full flex flex-col items-center justify-center">
-            <div className="w-full flex-1 flex flex-col">
-              <div className="flex-1">
-                <PasoCantidad
-                  adults={adults}
-                  children={children}
-                  mascotas={mascotas}
-                  isZonaExpanded={isZonaExpanded}
-                  setZonaExpanded={setZonaExpanded}
-                  setAdults={setAdults}
-                  setChildren={setChildren}
-                  setMascotas={setMascotas}
-                  onConfirm={confirmarPaso}
-                  canConfirm={canContinueFromCantidad}
-                />
-              </div>
+            <div className="w-full flex-1 flex flex-col items-center justify-center">
+              <PasoCantidad
+                adults={adults}
+                children={children}
+                mascotas={mascotas}
+                isZonaExpanded={isZonaExpanded}
+                setZonaExpanded={setZonaExpanded}
+                setAdults={setAdults}
+                setChildren={setChildren}
+                setMascotas={setMascotas}
+                onConfirm={confirmarPaso}
+                canConfirm={canContinueFromCantidad}
+              />
+
+              {!isZonaExpanded && (
+                <div className="flex w-full max-w-lg justify-center gap-6">
+                  <ConfirmarPasoBoton
+                    confirmarPaso={goToPrevFlowStep}
+                    texto="Anterior"
+                    variantType="button-secondary"
+                  />
+                  <ConfirmarPasoBoton
+                    confirmarPaso={confirmarPaso}
+                    isDisabled={!canContinueFromCantidad}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </SwiperSlide>
@@ -266,9 +286,6 @@ export default function SliderVertical({
         <SwiperSlide className="size-full">
           <div className="w-full h-full flex flex-col items-center justify-center py-8">
             <div className="w-full max-w-lg flex-1 flex flex-col">
-              <h2 className="font-parkson !text-4xl">
-                Elige la fecha de tu reserva
-              </h2>
               <div className="flex-1 flex items-center justify-center">
                 <PasoFecha
                   selectedDate={selectedDate}
@@ -294,7 +311,6 @@ export default function SliderVertical({
         <SwiperSlide className="slide-content">
           <div className="w-full h-full flex flex-col items-center justify-center py-8">
             <div className="w-full max-w-sm flex-1 flex flex-col">
-              <h2 className="font-parkson !text-4xl">¿A qué hora te esperamos?</h2>
               <div className="flex-1 flex items-center justify-center">
                 <PasoHora
                   hour={hour}
@@ -319,49 +335,6 @@ export default function SliderVertical({
           </div>
         </SwiperSlide>
       </Swiper>
-
-      <AnimatePresence>
-        {showMenuConfirmPopup && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[30000] bg-black/60 flex items-center justify-center p-4"
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 16, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.98 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="w-full max-w-lg bg-[#faf6ef] rounded-2xl p-6"
-            >
-              <BanknoteArrowUp size={62} className="mx-auto mb-6" />
-              <p className="text-center mb-6">
-                Para continuar deberás seleccionar{" "}
-                <br className=" hidden md:block " /> y pagar los platos de tu
-                reserva
-              </p>
-              <div className="w-full flex justify-center gap-3">
-                <Button
-                  onClick={handleCancelMenuConfirm}
-                  title="Cancelar"
-                  Icon={X}
-                  type="button-secondary"
-                  width="min"
-                  fontSize="xl"
-                />
-                <Button
-                  onClick={handleContinueMenuConfirm}
-                  title="Continuar"
-                  type="button-dark"
-                  width="min"
-                  fontSize="xl"
-                />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   );
 }

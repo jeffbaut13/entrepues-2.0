@@ -1,13 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Calendar, Timer, User } from "lucide-react";
 
-import SliderVertical from "../slider/SliderVertical";
+import SliderVertical from "./slider/SliderVertical";
 import HeaderPaso from "./HeaderPaso";
 import { convertTo12Hour, getAmPm } from "./horaUtils";
 
 import useReservaStore from "../../store/reservaStore";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 const normalizeRegionParam = (value = "") =>
   value
@@ -21,6 +22,8 @@ const resolveRegionName = (value = "") => {
 
   const aliases = {
     pacifico: "pacífica",
+    orinoquia: "orinoquía",
+    amazonia: "amazonía",
   };
 
   return aliases[normalized] || normalized;
@@ -58,11 +61,9 @@ export const ReservaComponent = ({
   isZonaExpanded,
   setZonaExpanded,
 }) => {
-  const [searchParams] = useSearchParams();
-
   // Estados derivados del store
   const stepRefs = useRef([]);
-
+  const isMobile = useIsMobile();
   /* zustand */
 
   const {
@@ -71,9 +72,10 @@ export const ReservaComponent = ({
     pasosReserva,
     reservaData,
     seleccionarZona,
+    reservaZonaData,
   } = useReservaStore();
 
-  const regionFromUrl = searchParams.get("región") || region || null;
+  const regionFromUrl = region || null;
 
   // Estados derivados del store
   const selectedDate = reservaData.selectedDate
@@ -88,7 +90,7 @@ export const ReservaComponent = ({
   const pasos = [
     {
       key: "visitantes",
-      titulo: "Visitantes",
+      titulo: "¿Cuantos nos visitán?",
       icon: User,
       descripcion: pasosReserva.visitantes.completado
         ? `${adults} adulto${adults !== 1 ? "s" : ""}${
@@ -97,14 +99,14 @@ export const ReservaComponent = ({
             mascotas > 0
               ? `, ${mascotas} mascota${mascotas !== 1 ? "s" : ""}`
               : ""
-          }`
+          } en región ${reservaZonaData.selectedZoneName}`
         : "",
       habilitado: pasosReserva.visitantes.habilitado,
       completado: pasosReserva.visitantes.completado,
     },
     {
       key: "fecha",
-      titulo: "Fecha",
+      titulo: "Elige la fecha",
       icon: Calendar,
       descripcion: pasosReserva.fecha.completado
         ? selectedDate.toLocaleDateString("es-CO", {
@@ -118,7 +120,7 @@ export const ReservaComponent = ({
     },
     {
       key: "hora",
-      titulo: "Hora",
+      titulo: "Elige la hora",
       icon: Timer,
       descripcion: pasosReserva.hora.completado
         ? `${convertTo12Hour(hour)}:${minute} ${getAmPm(hour)}`
@@ -128,6 +130,30 @@ export const ReservaComponent = ({
     },
     // Puedes agregar más pasos aquí si es necesario
   ];
+
+  const TitleSlider = ({ head, content }) => {
+    return (
+      <>
+        <span className="lg:!text-5xl !text-5xl">{head} </span>
+        <br className="max-lg:hidden" />
+        <span className="lg:!text-7xl lg:!leading-14 !text-5xl">{content}</span>
+      </>
+    );
+  };
+  const titlePaso = (stepKey) => {
+    switch (stepKey) {
+      case "visitantes":
+        return <TitleSlider head="¿Dónde " content="Quieres comer?" />;
+      case "fecha":
+        return <TitleSlider head="Elige la fecha" content="de tu reserva" />;
+      case "hora":
+        return <TitleSlider head="¿A qué hora" content=" te esperamos?" />;
+      default:
+        return <></>;
+    }
+  };
+
+  const currentStepKey = pasos[currentStep]?.key;
 
   useEffect(() => {
     if (regionFromUrl) return;
@@ -173,84 +199,108 @@ export const ReservaComponent = ({
     }
   }, [currentStep, isZonaExpanded, setZonaExpanded]);
 
+  const showContent = isMobile && !isZonaExpanded;
   return (
     <>
       <motion.div
-        className="w-full lg:h-[40.2060625rem] h-full flex lg:flex-row flex-col items-stretch bg-white/20 text-dark rounded-xl lg:gap-6 gap-3 py-4 md:px-6 px-4 overflow-hidden relative"
+        className="w-full lg:h-[40.2060625rem] h-full flex lg:flex-row flex-col max-lg:justify-center lg:items-stretch items-center bg-white/20 text-dark lg:rounded-2xl lg:gap-6 gap-3 lg:py-4 md:px-6 px-0 overflow-hidden relative"
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.7, delay: 0.5, ease: "easeOut" }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
       >
-        <motion.div
-          className={`lg:w-1/3 w-full lg:h-full h-auto flex flex-col justify-start lg:justify-between overflow-y-auto lg:overflow-y-visible max-lg:gap-2 lg:py-24`}
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.7, ease: "easeOut" }}
-        >
-          {/* <motion.h2
-            className="lg:pl-4 font-parkson lg:mb-8 mb-4 flex-shrink-0 lg:text-start text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.9, ease: "easeOut" }}
-          >
-            <span className="lg:!text-4xl !text-5xl">Realiza tu</span>{" "}
-            <br className="max-lg:hidden" />
-            <span className=" lg:!text-9xl lg:!leading-20 !text-5xl">
-              reserva
-            </span>
-          </motion.h2> */}
-
+        {showContent && (
           <AnimatePresence>
-            {pasos.map((paso, index) => {
-              const isExpanded = currentStep === index;
-              return (
-                <motion.div
-                  ref={(el) => (stepRefs.current[index] = el)}
-                  key={paso.key}
-                  className={`${
-                    index !== pasos.length - 1 ? "lg:border-b" : ""
-                  } lg:border-l border-dark/20 flex-shrink-0 lg:flex-1`}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{
-                    duration: 0.5,
-                    delay: 1.1 + index * 0.1,
-                    ease: "easeOut",
-                  }}
-                >
-                  {/* Header del paso */}
-                  <HeaderPaso
-                    index={index}
-                    paso={paso}
-                    habilitado={paso.habilitado}
-                    content={
-                      <>
-                        {paso.descripcion === "" ? null : (
-                          <p className="text-start lg:!text-xl md:!text-base">
-                            {paso.descripcion || "-- /--"}
-                          </p>
-                        )}
-                      </>
-                    }
-                    isExpanded={isExpanded}
-                    onClick={() => {
-                      if (paso.habilitado) {
-                        setCurrentStep(index);
-                      }
-                    }}
-                  />
-                </motion.div>
-              );
-            })}
+            <motion.div
+              className={`w-full h-auto flex justify-center items-center mb-4`}
+              initial={{ opacity: 0, height: "fit-content" }}
+              animate={{
+                opacity: 1,
+                height: showContent ? "0%" : "auto",
+              }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+            >
+              <motion.h2
+                className="font-parkson lg:mb-8 mb-4 flex-shrink-0 lg:text-start text-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              >
+                {titlePaso(currentStepKey)}
+              </motion.h2>
+            </motion.div>
           </AnimatePresence>
-        </motion.div>
+        )}
+        {!isMobile && (
+          <motion.div
+            className={`lg:w-1/3 w-full lg:h-full h-auto flex flex-col justify-start lg:justify-between overflow-y-auto lg:overflow-y-visible max-lg:gap-2 lg:py-10`}
+            initial={{ opacity: 0, x: -30 }}
+            animate={{
+              opacity: 1,
+              x: 0,
+            }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
+            <motion.h2
+              className="lg:pl-4 font-parkson lg:mb-8 mb-4 flex-shrink-0 lg:text-start text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+            >
+              {titlePaso(currentStepKey)}
+            </motion.h2>
+
+            <AnimatePresence>
+              {pasos.map((paso, index) => {
+                const isExpanded = currentStep === index;
+                return (
+                  <motion.div
+                    ref={(el) => (stepRefs.current[index] = el)}
+                    key={paso.key}
+                    className={`${
+                      index !== pasos.length - 1 ? "lg:border-b" : ""
+                    } lg:border-l border-dark/20 flex-shrink-0 lg:flex-1`}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{
+                      duration: 0.5,
+
+                      ease: "easeOut",
+                    }}
+                  >
+                    {/* Header del paso */}
+                    <HeaderPaso
+                      index={index}
+                      paso={paso}
+                      habilitado={paso.habilitado}
+                      content={
+                        <>
+                          {paso.descripcion === "" ? null : (
+                            <p className="hidden lg:inline-block text-start lg:!text-xl md:!text-base">
+                              {paso.descripcion || "-- /--"}
+                            </p>
+                          )}
+                        </>
+                      }
+                      isExpanded={isExpanded}
+                      onClick={() => {
+                        if (paso.habilitado) {
+                          setCurrentStep(index);
+                        }
+                      }}
+                    />
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </motion.div>
+        )}
 
         <div
-          className={`absolute right-0 top-0 h-full z-10 p-6 bg-white/20 ${
-            isZonaExpanded ? "w-full" : " w-[37.875rem]"
+          className={`lg:absolute right-0 top-0 lg:h-full z-10 lg:p-6  ${
+            isZonaExpanded ? "w-full h-full" : "lg:w-[37.875rem] w-full h-126"
           } transition-all duration-500 ease-in-out`}
         >
-          <div className="size-full bg-[#faf7f1]">
+          <div className={`size-full bg-[#faf7f1] ${showContent ? "max-lg:!rounded-2xl" : ""}   max-lg:p-4` }>
             <SliderVertical
               isZonaExpanded={isZonaExpanded}
               setZonaExpanded={setZonaExpanded}
@@ -258,6 +308,44 @@ export const ReservaComponent = ({
             />
           </div>
         </div>
+
+        <AnimatePresence>
+          {showContent && (
+            <motion.div
+              initial={{ opacity: 0, height: "fit-content" }}
+              animate={{
+                opacity: 1,
+                height: showContent ? "0%" : "fit-content",
+              }}
+              transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
+              className={`w-full h-fit my-4 flex justify-between px-4`}
+            >
+              {pasos.map((paso, index) => {
+                const isExpanded = currentStep === index;
+                return (
+                  <motion.div
+                    ref={(el) => (stepRefs.current[index] = el)}
+                    key={paso.key}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{
+                      duration: 0.5,
+
+                      ease: "easeOut",
+                    }}
+                  >
+                    {/* Header del paso */}
+                    <h3
+                      className={`text-md border-dark ${isExpanded ? "opacity-100 border-b-4" : "opacity-60"} `}
+                    >
+                      {paso.titulo}
+                    </h3>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
         {/* Slider Vertical con Swiper */}
       </motion.div>
     </>

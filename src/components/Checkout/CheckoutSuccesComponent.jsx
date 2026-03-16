@@ -41,7 +41,7 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", damping: 22, stiffness: 260 }}
-          className="text-center bg-[#faf7f1] rounded-lg p-6"
+          className="text-center rounded-lg p-6"
         >
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -50,8 +50,8 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
             className="p-8"
           >
             <h2 className="font-parkson mb-12">
-              <span className="!text-5xl">Gracias por tu</span> <br />
-              <span className="!text-[9rem] leading-20">reserva</span>
+              <span className="!text-5xl">Gracias por tu reserva</span> <br />
+              <span className="!text-[9rem] leading-20">te esperamos</span>
             </h2>
           </motion.div>
 
