@@ -176,7 +176,7 @@ export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
                         ? "70rem"
                         : "64rem",
                 height:
-                  flowStep === "platos"
+                  flowStep === "platos" && !isMobile
                     ? "50rem"
                     : isMobile
                       ? "100dvh"

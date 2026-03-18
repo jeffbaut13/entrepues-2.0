@@ -1,21 +1,22 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Button } from "../ui/Button";
-import { capitalizeFirst } from "../../constants/firsLetterUppercase";
+import { useIsMobile } from "../../hooks/useIsMobile";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { BookCheck, ChevronLeft, X } from "lucide-react";
 import {
   normalizarClaveCatalogo,
   obtenerCatalogoNormalizado,
   obtenerCategoriasCatalogo,
   obtenerProductosCatalogo,
 } from "../../firebase/actions";
+import useReservaStore from "../../store/reservaStore";
+import useCheckoutStore from "../../store/checkoutStore";
 
-import { Swiper, SwiperSlide } from "swiper/react";
+import { capitalizeFirst } from "../../constants/firsLetterUppercase";
+import { Button } from "../ui/Button";
 import "swiper/css";
 import "swiper/css/pagination";
 import "./slider/styleVertical.css";
-import { BookCheck, ChevronLeft, X } from "lucide-react";
-import useReservaStore from "../../store/reservaStore";
-import useCheckoutStore from "../../store/checkoutStore";
 
 // ===========================
 // FUNCIONES UTILITARIAS
@@ -91,6 +92,8 @@ export default function PlatosSeleccion({
     clearError,
   } = useCheckoutStore();
 
+  const isMobile = useIsMobile();
+
   const asistentesLista = useMemo(() => {
     if (Array.isArray(asistentes)) return asistentes;
 
@@ -116,6 +119,9 @@ export default function PlatosSeleccion({
 
     return [];
   }, [asistentes]);
+
+  const mensajePlatosUsuario =
+    "Estarán 5 minutos después de que llegues a tu mesa";
 
   const buildPlatosPayload = (sourcePlatos) => {
     return asistentesLista.map((asistente, index) => ({
@@ -569,84 +575,89 @@ export default function PlatosSeleccion({
         customClass={`absolute left-2 top-2`}
         onClick={Atras}
       />
-      <div className="w-full h-full flex mx-auto items-center justify-center pt-6 px-4">
-        <div className="flex-1 h-full flex items-center justify-center">
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-              className="flex-1 h-fit flex flex-col items-center justify-between"
-            >
-              <div className="w-fit">
-                <h4 className="text-start font-parkson font-bold">
-                  <span className="lg:!text-5xl !text-5xl">Selecciona</span>
-                  <br className="max-lg:hidden" />
-                  <span className="lg:!text-8xl lg:!leading-14 !text-5xl">
-                    tus platos
-                  </span>
-                </h4>
+      <div className="w-full h-full mx-auto lg:pt-6">
+        <div className="w-full h-full flex lg:flex-row flex-col max-lg:gap-2 items-center justify-center max-lg:pt-6">
+          {/* Interaccion de personas */}
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="flex-1 max-lg:w-full lg:h-fit flex lg:flex-col flex-row-reverse gap-4 items-center lg:justify-between justify-center flex-wrap content-center"
+          >
+            <div className="lg:w-fit w-56">
+              <h4 className="text-start font-parkson font-bold">
+                <span className="lg:!text-5xl !text-4xl">Selecciona</span>
+                <br />
+                <span className="lg:!text-8xl lg:!leading-14 !text-7xl !leading-11">
+                  tus platos
+                </span>
+              </h4>
+              {!isMobile && (
                 <h2 className="text-start mt-4 !text-xl">
-                  Estarán 5 minutos después de que llegues a tu mesa
+                  {mensajePlatosUsuario}
                 </h2>
+              )}
+            </div>
+
+            <div className="lg:w-96 w-28 space-y-4 lg:mt-12">
+              <div className="w-full flex items-start gap-2">
+                <div className="flex-1 min-w-0 flex flex-col gap-2">
+                  <Swiper
+                    ref={asistentesSwiperRef}
+                    slidesPerView={isMobile ? 1 : 3}
+                    spaceBetween={0}
+                    className="w-full"
+                    watchSlidesProgress
+                    onSlideChange={handleAsistenteSlideChange}
+                  >
+                    {asistentesLista.map((asistente, index) => {
+                      const nombreAsistente = String(
+                        asistente || `Persona ${index + 1}`,
+                      )
+                        .replace(/_/g, " ")
+                        .toUpperCase();
+
+                      return (
+                        <SwiperSlide key={`${nombreAsistente}-${index}`}>
+                          <div className="w-full flex flex-col items-center px-1">
+                            <motion.button
+                              type="button"
+                              onClick={() => handleSelectAsistente(index)}
+                              whileTap={{ scale: 0.95 }}
+                              animate={{
+                                scale: asistenteActual === index ? 1 : 0.96,
+                                opacity: asistenteActual === index ? 1 : 0.2,
+                              }}
+                              transition={{
+                                type: "spring",
+                                stiffness: 320,
+                                damping: 24,
+                              }}
+                              className={`w-fit h-fit flex flex-col items-center justify-center font-parkson !text-3xl transition-opacity ${
+                                asistenteActual === index
+                                  ? "opacity-100 text-dark"
+                                  : "opacity-40 text-dark"
+                              }`}
+                            >
+                              <i className="bg-white rounded-full overflow-hidden mt-6 shadow-lg self-start size-24 flex items-center justify-center pt-4">
+                                <img
+                                  className="size-full object-contain inline-block"
+                                  src="/iconos/user.svg"
+                                  alt=""
+                                />
+                              </i>
+                              {nombreAsistente}
+                            </motion.button>
+                          </div>
+                        </SwiperSlide>
+                      );
+                    })}
+                  </Swiper>
+                </div>
               </div>
 
-              <div className="w-96 space-y-4 mt-12">
-                <div className="w-full flex items-start gap-2">
-                  <div className="flex-1 min-w-0 flex flex-col gap-2">
-                    <Swiper
-                      ref={asistentesSwiperRef}
-                      slidesPerView={3}
-                      spaceBetween={0}
-                      className="w-full"
-                      watchSlidesProgress
-                      onSlideChange={handleAsistenteSlideChange}
-                    >
-                      {asistentesLista.map((asistente, index) => {
-                        const nombreAsistente = String(
-                          asistente || `Persona ${index + 1}`,
-                        )
-                          .replace(/_/g, " ")
-                          .toUpperCase();
-
-                        return (
-                          <SwiperSlide key={`${nombreAsistente}-${index}`}>
-                            <div className="w-full flex flex-col items-center px-1">
-                              <motion.button
-                                type="button"
-                                onClick={() => handleSelectAsistente(index)}
-                                whileTap={{ scale: 0.95 }}
-                                animate={{
-                                  scale: asistenteActual === index ? 1 : 0.96,
-                                  opacity: asistenteActual === index ? 1 : 0.2,
-                                }}
-                                transition={{
-                                  type: "spring",
-                                  stiffness: 320,
-                                  damping: 24,
-                                }}
-                                className={`w-fit h-fit flex flex-col items-center justify-center font-parkson !text-3xl transition-opacity ${
-                                  asistenteActual === index
-                                    ? "opacity-100 text-dark"
-                                    : "opacity-40 text-dark"
-                                }`}
-                              >
-                                <i className="bg-white rounded-full overflow-hidden mt-6 shadow-lg self-start size-24 flex items-center justify-center pt-4">
-                                  <img
-                                    className="size-full object-contain inline-block"
-                                    src="/iconos/user.svg"
-                                    alt=""
-                                  />
-                                </i>
-                                {nombreAsistente}
-                              </motion.button>
-                            </div>
-                          </SwiperSlide>
-                        );
-                      })}
-                    </Swiper>
-                  </div>
-                </div>
+              {!isMobile && (
                 <div className="w-full flex items-start gap-2">
                   <div className="flex-1 min-w-0 flex flex-col gap-2">
                     <Swiper
@@ -708,102 +719,113 @@ export default function PlatosSeleccion({
                     </Swiper>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-            <div className="flex-1 h-full flex items-center">
-              {loading ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                  className="bg-black/20 animate-pulse h-full w-full rounded-2xl p-6 flex flex-col items-center justify-evenly"
-                >
-                  <div className="bg-black/5 w-full h-10 rounded-full" />
-                  <div className="bg-black/5 w-full h-14 rounded-full" />
-                  <div className="bg-black/5 w-full h-126 rounded-2xl" />
-                </motion.div>
-              ) : (
-                <MenuSelected
-                  categorias={categorias}
-                  categoriaActual={categoriaActual}
-                  handleCategoriaChange={handleCategoriaChange}
-                  swiperRef={swiperRef}
-                  handleSlideChange={handleSlideChange}
-                  getProductosPorCategoria={getProductosPorCategoria}
-                  esPlatoSeleccionado={esPlatoSeleccionado}
-                  handleSeleccionarPlato={handleSeleccionarPlato}
-                  component={
-                    <>
-                      <div className="w-full flex flex-wrap items-center justify-center gap-4">
-                        <div className="w-full flex justify-around">
-                          {ctaEsPago && todosConPlatos && (
-                            <Button
-                              onClick={handleOpenResumen}
-                              title="Ver resumen"
-                              type="button-secondary"
-                              width="medio"
-                              fontSize="xl"
-                              Icon={BookCheck}
-                              disabled={guardando || pagoEnProceso}
-                            />
-                          )}
-
-                          <div>
-                            <span className="!text-2xl font-semibold">
-                              Subtotal:
-                            </span>
-                            <span className="!text-2xl font-bold">
-                              ${totalGeneralPrecio.toLocaleString("es-CO")}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="w-full flex items-center gap-4 justify-around">
-                          {asistenteActual >= 1 && (
-                            <Button
-                              type="button-secondary"
-                              Icon={ChevronLeft}
-                              disabled={guardando}
-                              title={`Anterior Persona`}
-                              fontSize="xl"
-                              onClick={() =>
-                                handleSelectAsistente(
-                                  Math.max(asistenteActual - 1, 0),
-                                )
-                              }
-                            />
-                          )}
-                          <Button
-                            onClick={handleBottomCta}
-                            title={
-                              guardando || pagoEnProceso
-                                ? "Guardando..."
-                                : ctaEsPago
-                                  ? "Pagar"
-                                  : "Siguiente persona"
-                            }
-                            type="button-dark"
-                            width="medio"
-                            fontSize="xl"
-                            disabled={
-                              guardando ||
-                              pagoEnProceso ||
-                              (ctaEsPago && !todosConPlatos)
-                            }
-                          />
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-center justofy-center gap-2">
-                        <p className="!text-sm">
-                          Para continuar debes pagar los platos de tu reserva
-                        </p>
-                      </div>
-                    </>
-                  }
-                />
               )}
             </div>
-          </>
+            {isMobile && (
+              <div className="w-full">
+                <p className="!text-base text-center whitespace-break-spaces">
+                  {mensajePlatosUsuario}
+                </p>
+              </div>
+            )}
+          </motion.div>
+          {/* Menu dinamico */}
+          <div className="flex-3 lg:flex-1 lg:h-full h-20 max-lg:w-full min-w-0 flex items-center">
+            {loading ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                className="bg-black/20 animate-pulse h-full w-full rounded-2xl p-6 flex flex-col items-center justify-evenly gap-4"
+              >
+                <div className="bg-black/5 w-full h-10 rounded-full" />
+                <div className="bg-black/5 w-full h-14 rounded-full" />
+                <div className="bg-black/5 w-full h-126 rounded-2xl" />
+              </motion.div>
+            ) : (
+              <MenuSelected
+                categorias={categorias}
+                categoriaActual={categoriaActual}
+                isMobile={isMobile}
+                handleCategoriaChange={handleCategoriaChange}
+                swiperRef={swiperRef}
+                handleSlideChange={handleSlideChange}
+                getProductosPorCategoria={getProductosPorCategoria}
+                esPlatoSeleccionado={esPlatoSeleccionado}
+                handleSeleccionarPlato={handleSeleccionarPlato}
+                component={
+                  <>
+                    <div className="w-full flex flex-wrap items-center justify-center gap-4">
+                      <div className="w-full flex justify-around">
+                        <div>
+                          <span className="!text-xl font-light mr-2">
+                            {ctaEsPago && todosConPlatos ?"Total a pagar": "Subtotal:"}
+                          </span>
+                          <span className="!text-2xl font-bold">
+                            ${totalGeneralPrecio.toLocaleString("es-CO")}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="w-full flex items-center gap-4 justify-center">
+                        {asistenteActual >= 1 && (
+                          <Button
+                            type="button-secondary"
+                            Icon={ChevronLeft}
+                            disabled={guardando}
+                            //title={`Anterior`}
+                            fontSize="xl"
+                            width="ajustado"
+                            customClass="!p-0 border"
+                            onClick={() =>
+                              handleSelectAsistente(
+                                Math.max(asistenteActual - 1, 0),
+                              )
+                            }
+                          />
+                        )}
+                        {ctaEsPago && todosConPlatos && (
+                          <Button
+                            onClick={handleOpenResumen}
+                            //title="Resumen"
+                            type="button-secondary"
+                            customClass="!p-0 flex-col !text-xs"
+                            width="ajustado"
+                            fontSize="xl"
+                            Icon={BookCheck}
+                            disabled={guardando || pagoEnProceso}
+                          />
+                        )}
+                        <Button
+                          onClick={handleBottomCta}
+                          title={
+                            guardando || pagoEnProceso
+                              ? "Guardando..."
+                              : ctaEsPago
+                                ? "Pagar"
+                                : "Siguiente"
+                          }
+                          type="button-dark"
+                          width="min"
+                          fontSize="xl"
+                          disabled={
+                            guardando ||
+                            pagoEnProceso ||
+                            (ctaEsPago && !todosConPlatos)
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="w-full flex flex-col items-center justify-center gap-2">
+                      <p className="!text-base text-center whitespace-break-spaces">
+                        Para continuar debes pagar los platos de tu reserva
+                      </p>
+                    </div>
+                  </>
+                }
+              />
+            )}
+          </div>
         </div>
       </div>
 
@@ -859,7 +881,7 @@ export default function PlatosSeleccion({
                       </p>
                     )}
                     <p>
-                      {datosReserva?.reservaData?.adults || 0} adulto(s)
+                      para {datosReserva?.reservaData?.adults || 0} adulto(s)
                       {Number(datosReserva?.reservaData?.children || 0) > 0
                         ? `, ${datosReserva.reservaData.children} niño(s)`
                         : ""}
@@ -869,7 +891,7 @@ export default function PlatosSeleccion({
 
                 <div className="mb-6">
                   <h3 className="font-bold mb-3">Platos Seleccionados</h3>
-                  <div className="bg-dark/5 rounded-lg p-4">
+                  <div className="bg-dark/5 rounded-lg p-4 max-h-62 overflow-auto">
                     {(datosReserva?.platosSeleccionados || []).map(
                       (asistente, index) => (
                         <div key={index} className="mb-3 last:mb-0">
@@ -900,7 +922,7 @@ export default function PlatosSeleccion({
 
                 <div className="space-y-2 border-t border-dark/20 pt-4">
                   <div className="flex justify-between">
-                    <span>Subtotal</span>
+                    <span className="font-light">Subtotal</span>
                     <span className="font-medium">
                       ${Number(montoTotal || 0).toLocaleString("es-CO")}
                     </span>
@@ -917,19 +939,6 @@ export default function PlatosSeleccion({
                       ${Number(montoFinal || 0).toLocaleString("es-CO")}
                     </span>
                   </div>
-                </div>
-
-                <div className="mt-4 p-3 bg-dark/5 rounded-lg">
-                  <p className="!text-sm font-semibold">Datos de contacto</p>
-                  <p className="!text-sm">
-                    Nombre: {datosContacto?.nombre || "-"}
-                  </p>
-                  <p className="!text-sm">
-                    Email: {datosContacto?.email || "-"}
-                  </p>
-                  <p className="!text-sm">
-                    WhatsApp: {datosContacto?.whatsapp || "-"}
-                  </p>
                 </div>
               </div>
             </motion.div>
@@ -950,6 +959,7 @@ export default function PlatosSeleccion({
 const MenuSelected = ({
   categorias,
   categoriaActual,
+  isMobile,
   handleCategoriaChange,
   swiperRef,
   handleSlideChange,
@@ -959,15 +969,21 @@ const MenuSelected = ({
   component,
 }) => {
   return (
-    <div className="w-full  h-full bg-white grid grid-rows-[auto minmax(0,1fr)] overflow-hidden rounded-3xl gap-4 px-4 pt-4 pb-2">
+    <div className="w-full max-w-full min-w-0 h-full bg-white grid grid-rows-[auto minmax(0,1fr)_auto] overflow-x-hidden overflow-y-hidden rounded-3xl gap-4 px-4 pt-4 pb-2">
       {/* <h3 className="text-xl px-4">Selecciona los platos por persona</h3> */}
       {/* Nombres de Categorías */}
       {categorias.length > 0 && (
-        <div className="font-parkson shrink-0 px-2">
-          <div className="w-full flex justify-between overflow-x-auto">
+        <div className="font-parkson shrink-0 px-2 max-w-full overflow-x-hidden">
+          <div
+            className={`w-full flex overflow-x-auto ${
+              isMobile ? "gap-2" : "justify-between"
+            }`}
+          >
             {categorias.map((categoria) => (
               <div
-                className={`w-fit relative flex items-center justify-center border-dark/20 `}
+                className={`relative flex items-center justify-center border-dark/20 ${
+                  isMobile ? "min-w-[28.571%] shrink-0" : "w-fit"
+                }`}
                 key={categoria.key}
               >
                 {/* {categoriaActual === categoria && (
@@ -995,11 +1011,10 @@ const MenuSelected = ({
           </div>
         </div>
       )}
-      {/* Platos de la categoría con Slider Vertical */}
-      <div className="w-full min-h-0 h-full overflow-hidden">
+      {/* Platos de la categoría con Slider   */}
+      <div className="w-full max-w-full min-h-0 h-full overflow-x-hidden overflow-y-hidden">
         <Swiper
           ref={swiperRef}
-          //direction="vertical"
           pagination={false}
           modules={[]}
           className="mySwiper w-full !h-full"
@@ -1022,35 +1037,35 @@ const MenuSelected = ({
                 key={categoria.key}
                 className="!h-full !overflow-hidden"
               >
-                <div className="w-full h-full min-h-0 overflow-y-auto overscroll-contain grid grid-cols-1 gap-3 content-start auto-rows-max pl-2 pr-4">
+                <div className="w-full max-w-full h-full min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain grid grid-cols-1 gap-3 content-start auto-rows-max pl-2 pr-2">
                   {productosCategoria.length > 0 ? (
                     productosCategoria.map((plato) => (
                       <motion.div
                         key={plato.id}
-                        className={`group p-1.5 max-h-20 flex items-center justify-between rounded-2xl border border-[#e6e6e6] transition-all cursor-pointer ${
+                        className={`group p-1.5 max-h-20 flex items-center gap-2 rounded-2xl border border-[#e6e6e6] transition-all cursor-pointer ${
                           esPlatoSeleccionado(plato.id) ? "bg-[#e6e6e6]" : ""
                         } hover:bg-dark/10 relative overflow-hidden`}
                         onClick={() => handleSeleccionarPlato(plato)}
                       >
-                        <picture className="w-20 h-full inline-block rounded-2xl overflow-hidden">
+                        <picture className="lg:w-20 w-16 max-lg:aspect-square lg:h-full h-16 shrink-0 inline-block rounded-2xl overflow-hidden">
                           <img
                             className="size-full object-cover inline-block"
                             src={plato.img}
                             alt={plato.nombre}
                           />
                         </picture>
-                        <p className="pl-4 font-medium text-sm w-62 text-start line-clamp-1 whitespace-normal">
+                        <p className="pl-1 font-medium flex-1 min-w-0 text-start lg:line-clamp-1 line-clamp-2 whitespace-normal">
                           {plato.nombre}
                         </p>
                         <span className="hidden md:inline-block opacity-0 group-hover:opacity-100 px-3 py-1.5 rounded-md bg-dark text-white absolute left-[22%] top-0 !text-xs transition-all duration-500 delay-200">
                           {plato.nombre}
                         </span>
 
-                        <p className="font-bold mt-1 text-start">
+                        <p className="font-bold mt-1 text-start shrink-0 whitespace-nowrap">
                           ${plato.precio.toLocaleString("es-CO")}
                         </p>
 
-                        <div className="w-fits flex flex-col items-start justify-center p-4">
+                        <div className="w-fit shrink-0 flex flex-col items-start justify-center p-1">
                           <div className="w-full flex justify-end">
                             <span
                               className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${

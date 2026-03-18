@@ -47,7 +47,7 @@ export const Datos = ({ onContinue }) => {
 
       <div className="lg:px-6 px-4">
         <div className="w-full space-y-3">
-          {error && (
+          {/* {error && (
             <motion.div
               className="w-full bg-red-50 border border-red-200 rounded-3xl p-4 flex items-center space-x-2"
               initial={{ opacity: 0, y: -10 }}
@@ -56,7 +56,7 @@ export const Datos = ({ onContinue }) => {
               <AlertCircle className="w-5 h-5 text-red-500" />
               <p className="text-red-700 !text-xs">{error}</p>
             </motion.div>
-          )}
+          )} */}
 
           <div className="py-1">
             <label className="hidden items-center font-medium">
