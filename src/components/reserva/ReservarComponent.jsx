@@ -300,7 +300,9 @@ export const ReservaComponent = ({
             isZonaExpanded ? "w-full h-full" : "lg:w-[37.875rem] w-full h-126"
           } transition-all duration-500 ease-in-out`}
         >
-          <div className={`size-full bg-[#faf7f1] ${showContent ? "max-lg:!rounded-2xl" : ""}   max-lg:p-4` }>
+          <div
+            className={`size-full bg-[#faf7f1] ${showContent ? "max-lg:!rounded-2xl" : ""}   max-lg:p-4`}
+          >
             <SliderVertical
               isZonaExpanded={isZonaExpanded}
               setZonaExpanded={setZonaExpanded}
@@ -335,11 +337,16 @@ export const ReservaComponent = ({
                     }}
                   >
                     {/* Header del paso */}
-                    <h3
+                    <button
+                      onClick={() => {
+                        if (paso.habilitado) {
+                          setCurrentStep(index);
+                        }
+                      }}
                       className={`text-md border-dark ${isExpanded ? "opacity-100 border-b-4" : "opacity-60"} `}
                     >
                       {paso.titulo}
-                    </h3>
+                    </button>
                   </motion.div>
                 );
               })}

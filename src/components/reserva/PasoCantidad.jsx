@@ -305,7 +305,7 @@ const PasoCantidad = ({
                 <p className="w-full text-center !text-4xl font-parkson mb-4">
                   {selectedZoneName}
                 </p>
-                <p className="text-end mb-2  absolute right-2 top-2">
+                <p className="text-end mb-2  absolute right-2 lg:top-2 top-4">
                   {!permiteMascotas && (
                     <>
                       <DontPet size="w-6 h-auto" color="fill-dark/40" />
