@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { BookCheck, ChevronLeft, X } from "lucide-react";
+import { BookCheck, ChevronLeft } from "lucide-react";
 import {
   normalizarClaveCatalogo,
   obtenerCatalogoNormalizado,
@@ -71,7 +71,6 @@ export default function PlatosSeleccion({
   const [catalogo, setCatalogo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [guardando, setGuardando] = useState(false);
-  const [showResumen, setShowResumen] = useState(false);
   const asistentesSwiperRef = useRef(null);
   const resumenSwiperRef = useRef(null);
   const swiperRef = useRef(null);
@@ -80,13 +79,8 @@ export default function PlatosSeleccion({
   const previousAsistentesCountRef = useRef(null);
   const { prepararDatosCheckout } = useReservaStore();
   const {
-    datosReserva,
-    datosContacto,
-    montoTotal,
-    impuestos,
-    montoFinal,
+    setShowResumen,
     pagoEnProceso,
-    error: checkoutError,
     cargarDatosReservaDesdeResultado,
     iniciarPago,
     clearError,
@@ -393,32 +387,6 @@ export default function PlatosSeleccion({
 
   const Atras = () => {
     onBackToReserva?.();
-  };
-
-  const formatearFecha = (fechaISO) => {
-    if (!fechaISO) return "";
-    const fecha = new Date(fechaISO);
-    return fecha.toLocaleDateString("es-CO", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const formatearHora = (hora, minuto) => {
-    if (!hora || !minuto) return "";
-    const hour24 = parseInt(hora, 10);
-    let hour12 = hour24;
-    let period = "AM";
-
-    if (hour24 >= 12) {
-      period = "PM";
-      if (hour24 > 12) hour12 = hour24 - 12;
-    }
-    if (hour24 === 0) hour12 = 12;
-
-    return `${String(hour12).padStart(2, "0")}:${minuto} ${period}`;
   };
 
   const validarPlatosPorAsistente = () => {
@@ -759,7 +727,9 @@ export default function PlatosSeleccion({
                       <div className="w-full flex justify-around">
                         <div>
                           <span className="!text-xl font-light mr-2">
-                            {ctaEsPago && todosConPlatos ?"Total a pagar": "Subtotal:"}
+                            {ctaEsPago && todosConPlatos
+                              ? "Total a pagar"
+                              : "Subtotal:"}
                           </span>
                           <span className="!text-2xl font-bold">
                             ${totalGeneralPrecio.toLocaleString("es-CO")}
@@ -829,122 +799,6 @@ export default function PlatosSeleccion({
         </div>
       </div>
 
-      <AnimatePresence>
-        {showResumen && (
-          <motion.div
-            className="fixed inset-0 z-[120] bg-black/60 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <div className="sticky top-0 bg-dark text-white px-6 py-4 flex items-center justify-between">
-                <h2 className="font-parkson">
-                  <span className="!text-3xl">Resumen de tu</span>
-                  <br />
-                  <span className="!text-6xl !leading-10">Reserva</span>
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => setShowResumen(false)}
-                  className="inline-flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 p-2 transition"
-                  aria-label="Cerrar resumen"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div className="px-6 py-4">
-                {checkoutError && (
-                  <p className="text-red-600 !text-sm mb-4">{checkoutError}</p>
-                )}
-
-                <div className="space-y-4 mb-6">
-                  <div>
-                    <p>
-                      {formatearFecha(datosReserva?.reservaData?.selectedDate)}
-                    </p>
-                    <p>
-                      {formatearHora(
-                        datosReserva?.reservaData?.hour,
-                        datosReserva?.reservaData?.minute,
-                      )}
-                    </p>
-                    {datosReserva?.reservaZonaData?.selectedZoneName && (
-                      <p className="font-bold mt-4">
-                        Región: {datosReserva.reservaZonaData.selectedZoneName}
-                      </p>
-                    )}
-                    <p>
-                      para {datosReserva?.reservaData?.adults || 0} adulto(s)
-                      {Number(datosReserva?.reservaData?.children || 0) > 0
-                        ? `, ${datosReserva.reservaData.children} niño(s)`
-                        : ""}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <h3 className="font-bold mb-3">Platos Seleccionados</h3>
-                  <div className="bg-dark/5 rounded-lg p-4 max-h-62 overflow-auto">
-                    {(datosReserva?.platosSeleccionados || []).map(
-                      (asistente, index) => (
-                        <div key={index} className="mb-3 last:mb-0">
-                          <p className="font-medium mb-2">
-                            {asistente.asistente || `Asistente ${index + 1}`}
-                          </p>
-                          {(asistente.platos || []).map((plato, platoIndex) => (
-                            <div
-                              key={platoIndex}
-                              className="[&>span]:!text-base flex justify-between items-center py-1"
-                            >
-                              <span>
-                                {plato.cantidad}x {plato.nombre}
-                              </span>
-                              <span className="font-bold">
-                                $
-                                {(plato.precio * plato.cantidad).toLocaleString(
-                                  "es-CO",
-                                )}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      ),
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-2 border-t border-dark/20 pt-4">
-                  <div className="flex justify-between">
-                    <span className="font-light">Subtotal</span>
-                    <span className="font-medium">
-                      ${Number(montoTotal || 0).toLocaleString("es-CO")}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>IVA (19%)</span>
-                    <span className="font-medium">
-                      ${Number(impuestos || 0).toLocaleString("es-CO")}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-lg font-bold pt-2">
-                    <span>Total</span>
-                    <span>
-                      ${Number(montoFinal || 0).toLocaleString("es-CO")}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   );
 }

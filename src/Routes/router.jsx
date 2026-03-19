@@ -40,7 +40,7 @@ function AppRouter() {
           {/* Logica de reserva y checkout */}
 
           {/* Logica menu y productos */}
-          <Route path="/menu" element={<MenuPage />} />
+        {/*   <Route path="/menu" element={<MenuPage />} /> */}
           <Route path="/carta" element={<CartaPage />} />
           {/* Ruta de descubrenos - Video 360 */}
           {/* <Route path="/descubrenos" element={<Video360Page />} /> */}
@@ -49,7 +49,7 @@ function AppRouter() {
           <Route index element={<VideoScrollComponent />} />
         </Route>
 
-        <Route element={<CheckoutLayout />}>
+        {/* <Route element={<CheckoutLayout />}>
           <Route path="/reservar" element={<ReservarPage />} />
           <Route
             path="/reservar/elegir-platos"
@@ -58,7 +58,7 @@ function AppRouter() {
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/checkout/success" element={<CheckoutSuccesPage />} />
           <Route path="/checkout/cancel" element={<CheckoutPage />} />
-        </Route>
+        </Route> */}
 
         {/* Panel de Administración */}
         <Route path="/admin" element={<AdminLayout />}>

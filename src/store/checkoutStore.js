@@ -107,6 +107,9 @@ export const useCheckoutStore = create(
       // ===== RESPUESTA DE FIREBASE =====
       reservaGuardada: null,
 
+      // ===== UI DE CHECKOUT =====
+      showResumen: false,
+
       // ===== DATOS DE LA TRANSACCIÓN =====
       transaccion: {
         id: null,
@@ -190,6 +193,10 @@ export const useCheckoutStore = create(
        */
       setMetodoPago: (metodo) => {
         set({ metodoPago: metodo });
+      },
+
+      setShowResumen: (visible) => {
+        set({ showResumen: Boolean(visible) });
       },
 
       /**
@@ -422,6 +429,7 @@ export const useCheckoutStore = create(
           impuestos: 0,
           montoFinal: 0,
           reservaGuardada: null,
+          showResumen: false,
           transaccion: {
             id: null,
             estado: null,

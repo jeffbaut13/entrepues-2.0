@@ -33,27 +33,17 @@ export const CallToActions = ({ onOpenReservePopup }) => {
             motionProps={{
               initial: { y: 100 },
               animate: { y: 0 },
-              transition: {
-                delay: getAnimationDelay(0.8),
-                ease: "easeInOut",
-                duration: 1,
-              },
             }}
           />
           <Button
             width={isMobile ? "medio" : "full"}
             type="button-primary"
             title="Reservar"
-            onClick={()=>onOpenReservePopup(null)}
+            onClick={() => onOpenReservePopup(null)}
             fontSize="2xl"
             motionProps={{
               initial: { y: 100 },
               animate: { y: 0 },
-              transition: {
-                delay: getAnimationDelay(1.2),
-                ease: "easeInOut",
-                duration: 1,
-              },
             }}
           />
           <Button
@@ -65,11 +55,6 @@ export const CallToActions = ({ onOpenReservePopup }) => {
             motionProps={{
               initial: { y: 100 },
               animate: { y: 0 },
-              transition: {
-                delay: getAnimationDelay(1.6),
-                ease: "easeInOut",
-                duration: 1,
-              },
             }}
           />
         </div>
@@ -77,11 +62,6 @@ export const CallToActions = ({ onOpenReservePopup }) => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{
-            delay: getAnimationDelay(2.0),
-            ease: "easeInOut",
-            duration: 1,
-          }}
           className="flex justify-center items-center gap-12 max-md:mt-4"
         >
           <div

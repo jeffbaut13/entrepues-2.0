@@ -214,7 +214,7 @@ const PasoCantidad = ({
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25 }}
-            className="w-full h-full min-h-0 rounded-2xl flex flex-col gap-3"
+            className="w-full h-full min-h-0 lg:rounded-2xl flex flex-col justify-center gap-3"
           >
             <Button
               type="button-secondary"
@@ -300,8 +300,7 @@ const PasoCantidad = ({
             </div>
 
             {/* Mesas y botones */}
-            <div className="size-full min-h-0 flex flex-col justify-between bg-white/40 rounded-2xl overflow-hidden">
-              <div />
+            <div className="w-full min-h-0 flex flex-col justify-between bg-white/40 rounded-2xl overflow-hidden">
               <div className="w-full lg:h-96 h-full min-h-0 rounded-2xl p-3 relative flex flex-col justify-start items-stretch overflow-hidden">
                 <p className="w-full text-center !text-4xl font-parkson mb-4">
                   {selectedZoneName}
@@ -325,16 +324,17 @@ const PasoCantidad = ({
                     </>
                   )}
                 </p>
-                <div className="w-full flex-1 min-h-0 flex max-lg:flex-col-reverse justify-center gap-4">
+
+                <div className="w-full flex-1 min-h-0 max-h-78 flex max-lg:flex-col justify-center gap-4">
                   <div
-                    className={`max-lg:w-full lg:flex-1 border border-dark rounded-xl flex flex-wrap items-center justify-between min-h-0 overflow-y-auto`}
+                    className={`flex-1 max-lg:py-6 border border-dark/20 rounded-xl flex flex-wrap items-center justify-between min-h-0 overflow-y-auto`}
                   >
                     {mesaSeleccionada && (
                       <div className="w-full h-full rounded-xl p-2 bg-white/50 flex items-center justify-center">
-                        <div className="flex items-center justify-center gap-2">
+                        <div className="flex items-center justify-center lg:gap-24 gap-12">
                           {renderMesaGroup(
                             mesaSeleccionada,
-                            "lg",
+                            `${isMobile ? "md" : "lg"}`,
                             true,
                             totalOcupacion,
                           )}
@@ -343,7 +343,7 @@ const PasoCantidad = ({
                     )}
                   </div>
 
-                  <div className="max-lg:w-full lg:flex-1 max-lg:h-2/3 overflow-hidden">
+                  <div className="lg:flex-1 flex-4 overflow-hidden">
                     <RegionImageSlider selectedZoneName={selectedZoneName} />
                   </div>
                 </div>

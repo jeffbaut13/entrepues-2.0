@@ -56,7 +56,7 @@ export const Title = ({
       case "h2":
         return "!text-4xl";
       case "h3":
-        return "lg:!text-xl !text-sm";
+        return "lg:!text-xl max-lg:!leading-1 !text-sm";
       default:
         return "lg:!text-2xl !text-xl";
     }

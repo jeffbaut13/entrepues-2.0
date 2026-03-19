@@ -1,0 +1,15 @@
+User-agent: *
+# Temporal: bloquear indexacion completa hasta dominio final
+Disallow: /
+
+# Activar en produccion (quitar el bloque temporal de arriba y descomentar esto):
+# Disallow: /admin
+# Disallow: /admin/
+# Disallow: /menu
+# Disallow: /reservar
+# Disallow: /checkout
+# Disallow: /descubrenos/
+# Allow: /descubrenos
+# Allow: /carta
+# Allow: /
+# Sitemap: https://TU-DOMINIO-FINAL.com/sitemap.xml

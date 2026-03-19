@@ -10,8 +10,6 @@ export const RegionOverlayControls = ({
   onSelectRegion,
   onOpenReservePopup,
 }) => {
-  
-  
   return (
     <AnimatePresence>
       {activeRegion > 0 && (
@@ -26,9 +24,9 @@ export const RegionOverlayControls = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute md:bottom-6 bottom-6 w-full flex flex-col items-center gap-6 "
+            className="absolute md:bottom-6 bottom-6 w-full flex flex-col items-center gap-6 max-lg:px-2"
           >
-            <div className="w-full grid grid-cols-5 md:max-w-2xl max-w-sm relative">
+            <div className="w-full grid grid-cols-5 justify-items-center md:max-w-2xl max-w-full relative">
               {regiones
                 .filter((text) => text.title !== "Bienvenido")
                 .map((text, index) => (
@@ -37,7 +35,9 @@ export const RegionOverlayControls = ({
                     type="button-thirty"
                     customClass={`relative hover:opacity-80 ${
                       activeTextIndex ===
-                      regiones.findIndex((region) => region.title === text.title)
+                      regiones.findIndex(
+                        (region) => region.title === text.title,
+                      )
                         ? "opacity-100"
                         : "opacity-40"
                     } text-white`}
@@ -48,10 +48,10 @@ export const RegionOverlayControls = ({
                           content={text.title}
                           theme="light"
                           headingLevel="h3"
-                          className={`md:scale-75 transition-all duration-500 ${
+                          className={`lg:scale-75 scale-90 transition-all duration-500 ${
                             activeTextIndex ===
                             regiones.findIndex(
-                              (region) => region.title === text.title
+                              (region) => region.title === text.title,
                             )
                               ? "-translate-y-4"
                               : ""

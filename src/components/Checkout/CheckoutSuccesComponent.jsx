@@ -10,7 +10,7 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
 
   const reserva = useMemo(
     () => obtenerReservaGuardada(),
-    [obtenerReservaGuardada]
+    [obtenerReservaGuardada],
   );
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
 
   return (
     <div className="size-full mx-auto flex justify-center items-center">
-      <div className="p-12 md:max-w-4xl bg-white/20 rounded-lg">
+      <div className="p-12 md:max-w-4xl max-lg:h-full bg-secondary flex justify-center items-center">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -50,8 +50,8 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
             className="p-8"
           >
             <h2 className="font-parkson mb-12">
-              <span className="!text-5xl">Gracias por tu reserva</span> <br />
-              <span className="!text-[9rem] leading-20">te esperamos</span>
+              <span className="!text-4xl">Gracias por tu reserva</span> <br />
+              <span className="!text-7xl leading-14">te esperamos</span>
             </h2>
           </motion.div>
 

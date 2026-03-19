@@ -6,6 +6,7 @@ import { ReservaComponent } from "../ReservarComponent";
 import useReservaStore from "../../../store/reservaStore";
 import useCheckoutStore from "../../../store/checkoutStore";
 import PlatosSeleccion from "../PlatosSeleccion";
+import { ResumenReservaModal } from "./ResumenReservaModal";
 import { Button } from "../../ui/Button";
 import { Datos } from "../datos/Datos";
 import { CheckoutSuccesComponent } from "../../Checkout/CheckoutSuccesComponent";
@@ -15,7 +16,8 @@ export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
   const wasOpenRef = useRef(false);
   const shouldForceReservaFromRegion =
     String(selectedRegion || "").trim().length > 0;
-  const { datosContacto, resetCheckout } = useCheckoutStore();
+  const { datosContacto, resetCheckout, showResumen, setShowResumen } =
+    useCheckoutStore();
 
   const hasDatosCompletos =
     String(datosContacto?.nombre || "").trim().length >= 3 &&
@@ -53,6 +55,7 @@ export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
   };
 
   const handlePopupClose = () => {
+    setShowResumen(false);
     if (flowStep === "succes") {
       clearReservationState();
     }
@@ -114,12 +117,14 @@ export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
   ]);
 
   const handleBackToReservaFromPlatos = () => {
+    setShowResumen(false);
     setPasoReserva("platos", { habilitado: false, completado: false });
     setCurrentStep(2);
     setFlowStep("reserva");
   };
 
   const handlePagoSuccess = () => {
+    setShowResumen(false);
     setFlowStep("succes");
   };
 
@@ -146,14 +151,16 @@ export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
             className="lg:w-fit w-full lg:rounded-2xl relative overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <Button
-              type="just-icon"
-              onClick={handlePopupClose}
-              Icon={X}
-              iconSize="small"
-              customClass="absolute right-2 top-2 z-20"
-              props={{ "aria-label": "Cerrar popup de reserva" }}
-            />
+            {flowStep !== "succes" && (
+              <Button
+                type="just-icon"
+                onClick={handlePopupClose}
+                Icon={X}
+                iconSize="small"
+                customClass="absolute right-2 top-2 z-20"
+                props={{ "aria-label": "Cerrar popup de reserva" }}
+              />
+            )}
 
             <motion.div
               className="flex-1 h-full mx-auto flex items-center justify-center lg:bg-secondary bg-secondary/10 lg:rounded-2xl"
@@ -168,7 +175,7 @@ export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
                 y: 0,
                 width: isMobile
                   ? "100%"
-                  : flowStep === "datos"
+                  : flowStep === "datos" || flowStep === "succes"
                     ? "30rem"
                     : flowStep === "platos"
                       ? "80rem"
@@ -230,6 +237,8 @@ export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
                   />
                 )}
               </AnimatePresence>
+
+              {flowStep === "platos" && <ResumenReservaModal />}
             </motion.div>
           </motion.div>
         </motion.div>
