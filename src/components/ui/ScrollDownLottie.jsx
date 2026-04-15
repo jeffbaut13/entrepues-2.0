@@ -82,7 +82,7 @@ export const ScrollDownLottie = ({
           transition={{ duration: 0.25, ease: "easeOut" }}
           className={`pointer-events-none ${
             fixed ? "fixed" : "absolute"
-          } ${positionBottom()} left-1/2 -translate-x-1/2 z-30 flex flex-col items-center justify-center ${
+          } ${positionBottom()} left-1/2 -translate-x-1/2 z-30 gap-2 flex flex-col items-center justify-center ${
             className ? className : ""
           }`}
         >
