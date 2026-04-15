@@ -8,6 +8,7 @@ const MesasDisplay = ({
   totalPersonas,
   childrenNum,
   mascotasNum,
+  sizeOverride,
 }) => {
   const renderMesaUnit = (
     capacidadBase,
@@ -135,7 +136,7 @@ const MesasDisplay = ({
           <div className="flex items-center justify-center gap-4">
             {renderMesaGroup(
               mesaSeleccionada,
-              `${isMobile ? "md" : "lg"}`,
+              sizeOverride || `${isMobile ? "md" : "lg"}`,
               true,
               totalOcupacion,
             )}

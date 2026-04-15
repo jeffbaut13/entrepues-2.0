@@ -7,6 +7,7 @@ export const DARK_ROUTES = [
   "/checkout",
 ];
 export const LIGHT_ROUTES = ["/descubrenos", "/carta"];
+export const LIGHT_ROUTES_SCROLL = ["/receta-semanal"];
 
 export const BG_ROUTES = ["/menu"];
 
@@ -23,12 +24,15 @@ export const useRouteMode = () => {
   const isHome = HOME_ROUTES.map(normalizePath).includes(currentPath);
   const isDark = DARK_ROUTES.map(normalizePath).includes(currentPath);
   const isLight = LIGHT_ROUTES.map(normalizePath).includes(currentPath);
+  const isLightScroll =
+    LIGHT_ROUTES_SCROLL.map(normalizePath).includes(currentPath);
   const isBg = BG_ROUTES.map(normalizePath).includes(currentPath);
 
   return {
     isHome,
     isDark,
     isLight,
+    isLightScroll,
     isBg,
     currentPath,
   };

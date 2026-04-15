@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, X } from "lucide-react";
+
 import useCheckoutStore from "../../../store/checkoutStore";
 import { Button } from "../../ui/Button";
 
@@ -39,6 +40,11 @@ export const ResumenReservaModal = () => {
     montoFinal,
     error: checkoutError,
   } = useCheckoutStore();
+
+  const mesaAsignada =
+    datosReserva?.reservaZonaData?.mesaAsignada ||
+    datosReserva?.reservaData?.mesa ||
+    null;
 
   return (
     <AnimatePresence>
@@ -89,13 +95,14 @@ export const ResumenReservaModal = () => {
                   </p>
                   {datosReserva?.reservaZonaData?.selectedZoneName && (
                     <p className="font-bold mt-4">
-                      Región: {datosReserva.reservaZonaData.selectedZoneName}
+                      Region: {datosReserva.reservaZonaData.selectedZoneName}
                     </p>
                   )}
+                  {mesaAsignada && <p className="font-bold">Mesa: {mesaAsignada}</p>}
                   <p>
                     para {datosReserva?.reservaData?.adults || 0} adulto(s)
                     {Number(datosReserva?.reservaData?.children || 0) > 0
-                      ? `, ${datosReserva.reservaData.children} niño(s)`
+                      ? `, ${datosReserva.reservaData.children} nino(s)`
                       : ""}
                   </p>
                 </div>
@@ -157,12 +164,10 @@ export const ResumenReservaModal = () => {
                   Icon={Check}
                   iconSize="small"
                   fontSize="2xl"
-                  title={"OK"}
+                  title="OK"
                   onClick={() => setShowResumen(false)}
                   className="px-6 py-2 rounded-full bg-dark text-white font-medium hover:opacity-90 transition"
                 />
-                  
-                
               </div>
             </div>
           </motion.div>

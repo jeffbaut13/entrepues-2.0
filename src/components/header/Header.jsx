@@ -13,7 +13,7 @@ import { useIsMobile } from "../../hooks/useIsMobile";
 import { useEffect } from "react";
 
 export const Header = ({ loading, logo, fullwidth = false }) => {
-  const { isHome, isDark, isLight, isBg } = useRouteMode();
+  const { isHome, isDark, isLight, isBg, isLightScroll } = useRouteMode();
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -21,12 +21,18 @@ export const Header = ({ loading, logo, fullwidth = false }) => {
       document.documentElement.classList.add("not_scroll");
       document.body.classList.add("not_scroll");
     }
+    if (isLightScroll) {
+      document.documentElement.classList.add("scroll");
+      document.body.classList.add("scroll");
+    }
 
     return () => {
       document.documentElement.classList.remove("not_scroll");
       document.body.classList.remove("not_scroll");
+      document.documentElement.classList.remove("scroll");
+      document.body.classList.remove("scroll");
     };
-  }, [isLight]);
+  }, [isLight, isLightScroll]);
 
   const isSectionTwoVisible = useObserverVisibility(".hide-logo-section");
   const { loadingComplete } = useLoaderContext();
@@ -49,7 +55,7 @@ export const Header = ({ loading, logo, fullwidth = false }) => {
     if (isDark || isBg) {
       return <HeaderTheme darkTheme={true} logo={logo} isMobile={isMobile} />;
     }
-    if (isLight) {
+    if (isLight || isLightScroll) {
       return <HeaderTheme darkTheme={false} logo={logo} isMobile={isMobile} />;
     }
   };
@@ -66,7 +72,7 @@ export const Header = ({ loading, logo, fullwidth = false }) => {
               isBg ? "bg-secondary" : ""
             } h-auto fixed z-1001 top-0 left-0 text-secondary flex flex-col items-center justify-between`}
           >
-            {(isHome || isLight) && (
+            {(isHome || isLight || isLightScroll) && (
               <div className="bg-gradient-to-t to-black/65 w-full h-62 absolute top-0 left-0 z-0 pointer-events-none" />
             )}
             <div
@@ -132,23 +138,19 @@ const HeaderTheme = ({ darkTheme, logo, isMobile }) => {
       </motion.div>
       <div />
       <AnimatePresence mode="wait">
-        {logo ? (
-          <motion.div
-            key={"logo"}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
-            className="justify-self-end px-4"
-          >
-            <Logo
-              color={darkTheme ? "dark" : "white"}
-              size={`${isMobile ? "sm" : "sm"}`}
-            />
-          </motion.div>
-        ) : (
-          <div />
-        )}
+        <motion.div
+          key={"logo"}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+          className="justify-self-end px-4"
+        >
+          <Logo
+            color={darkTheme ? "dark" : "white"}
+            size={`${isMobile ? "sm" : "sm"}`}
+          />
+        </motion.div>
       </AnimatePresence>
     </>
   );

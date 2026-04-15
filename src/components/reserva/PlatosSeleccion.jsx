@@ -464,17 +464,21 @@ export default function PlatosSeleccion({
   };
 
   const validarPlatosPorAsistente = () => {
-    const asistentesSinPlatos = [];
+    const adultosSinPlatos = [];
+
     for (let i = 0; i < asistentesLista.length; i++) {
+      const asistente = asistentesLista[i];
+      if (esAsistenteNino(asistente)) continue;
+
       if (!platosSeleccionados[i] || platosSeleccionados[i].length === 0) {
-        asistentesSinPlatos.push(asistentesLista[i]);
+        adultosSinPlatos.push(asistentesLista[i]);
       }
     }
 
-    if (asistentesSinPlatos.length > 0) {
-      const asistentesTexto = asistentesSinPlatos.join(", ");
+    if (adultosSinPlatos.length > 0) {
+      const asistentesTexto = adultosSinPlatos.join(", ");
       alert(
-        `⚠️ Los siguientes asistentes no tienen platos seleccionados:\n\n${asistentesTexto}\n\nPor favor, agrega al menos un plato para cada asistente antes de continuar.`,
+        `⚠️ Los siguientes adultos no tienen platos seleccionados:\n\n${asistentesTexto}\n\nPor favor, agrega al menos un plato para cada adulto antes de continuar.`,
       );
       return false;
     }
@@ -584,17 +588,18 @@ export default function PlatosSeleccion({
 
   const ctaEsPago =
     asistentesLista.length > 0 && asistenteActual >= ultimoAsistenteIndex;
-  const todosConPlatos =
+  const todosAdultosConPlatos =
     asistentesLista.length > 0 &&
-    asistentesLista.every((_, index) =>
-      Array.isArray(platosSeleccionados[index])
+    asistentesLista.every((asistente, index) => {
+      if (esAsistenteNino(asistente)) return true;
+      return Array.isArray(platosSeleccionados[index])
         ? platosSeleccionados[index].length > 0
-        : false,
-    );
+        : false;
+    });
 
   const handleBottomCta = () => {
     if (ctaEsPago) {
-      if (!todosConPlatos) return;
+      if (!todosAdultosConPlatos) return;
       handleConfirmar();
       return;
     }
@@ -800,7 +805,7 @@ export default function PlatosSeleccion({
                       <div className="w-full flex justify-around">
                         <div>
                           <span className="!text-xl font-light mr-2">
-                            {ctaEsPago && todosConPlatos
+                            {ctaEsPago && todosAdultosConPlatos
                               ? "Total a pagar"
                               : "Subtotal:"}
                           </span>
@@ -827,7 +832,7 @@ export default function PlatosSeleccion({
                             }
                           />
                         )}
-                        {ctaEsPago && todosConPlatos && (
+                        {ctaEsPago && todosAdultosConPlatos && (
                           <Button
                             onClick={handleOpenResumen}
                             //title="Resumen"
@@ -845,7 +850,7 @@ export default function PlatosSeleccion({
                             guardando || pagoEnProceso
                               ? "Guardando..."
                               : ctaEsPago
-                                ? "Pagar"
+                                ? "Finalizar orden"
                                 : "Siguiente"
                           }
                           type="button-dark"
@@ -854,7 +859,7 @@ export default function PlatosSeleccion({
                           disabled={
                             guardando ||
                             pagoEnProceso ||
-                            (ctaEsPago && !todosConPlatos)
+                            (ctaEsPago && !todosAdultosConPlatos)
                           }
                         />
                       </div>

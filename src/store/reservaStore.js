@@ -21,6 +21,7 @@ const DEFAULT_RESERVA_DATA = {
   adults: 0,
   children: 0,
   mascotas: 0,
+  mesa: null,
   name: "",
   email: "",
   whatsapp: "",
@@ -190,6 +191,7 @@ const buildZonaReservaData = (
       totalOcupacion,
       opcionesMesa: [],
       mesaSeleccionada: null,
+      mesaAsignada: Number(reservaData?.mesa) || null,
     };
   }
 
@@ -208,6 +210,7 @@ const buildZonaReservaData = (
     totalOcupacion,
     opcionesMesa,
     mesaSeleccionada,
+    mesaAsignada: Number(reservaData?.mesa) || null,
   };
 };
 
@@ -303,6 +306,31 @@ export const useReservaStore = create(
           };
         }),
 
+      setMesaAsignada: (mesa) =>
+        set((state) => {
+          const mesaNormalizada =
+            mesa === null || mesa === undefined || mesa === ""
+              ? null
+              : Number(mesa);
+
+          const nextReservaData = {
+            ...state.reservaData,
+            mesa:
+              mesaNormalizada !== null && !Number.isNaN(mesaNormalizada)
+                ? mesaNormalizada
+                : null,
+          };
+
+          return {
+            reservaData: nextReservaData,
+            reservaZonaData: buildZonaReservaData(
+              nextReservaData,
+              state.reservaZonaData?.selectedZoneId || null,
+              state.reservaZonaData?.mesaSeleccionada?.capacidadBase || null,
+            ),
+          };
+        }),
+
       prepararDatosCheckout: (platosSeleccionados) => {
         const { reservaData, reservaZonaData } = get();
         const checkoutData = {
@@ -313,6 +341,7 @@ export const useReservaStore = create(
           reservaZonaData: {
             selectedZoneId: reservaZonaData?.selectedZoneId || null,
             selectedZoneName: reservaZonaData?.selectedZoneName || null,
+            mesaAsignada: reservaZonaData?.mesaAsignada || null,
           },
           platosSeleccionados,
           uiState: { showMenu: true },

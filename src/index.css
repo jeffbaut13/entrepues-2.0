@@ -52,7 +52,7 @@ body.not_scroll {
 }
 
 #root {
-  @apply w-full h-dvh;
+  @apply w-full h-dvh relative;
 }
 
 /* Webkit scrollbar (Chrome, Safari, Edge) */

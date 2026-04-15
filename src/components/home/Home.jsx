@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 
 import {
   CallToActions,
-  RedesSociales,
 } from "../common/CallToAction/CallToActions";
 import ArcScrollReveal from "../ScrollSvg";
 import { Title } from "../ui/Title";
@@ -12,8 +11,7 @@ import { ScrollDownLottie } from "../ui/ScrollDownLottie";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { useOutletContext } from "react-router-dom";
 import { Button } from "../ui/Button";
-import { Logo } from "../ui/Logo";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { SiteFooter } from "../footer/SiteFooter";
 
 export const HomeComponent = () => {
   const [showScrollHint, setShowScrollHint] = useState(false);
@@ -40,7 +38,7 @@ export const HomeComponent = () => {
       <div className="hide-logo-section">
         <SectionTwo isMobile={isMobile} />
         <SectionThree isMobile={isMobile} />
-        <Footer isMobile={isMobile} />
+        <SiteFooter />
       </div>
       <ScrollDownLottie
         color="#FFFFFF"
@@ -175,7 +173,7 @@ const SectionThree = ({ isMobile }) => {
               <Button
                 target="_blank"
                 type="enlace"
-                href={"/plato-del-dia"}
+                href={"/receta-semanal"}
                 title={"ver historia"}
                 fontSize="2xl"
               />
@@ -188,48 +186,3 @@ const SectionThree = ({ isMobile }) => {
   );
 };
 
-const Footer = ({ isMobile }) => {
-  return (
-    <>
-      <footer
-        className="h-[80vh] w-full bg-cover bg-center"
-        style={{ backgroundImage: "url('/imagenes/background_texture.webp')" }}
-      >
-        <div className="size-full flex flex-col justify-evenly items-center">
-          <Logo color={"dark"} size={`${isMobile ? "md" : "lg"}`} />
-          <div className="w-fit space-y-2 text-center">
-            <h2 className="text-xl">
-              LA CASA DEL SABOR COLOMBIANO,
-            </h2>
-            <h2 className="text-xl mb-6">Desde 1987</h2>
-          </div>
-          <div className="grid md:grid-cols-3 text-dark gap-24">
-            <div className="flex flex-col items-start justify-center gap-2">
-              <div className="flex items-center justify-center gap-1">
-                <MapPin size={16} /> <p>Km. 9 Autopista Norte Vía Tunja</p>
-              </div>
-              <div className="flex items-center justify-center gap-1">
-                <Phone size={16} /> <p>300 - 214 - 19 - 78</p>
-              </div>
-              <div className="flex items-center justify-center gap-1">
-                <Mail size={16} /> <p>servicio@restauranteentrepues.com</p>
-              </div>
-            </div>
-            <div className="flex flex-col items-center justify-center gap-2">
-              <div className="w-fit flex flex-col items-start justify-center">
-                <h6 className="font-parkson text-3xl">Nuestros Horarios</h6>
-                <p>Lunes 10:00 a.m – 04:00 p.m</p>
-                <p>Martes 09:00 a.m – 05:00 p.m</p>
-              </div>
-            </div>
-            <div className="flex flex-col items-start justify-end">
-              <p>Miércoles y Jueves 08:00 a.m – 05:00 p.m</p>
-              <p>Viernes a Domingo 08:00 a.m – 06:00 p.m</p>
-            </div>
-          </div>
-          <RedesSociales isSectionVisible={true} />
-        </div>
-      </footer>
-    </>
-  );
-};

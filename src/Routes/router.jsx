@@ -1,4 +1,13 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 
 // Layout
 import MainLayout from "../components/layout/MainLayout";
@@ -16,6 +25,7 @@ import HomePage from "../pages/home/HomePage";
 import { VideoScrollComponent } from "../components/VideoScroll/VideoScrollComponent";
 import NotFoundPage from "../pages/NotFoundPage";
 import CartaPage from "../pages/carta/CartaPage";
+import { RecetaSemanalPage } from "../pages/Receta-semanal/RecetaSemanalPage";
 
 /**
  * Configuración centralizada de rutas de la aplicación
@@ -24,15 +34,16 @@ import CartaPage from "../pages/carta/CartaPage";
 function AppRouter() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         {/* Layout principal - contiene Header y Modal */}
         <Route element={<MainLayout />}>
           {/* Ruta principal - Home */}
           <Route path="/" element={<HomePage />} />
 
-          {/* Logica de reserva y checkout */}
-
           <Route path="/carta" element={<CartaPage />} />
+          <Route path="/receta-semanal" element={<RecetaSemanalPage />} />
+
         </Route>
         <Route path="/descubrenos" element={<VideoScrollLayout />}>
           <Route index element={<VideoScrollComponent />} />

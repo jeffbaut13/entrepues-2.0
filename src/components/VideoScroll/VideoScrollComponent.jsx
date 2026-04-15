@@ -1,156 +1,225 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useOutletContext } from "react-router-dom";
-import { ScrollDownLottie } from "../ui/ScrollDownLottie";
-import { VideoScrollLoader } from "./VideoScrollLoader";
-import { useIsMobile } from "../../hooks/useIsMobile";
 import { Volume2, VolumeX } from "lucide-react";
+import { ScrollDownLottie } from "../ui/ScrollDownLottie";
 import { RegionOverlayControls } from "./RegionOverlayControls";
 
 const AUDIO_URL = "/audios/audio.mp3";
+const FRAME_COUNT = 677;
+const VIDEO_DURATION_SECONDS = 56.41;
+const FRAMES_PER_SECOND = FRAME_COUNT / VIDEO_DURATION_SECONDS;
+const SCROLL_STEP_SECONDS = 2;
+const INPUT_STEP_FRAMES = Math.round(SCROLL_STEP_SECONDS * FRAMES_PER_SECOND);
+const INPUT_CAPTURE_MS = 500;
+const SPRING_STIFFNESS = 22;
+const SPRING_DAMPING = 10;
+const MAX_VELOCITY = 220;
+const TOUCH_THRESHOLD = 30;
 
 const REGIONES = [
   { start: 0, title: "Bienvenido" },
   { start: 2, title: "andina" },
-  { start: 14, title: "orinoquía" },
-  { start: 35, title: "pacífica" },
-  { start: 40, title: "amazonía" },
-  { start: 55, title: "caribe" },
+  { start: 14, title: "orinoquia" },
+  { start: 35, title: "pacifica" },
+  { start: 40, title: "amazonia" },
+  { start: 46, title: "caribe" },
+  { start: 51, title: "Zona pet" },
 ];
 
-/* Easing natural para evitar saltos bruscos */
-const easeInOutSine = (t) => -(Math.cos(Math.PI * t) - 1) / 2;
+const getReachableRegionStart = (start) =>
+  Math.max(0, Math.min(Number(start) || 0, VIDEO_DURATION_SECONDS - 0.05));
 
-const SCROLL_STEP_SECONDS = 3;
-const STEP_TRANSITION_MS = 1500;
+const alignTimeToStepGrid = (timeInSeconds) =>
+  Math.round(timeInSeconds / SCROLL_STEP_SECONDS) * SCROLL_STEP_SECONDS;
 
-const TOUCH_THRESHOLD = 30;
+const getAlignedRegionStart = (start) => {
+  const reachable = getReachableRegionStart(start);
+  const aligned = alignTimeToStepGrid(reachable);
+  return Math.max(0, Math.min(aligned, VIDEO_DURATION_SECONDS - 0.05));
+};
+
+const getFrameSrc = (frameIndex) =>
+  `/video/recorrido/frames-webp-hq/frame_${String(frameIndex + 1).padStart(4, "0")}.webp`;
 
 export const VideoScrollComponent = () => {
-  const { onOpenReservePopup, setShowHeader } = useOutletContext();
+  const { onOpenReservePopup, setShowHeader, setVideoScrollTime } =
+    useOutletContext();
 
-  const videoRef = useRef(null);
   const audioRef = useRef(null);
   const containerRef = useRef(null);
   const animationRef = useRef(null);
-
-  /* Refs de navegación */
-  const isTransitioningRef = useRef(false);
-  const transitionStartRef = useRef(0);
-  const transitionFromRef = useRef(0);
-  const transitionToRef = useRef(0);
-
-  /* Ref para detección de swipe */
+  const bootTimeoutRef = useRef(null);
+  const regionJumpTimeoutRef = useRef(null);
+  const regionFlashEndTimeoutRef = useRef(null);
   const touchStartYRef = useRef(0);
+  const currentPositionRef = useRef(0);
+  const targetFrameRef = useRef(0);
+  const velocityRef = useRef(0);
+  const lastTimestampRef = useRef(0);
+  const lastAcceptedInputAtRef = useRef(0);
+  const currentFrameRef = useRef(0);
+  const lastHeaderVisibleRef = useRef(false);
+  const lastScrollHintVisibleRef = useRef(true);
+  const lastRegionIndexRef = useRef(0);
+  const lastSettledFrameRef = useRef(null);
 
-  const isMobile = useIsMobile();
-  const VIDEO_URL = `/video/recorrido/recorrido${isMobile ? "M" : ""}.mp4`;
-
-  const [videoReady, setVideoReady] = useState(false);
+  const [frameReady, setFrameReady] = useState(false);
+  const [currentFrame, setCurrentFrame] = useState(0);
   const [activeTextIndex, setActiveTextIndex] = useState(0);
   const [activeRegion, setActiveRegion] = useState(0);
   const [showScrollHint, setShowScrollHint] = useState(true);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [isRegionJumpFlashVisible, setIsRegionJumpFlashVisible] =
+    useState(false);
 
   const zoneActive = REGIONES[activeTextIndex]?.title || REGIONES[0].title;
+  const currentFrameSrc = getFrameSrc(currentFrame);
 
-  const updateRegion = (time) => {
-    const OFFSET = 0.15;
+  const frameToTime = (frameIndex) => frameIndex / FRAMES_PER_SECOND;
 
+  const syncUiState = (frameIndex) => {
+    const time = frameToTime(frameIndex);
+    setVideoScrollTime?.(time);
+
+    const nextHeaderVisible = time > 1.5;
+    if (lastHeaderVisibleRef.current !== nextHeaderVisible) {
+      lastHeaderVisibleRef.current = nextHeaderVisible;
+      setShowHeader(nextHeaderVisible);
+    }
+
+    const nextScrollHintVisible = time < 3;
+    if (lastScrollHintVisibleRef.current !== nextScrollHintVisible) {
+      lastScrollHintVisibleRef.current = nextScrollHintVisible;
+      setShowScrollHint(nextScrollHintVisible);
+    }
+
+    const offset = 0.15;
     for (let i = REGIONES.length - 1; i >= 0; i--) {
-      if (time >= REGIONES[i].start - OFFSET) {
-        setActiveRegion(i);
-        setActiveTextIndex(i);
+      const regionStart = getAlignedRegionStart(REGIONES[i].start);
+      if (time >= regionStart - offset) {
+        if (lastRegionIndexRef.current !== i) {
+          lastRegionIndexRef.current = i;
+          setActiveRegion(i);
+          setActiveTextIndex(i);
+        }
         return;
       }
     }
   };
 
-  /* =========================
-     NAVEGAR A TIEMPO
-  ========================== */
-
-  const navigateToTime = (targetTime) => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const duration = video.duration || 60;
-    const clampedTargetTime = Math.max(0, Math.min(duration, targetTime));
-
-    const fromTime = video.currentTime;
-    const toTime = clampedTargetTime;
-
-    if (Math.abs(fromTime - toTime) < 0.05) {
-      isTransitioningRef.current = false;
-      return;
-    }
-
-    isTransitioningRef.current = true;
-    transitionStartRef.current = performance.now();
-    transitionFromRef.current = fromTime;
-    transitionToRef.current = toTime;
+  const setFrame = (frameIndex) => {
+    const nextFrame = Math.max(0, Math.min(FRAME_COUNT - 1, frameIndex));
+    currentFrameRef.current = nextFrame;
+    setCurrentFrame(nextFrame);
+    syncUiState(nextFrame);
   };
 
-  /* =========================
-     RAF LOOP (ease-in-out cinematográfico)
-  ========================== */
+  const preloadNearbyFrames = (frameIndex) => {
+    const preloadTargets = [
+      frameIndex + 1,
+      frameIndex + 2,
+      frameIndex + 3,
+      frameIndex - 1,
+    ].filter((index) => index >= 0 && index < FRAME_COUNT);
 
-  const animationLoop = () => {
-    const video = videoRef.current;
-    if (!video) return;
+    preloadTargets.forEach((index) => {
+      const img = new Image();
+      img.src = getFrameSrc(index);
+    });
+  };
 
-    if (isTransitioningRef.current) {
-      const elapsed = performance.now() - transitionStartRef.current;
-      const rawProgress = Math.min(elapsed / STEP_TRANSITION_MS, 1);
-      const eased = easeInOutSine(rawProgress);
+  const clampFrame = (frame) => Math.max(0, Math.min(FRAME_COUNT - 1, frame));
 
-      const from = transitionFromRef.current;
-      const to = transitionToRef.current;
-      const time = from + (to - from) * eased;
+  const nudgeTargetFrame = (deltaFrames) => {
+    const nextTarget = clampFrame(targetFrameRef.current + deltaFrames);
+    targetFrameRef.current = nextTarget;
+  };
 
-      video.currentTime = time;
+  const tryCaptureInput = (direction) => {
+    const now = performance.now();
+    if (now - lastAcceptedInputAtRef.current < INPUT_CAPTURE_MS) return;
 
-      setShowHeader(time > 1.5);
-      setShowScrollHint(time < 3);
-      updateRegion(time);
+    lastAcceptedInputAtRef.current = now;
+    nudgeTargetFrame(direction * INPUT_STEP_FRAMES);
+  };
 
-      if (rawProgress >= 1) {
-        video.currentTime = transitionToRef.current;
-        updateRegion(transitionToRef.current);
-        isTransitioningRef.current = false;
+  const navigateToFrame = (targetFrame) => {
+    targetFrameRef.current = clampFrame(targetFrame);
+  };
+
+  const snapToFrame = (targetFrame) => {
+    const nextFrame = clampFrame(targetFrame);
+    targetFrameRef.current = nextFrame;
+    currentPositionRef.current = nextFrame;
+    velocityRef.current = 0;
+    lastAcceptedInputAtRef.current = performance.now();
+    lastSettledFrameRef.current = nextFrame;
+    setFrame(nextFrame);
+  };
+
+  const animationLoop = (timestamp) => {
+    if (!lastTimestampRef.current) {
+      lastTimestampRef.current = timestamp;
+    }
+
+    const dt = Math.min((timestamp - lastTimestampRef.current) / 1000, 0.05);
+    lastTimestampRef.current = timestamp;
+
+    const current = currentPositionRef.current;
+    const target = targetFrameRef.current;
+    const displacement = target - current;
+
+    if (
+      Math.abs(displacement) > 0.001 ||
+      Math.abs(velocityRef.current) > 0.001
+    ) {
+      const acceleration =
+        displacement * SPRING_STIFFNESS - velocityRef.current * SPRING_DAMPING;
+
+      velocityRef.current += acceleration * dt;
+      velocityRef.current = Math.max(
+        -MAX_VELOCITY,
+        Math.min(MAX_VELOCITY, velocityRef.current),
+      );
+
+      currentPositionRef.current = clampFrame(
+        currentPositionRef.current + velocityRef.current * dt,
+      );
+
+      if (
+        Math.abs(target - currentPositionRef.current) < 0.02 &&
+        Math.abs(velocityRef.current) < 0.02
+      ) {
+        currentPositionRef.current = target;
+        velocityRef.current = 0;
+
+        const settledFrame = Math.round(target);
+        if (lastSettledFrameRef.current !== settledFrame) {
+          lastSettledFrameRef.current = settledFrame;
+          console.log("[VideoScroll] Scroll settled", {
+            frame: settledFrame,
+            time: Number(frameToTime(settledFrame).toFixed(2)),
+            region: REGIONES[lastRegionIndexRef.current]?.title || "unknown",
+          });
+        }
       }
+    }
+
+    const nextFrame = Math.round(currentPositionRef.current);
+    if (nextFrame !== currentFrameRef.current) {
+      setFrame(nextFrame);
     } else {
-      const time = video.currentTime;
-      setShowHeader(time > 1.5);
-      setShowScrollHint(time < 3);
-      updateRegion(time);
+      syncUiState(nextFrame);
     }
 
     animationRef.current = requestAnimationFrame(animationLoop);
   };
 
-  /* =========================
-      WHEEL → avance/retroceso fijo por segundos
-     (bloqueado durante transición)
-  ========================== */
-
   const handleWheel = (e) => {
     e.preventDefault();
-
-    if (isTransitioningRef.current) return;
-
-    const video = videoRef.current;
-    if (!video) return;
-
-    const direction = e.deltaY > 0 ? 1 : -1;
-    const nextTime = video.currentTime + direction * SCROLL_STEP_SECONDS;
-
-    navigateToTime(nextTime);
+    tryCaptureInput(e.deltaY > 0 ? 1 : -1);
   };
-
-  /* =========================
-      TOUCH → swipe en pasos de 2 segundos
-     (bloqueado durante transición)
-  ========================== */
 
   const handleTouchStart = (e) => {
     touchStartYRef.current = e.touches[0].clientY;
@@ -158,43 +227,51 @@ export const VideoScrollComponent = () => {
 
   const handleTouchMove = (e) => {
     e.preventDefault();
+    const deltaY = touchStartYRef.current - e.touches[0].clientY;
+    if (Math.abs(deltaY) < TOUCH_THRESHOLD) return;
+
+    tryCaptureInput(deltaY > 0 ? 1 : -1);
+    touchStartYRef.current = e.touches[0].clientY;
   };
 
   const handleTouchEnd = (e) => {
-    if (isTransitioningRef.current) return;
-
     const deltaY = touchStartYRef.current - e.changedTouches[0].clientY;
-
     if (Math.abs(deltaY) < TOUCH_THRESHOLD) return;
-
-    const video = videoRef.current;
-    if (!video) return;
-
-    const direction = deltaY > 0 ? 1 : -1;
-    const nextTime = video.currentTime + direction * SCROLL_STEP_SECONDS;
-
-    navigateToTime(nextTime);
+    tryCaptureInput(deltaY > 0 ? 1 : -1);
   };
 
-  /* =========================
-     REGION CLICK (salto directo, sin bloqueo)
-  ========================== */
-
   const handleRegionSelect = (regionName) => {
-    if (isTransitioningRef.current) return;
-
     const regionIndex = REGIONES.findIndex(
       (region) => region.title === regionName,
     );
 
     if (regionIndex < 0) return;
 
-    navigateToTime(REGIONES[regionIndex].start);
-  };
+    const regionStart = getAlignedRegionStart(REGIONES[regionIndex].start);
+    const nextFrame = Math.round(regionStart * FRAMES_PER_SECOND);
 
-  /* =========================
-     AUDIO
-  ========================== */
+    // Refleja el estado seleccionado de inmediato (antes del salto visual).
+    lastRegionIndexRef.current = regionIndex;
+    setActiveRegion(regionIndex);
+    setActiveTextIndex(regionIndex);
+
+    if (regionJumpTimeoutRef.current)
+      clearTimeout(regionJumpTimeoutRef.current);
+    if (regionFlashEndTimeoutRef.current) {
+      clearTimeout(regionFlashEndTimeoutRef.current);
+    }
+
+    setIsRegionJumpFlashVisible(true);
+
+    // Pequena rafaga visual para enmascarar el salto abrupto de frame.
+    regionJumpTimeoutRef.current = setTimeout(() => {
+      snapToFrame(nextFrame);
+    }, 55);
+
+    regionFlashEndTimeoutRef.current = setTimeout(() => {
+      setIsRegionJumpFlashVisible(false);
+    }, 170);
+  };
 
   const tryPlayAudio = async () => {
     const audio = audioRef.current;
@@ -215,59 +292,45 @@ export const VideoScrollComponent = () => {
     if (audio.paused) {
       audio.play();
       setIsAudioPlaying(true);
-    } else {
-      audio.pause();
-      setIsAudioPlaying(false);
+      return;
     }
+
+    audio.pause();
+    setIsAudioPlaying(false);
   };
 
-  /* =========================
-     VIDEO READY
-  ========================== */
+  useEffect(() => {
+    preloadNearbyFrames(currentFrame);
+  }, [currentFrame]);
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const handleMetadata = () => {
-      video.currentTime = 0.01;
-    };
-
-    const handleSeeked = () => {
-      video.pause();
-      setVideoReady(true);
-    };
-
-    video.addEventListener("loadedmetadata", handleMetadata);
-    video.addEventListener("seeked", handleSeeked);
-
-    video.load();
-
-    return () => {
-      video.removeEventListener("loadedmetadata", handleMetadata);
-      video.removeEventListener("seeked", handleSeeked);
+    const firstFrame = new Image();
+    firstFrame.src = getFrameSrc(0);
+    firstFrame.onload = () => {
+      currentPositionRef.current = 0;
+      targetFrameRef.current = 0;
+      velocityRef.current = 0;
+      lastAcceptedInputAtRef.current = 0;
+      lastSettledFrameRef.current = 0;
+      setFrame(0);
+      setFrameReady(true);
     };
   }, []);
 
-  /* =========================
-     START EXPERIENCE
-  ========================== */
-
   useEffect(() => {
-    if (!videoReady) return;
+    if (!frameReady) return;
 
     tryPlayAudio();
+    animationRef.current = requestAnimationFrame(animationLoop);
 
-    requestAnimationFrame(animationLoop);
-
-    setTimeout(() => {
-      navigateToTime(2);
+    bootTimeoutRef.current = setTimeout(() => {
+      navigateToFrame(Math.round(2 * FRAMES_PER_SECOND));
     }, 1000);
-  }, [videoReady]);
 
-  /* =========================
-     WHEEL + TOUCH LISTENERS
-  ========================== */
+    return () => {
+      if (bootTimeoutRef.current) clearTimeout(bootTimeoutRef.current);
+    };
+  }, [frameReady]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -290,13 +353,16 @@ export const VideoScrollComponent = () => {
     };
   }, []);
 
-  /* =========================
-     CLEAN RAF
-  ========================== */
-
   useEffect(() => {
     return () => {
+      if (bootTimeoutRef.current) clearTimeout(bootTimeoutRef.current);
+      if (regionJumpTimeoutRef.current)
+        clearTimeout(regionJumpTimeoutRef.current);
+      if (regionFlashEndTimeoutRef.current) {
+        clearTimeout(regionFlashEndTimeoutRef.current);
+      }
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      lastTimestampRef.current = 0;
     };
   }, []);
 
@@ -304,22 +370,27 @@ export const VideoScrollComponent = () => {
     <>
       <audio ref={audioRef} src={AUDIO_URL} preload="auto" loop />
 
-      <VideoScrollLoader visible={!videoReady} />
-
-      <div
-        ref={containerRef}
-        className="w-full h-dvh overflow-hidden"
-      >
+      <div ref={containerRef} className="w-full h-dvh overflow-hidden">
         <div className="relative h-full w-full">
-          <video
-            ref={videoRef}
-            src={VIDEO_URL}
-            className="w-full h-full object-cover"
-            preload="auto"
-            playsInline
-            muted
-            disablePictureInPicture
+          <img
+            src={currentFrameSrc}
+            alt=""
+            className="h-full w-full object-cover select-none"
+            draggable={false}
           />
+
+          <AnimatePresence>
+            {isRegionJumpFlashVisible && (
+              <motion.div
+                key="region-jump-flash"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.34 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.12, ease: "easeOut" }}
+                className="pointer-events-none absolute inset-0 z-[160] bg-white"
+              />
+            )}
+          </AnimatePresence>
 
           <RegionOverlayControls
             activeRegion={activeRegion}
@@ -340,10 +411,12 @@ export const VideoScrollComponent = () => {
       </div>
 
       <button
+        type="button"
         onClick={toggleAudio}
-        className="fixed bottom-6 right-6 z-[210] rounded-full bg-black/70 hover:bg-black/85 text-white p-3"
+        className="fixed bottom-5 right-5 z-[210] rounded-full bg-black/35 p-3 text-white backdrop-blur-sm transition hover:bg-black/50"
+        aria-label={isAudioPlaying ? "Silenciar audio" : "Activar audio"}
       >
-        {isAudioPlaying ? <Volume2 size={22} /> : <VolumeX size={22} />}
+        {isAudioPlaying ? <Volume2 size={20} /> : <VolumeX size={20} />}
       </button>
     </>
   );

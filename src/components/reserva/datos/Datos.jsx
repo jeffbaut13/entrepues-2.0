@@ -4,7 +4,7 @@ import { AlertCircle, MessageSquare, LoaderIcon } from "lucide-react";
 
 import { Button } from "../../ui/Button";
 import useCheckoutStore from "../../../store/checkoutStore";
-export const Datos = ({ onContinue }) => {
+export const Datos = ({ onContinue, back }) => {
   const { pagoEnProceso, error, datosContacto, updateDatosContacto } =
     useCheckoutStore();
 
@@ -15,7 +15,9 @@ export const Datos = ({ onContinue }) => {
   });
 
   const normalizePhoneDigits = (value = "") =>
-    String(value || "").replace(/\D/g, "").slice(0, 10);
+    String(value || "")
+      .replace(/\D/g, "")
+      .slice(0, 10);
 
   const formatPhoneForInput = (value = "") => {
     const digits = normalizePhoneDigits(value);
@@ -69,7 +71,8 @@ export const Datos = ({ onContinue }) => {
     return "";
   };
 
-  const hasFieldError = (field) => touched[field] && Boolean(getInputError(field));
+  const hasFieldError = (field) =>
+    touched[field] && Boolean(getInputError(field));
 
   const handleBlurField = (field) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
@@ -216,7 +219,8 @@ export const Datos = ({ onContinue }) => {
           </div>
         </div>
 
-        <div className="w-full space-y-2 my-6">
+        <div className="w-full flex justify-center items-center mt-6">
+          {back}
           <Button
             onClick={() => {
               if (!puedeContinuar) {
@@ -243,11 +247,10 @@ export const Datos = ({ onContinue }) => {
               </>
             }
           />
-
-          <p className="lg:!text-sm !text-base text-center">
-            Al confirmar aceptas los términos y condiciones.
-          </p>
         </div>
+        <p className="lg:!text-sm !text-base text-center">
+          Al confirmar aceptas los términos y condiciones.
+        </p>
       </div>
     </motion.div>
   );

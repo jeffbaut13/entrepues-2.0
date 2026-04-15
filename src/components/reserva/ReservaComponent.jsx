@@ -32,7 +32,7 @@ const resolveRegionName = (value = "") => {
   return aliases[normalized] || normalized;
 };
 
-export const ReservaComponent = ({ region, onReservaSinMenuCheckout }) => {
+export const ReservaComponent = ({ stepinvert, region, onReservaSinMenuCheckout }) => {
   // Estados derivados del store
 
   const isMobile = useIsMobile();
@@ -85,7 +85,7 @@ export const ReservaComponent = ({ region, onReservaSinMenuCheckout }) => {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
       >
-        <SliderVertical onReservaSinMenuCheckout={onReservaSinMenuCheckout} />
+        <SliderVertical stepinvert={stepinvert} onReservaSinMenuCheckout={onReservaSinMenuCheckout} />
       </motion.div>
     </>
   );

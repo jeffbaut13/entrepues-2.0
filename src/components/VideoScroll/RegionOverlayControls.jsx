@@ -26,7 +26,7 @@ export const RegionOverlayControls = ({
             exit={{ opacity: 0 }}
             className="absolute md:bottom-6 bottom-6 w-full flex flex-col items-center gap-6 max-lg:px-2"
           >
-            <div className="w-full grid grid-cols-5 justify-items-center md:max-w-2xl max-w-full relative">
+            <div className="w-full grid grid-cols-6 justify-items-center md:max-w-4xl max-w-full relative">
               {regiones
                 .filter((text) => text.title !== "Bienvenido")
                 .map((text, index) => (

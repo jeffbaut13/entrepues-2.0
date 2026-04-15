@@ -89,7 +89,7 @@ const PasoCantidad = ({
         {selectedZoneName === "general"
           ? "¿Dónde quieres comer?"
           : permiteMascotas
-            ? "¿Cuántos nos visitarán? ¿Vendrás con mascotas?"
+            ? "¿Cuántas personas y peluditos nos visitarán?"
             : "¿Cuántos vendrán?"}
       </h2>
       <div className="size-full flex flex-col items-center justify-center gap-8">

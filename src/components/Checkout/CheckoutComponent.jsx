@@ -127,6 +127,10 @@ export const CheckoutComponent = ({
     datosReserva?.reservaZonaData?.selectedZoneName ||
     datosReserva?.reservaData?.selectedZoneName ||
     null;
+  const mesaAsignada =
+    datosReserva?.reservaZonaData?.mesaAsignada ||
+    datosReserva?.reservaData?.mesa ||
+    null;
 
   if (!datosReserva) {
     return (
@@ -344,6 +348,9 @@ export const CheckoutComponent = ({
                             {regionSeleccionada.charAt(0).toUpperCase() +
                               regionSeleccionada.slice(1)}
                           </p>
+                        )}
+                        {mesaAsignada && (
+                          <p className="font-bold">Mesa: {mesaAsignada}</p>
                         )}
                         <p>
                           {datosReserva.reservaData?.adults} adulto(s)

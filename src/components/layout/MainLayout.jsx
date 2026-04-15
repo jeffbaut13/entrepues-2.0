@@ -52,6 +52,7 @@ export default function MainLayout() {
         <Outlet
           context={{
             onOpenReservePopup: openReservePopup,
+            isReservePopupOpen,
           }}
         />
       </main>

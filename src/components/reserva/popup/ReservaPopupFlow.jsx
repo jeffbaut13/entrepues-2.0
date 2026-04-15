@@ -12,7 +12,7 @@ import { CheckoutSuccesComponent } from "../../Checkout/CheckoutSuccesComponent"
 import { useIsMobile } from "../../../hooks/useIsMobile";
 import { ReservaComponent } from "../ReservaComponent";
 
-export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
+export const ReservaPopupFlow = ({ stepinvert, isOpen, selectedRegion = "", onClose }) => {
   const wasOpenRef = useRef(false);
   const shouldForceReservaFromRegion =
     String(selectedRegion || "").trim().length > 0;
@@ -41,14 +41,17 @@ export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
     resetReserva,
   } = useReservaStore();
   const isMobile = useIsMobile();
+  const datosStepIndex = stepinvert ? 1 : 0;
+  const cantidadStepIndex = stepinvert ? 0 : 1;
+
   const getReservaPopupWidth = () => {
     if (isMobile) return "100%";
     if (flowStep === "succes") return "30rem";
     if (flowStep === "platos") return "80rem";
 
     const widthsByStep = {
-      0: "32rem",
-      1: "80rem",
+      [datosStepIndex]: "32rem",
+      [cantidadStepIndex]: "80rem",
       2: "58rem",
       3: "58rem",
     };
@@ -91,16 +94,18 @@ export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
 
     wasOpenRef.current = true;
 
+    const visitantesCompletado = Boolean(pasosReserva?.visitantes?.completado);
+
     if (shouldForceReservaFromRegion && hasDatosCompletos) {
       setFlowStep("reserva");
-      setCurrentStep(1);
+      setCurrentStep(visitantesCompletado ? 2 : cantidadStepIndex);
 
       return;
     }
 
     if (shouldForceReservaFromRegion && !hasDatosCompletos) {
       setFlowStep("reserva");
-      setCurrentStep(0);
+      setCurrentStep(datosStepIndex);
 
       return;
     }
@@ -113,6 +118,7 @@ export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
     setCurrentStep,
     setFlowStep,
     hasDatosCompletos,
+    pasosReserva?.visitantes?.completado,
   ]);
 
   useEffect(() => {
@@ -192,7 +198,7 @@ export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
                 height:
                   flowStep === "platos" && !isMobile
                     ? "50rem"
-                    : flowStep === "reserva" && currentStep === 1 && activeMesas && !isMobile
+                    : flowStep === "reserva" && currentStep === cantidadStepIndex && activeMesas && !isMobile
                       ? "42rem"
                     : isMobile
                       ? "100dvh"
@@ -204,6 +210,7 @@ export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
                 {flowStep === "reserva" && (
                   <div key="reserva-base" className="size-full relative z-0">
                     <ReservaComponent
+                      stepinvert={stepinvert}
                       region={selectedRegion}
                       onReservaSinMenuCheckout={() => setFlowStep("platos")}
                     />

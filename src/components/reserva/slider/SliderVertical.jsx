@@ -14,6 +14,7 @@ import { Button } from "../../ui/Button";
 import { BanknoteArrowUp, ChevronLeft, X } from "lucide-react";
 
 export default function SliderVertical({
+  stepinvert = false,
   onReservaSinMenuCheckout = () => {},
 }) {
   const swiperRef = useRef(null);
@@ -60,11 +61,32 @@ export default function SliderVertical({
   const safeCompletedSteps = Array.isArray(completedSteps)
     ? completedSteps
     : [false, false, false, false];
-  const stepKeys = [null, "visitantes", "fecha", "hora"];
+  const orderedSteps = stepinvert
+    ? ["cantidad", "datos", "fecha", "hora"]
+    : ["datos", "cantidad", "fecha", "hora"];
+  const currentStepName = orderedSteps[currentStep] || orderedSteps[0];
 
-  const marcarPasoComoConfirmado = (stepIndex) => {
-    const currentStepKey = stepKeys[stepIndex];
-    const nextStepKey = stepKeys[stepIndex + 1];
+  const getStepIndex = (stepName) => orderedSteps.indexOf(stepName);
+
+  const getPasoKeyByStepName = (stepName) => {
+    if (stepName === "cantidad") return "visitantes";
+    if (stepName === "fecha") return "fecha";
+    if (stepName === "hora") return "hora";
+    return null;
+  };
+
+  const marcarPasoComoConfirmado = (stepName) => {
+    const currentStepKey = getPasoKeyByStepName(stepName);
+
+    let nextStepKey = null;
+
+    if (stepName === "cantidad") {
+      nextStepKey = "fecha";
+    }
+
+    if (stepName === "fecha") {
+      nextStepKey = "hora";
+    }
 
     if (currentStepKey) {
       setPasoReserva(currentStepKey, { completado: true, habilitado: true });
@@ -124,16 +146,20 @@ export default function SliderVertical({
 
   const handleContinueFromDatos = () => {
     const newCompleted = [...safeCompletedSteps];
-    newCompleted[0] = true;
+    newCompleted[currentStep] = true;
     setCompletedSteps(newCompleted);
-    setCurrentStep(1);
+
+    const nextStepIndex = getStepIndex("fecha");
+    if (nextStepIndex >= 0) {
+      setCurrentStep(nextStepIndex);
+    }
   };
 
   const handleElegirMenu = async () => {
     const newCompleted = [...safeCompletedSteps];
-    newCompleted[3] = true;
+    newCompleted[currentStep] = true;
     setCompletedSteps(newCompleted);
-    marcarPasoComoConfirmado(3);
+    marcarPasoComoConfirmado("hora");
     setDatosReservaCompletados(true);
   };
 
@@ -182,9 +208,9 @@ export default function SliderVertical({
       } catch (_) {}
 
       const newCompleted = [...safeCompletedSteps];
-      newCompleted[3] = true;
+      newCompleted[currentStep] = true;
       setCompletedSteps(newCompleted);
-      marcarPasoComoConfirmado(3);
+      marcarPasoComoConfirmado("hora");
       setPasoReserva("platos", { habilitado: false, completado: false });
       setDatosReservaCompletados(true);
 
@@ -197,28 +223,28 @@ export default function SliderVertical({
   };
 
   const confirmarPaso = async () => {
-    if (currentStep === 1 && !canContinueFromCantidad) {
+    if (currentStepName === "cantidad" && !canContinueFromCantidad) {
       alert("Selecciona una zona, una mesa y al menos 1 adulto para continuar");
       return;
     }
 
-    if (currentStep === 2 && !canContinueFromFecha) {
+    if (currentStepName === "fecha" && !canContinueFromFecha) {
       alert("Selecciona una fecha para continuar");
       return;
     }
 
-    if (currentStep === 3 && !canContinueFromHora) {
+    if (currentStepName === "hora" && !canContinueFromHora) {
       alert("Selecciona una hora para continuar");
       return;
     }
 
     const newCompleted = [...safeCompletedSteps];
     newCompleted[currentStep] = true;
-    marcarPasoComoConfirmado(currentStep);
+    marcarPasoComoConfirmado(currentStepName);
 
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    if (currentStep < 3) {
+    if (currentStep < orderedSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
 
@@ -229,6 +255,62 @@ export default function SliderVertical({
     if (currentStep <= 0) return;
     setCurrentStep(currentStep - 1);
   };
+
+  const datosSlide = (
+    <SwiperSlide key="datos" className="size-full">
+      <div className="w-full h-full flex flex-col items-center justify-center  ">
+        <div className="w-full max-w-xl flex-1 flex items-center justify-center">
+          <Datos
+            onContinue={handleContinueFromDatos}
+            back={
+              <>
+                {stepinvert && (
+                  <div className="flex w-full max-w-lg justify-center gap-6 pb-4">
+                    <ConfirmarPasoBoton
+                      confirmarPaso={goToPreviousStep}
+                      texto="Anterior"
+                      variantType="button-secondary"
+                    />
+                  </div>
+                )}
+              </>
+            }
+          />
+        </div>
+      </div>
+    </SwiperSlide>
+  );
+
+  const cantidadSlide = (
+    <SwiperSlide key="cantidad" className="size-full">
+      <div className="size-full h-full flex flex-col items-center justify-center py-4">
+        <div className="size-full flex-1 flex flex-col items-center justify-center">
+          <PasoCantidad
+            adults={adults}
+            children={children}
+            mascotas={mascotas}
+            setAdults={setAdults}
+            setChildren={setChildren}
+            setMascotas={setMascotas}
+            onConfirm={confirmarPaso}
+            canConfirm={canContinueFromCantidad}
+          />
+
+          <div className="flex w-full max-w-lg justify-center gap-6">
+            <ConfirmarPasoBoton
+              confirmarPaso={goToPreviousStep}
+              texto="Anterior"
+              variantType="button-secondary"
+            />
+            <ConfirmarPasoBoton
+              confirmarPaso={confirmarPaso}
+              isDisabled={!canContinueFromCantidad}
+            />
+          </div>
+        </div>
+      </div>
+    </SwiperSlide>
+  );
 
   return (
     <>
@@ -244,44 +326,8 @@ export default function SliderVertical({
         simulateTouch={false}
         keyboard={false}
       >
-        {/* Paso 0 datos */}
-        <SwiperSlide className="size-full">
-          <div className="w-full h-full flex flex-col items-center justify-center  ">
-            <div className="w-full max-w-xl flex-1 flex items-center justify-center">
-              <Datos onContinue={handleContinueFromDatos} />
-            </div>
-          </div>
-        </SwiperSlide>
-
-        {/* PASO 1: cantidad yo region */}
-        <SwiperSlide className="size-full">
-          <div className="size-full h-full flex flex-col items-center justify-center py-4">
-            <div className="size-full flex-1 flex flex-col items-center justify-center">
-              <PasoCantidad
-                adults={adults}
-                children={children}
-                mascotas={mascotas}
-                setAdults={setAdults}
-                setChildren={setChildren}
-                setMascotas={setMascotas}
-                onConfirm={confirmarPaso}
-                canConfirm={canContinueFromCantidad}
-              />
-
-              <div className="flex w-full max-w-lg justify-center gap-6">
-                <ConfirmarPasoBoton
-                  confirmarPaso={goToPreviousStep}
-                  texto="Anterior"
-                  variantType="button-secondary"
-                />
-                <ConfirmarPasoBoton
-                  confirmarPaso={confirmarPaso}
-                  isDisabled={!canContinueFromCantidad}
-                />
-              </div>
-            </div>
-          </div>
-        </SwiperSlide>
+        {stepinvert ? cantidadSlide : datosSlide}
+        {stepinvert ? datosSlide : cantidadSlide}
 
         {/* PASO 2: fecha */}
         <SwiperSlide className="size-full">

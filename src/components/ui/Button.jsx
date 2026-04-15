@@ -84,20 +84,20 @@ export const Button = ({
   switch (type) {
     case "enlace":
       return (
-        <motion.a
+        <motion.button
           disabled={disabled}
-          href={href}
+          //href={href}
           target={target}
           className={`w-fit ${getWidthClass(width)} ${getFontSizeClass(
             fontSize,
           )} ${listas[type]} ${customClass}`}
           {...motionProps}
           {...props}
-          //onClick={onClick ? onClick : () => handleNavigate(href)}
+          onClick={onClick ? onClick : () => handleNavigate(href)}
         >
           {Icon && <Icon size={getIconSize(iconSize)} />}
           {title}
-        </motion.a>
+        </motion.button>
       );
     case "button-primary":
       return (

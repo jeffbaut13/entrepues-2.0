@@ -547,6 +547,10 @@ export const crearReservaPendienteDesdeCheckout = async ({
       datosReserva?.reservaZonaData?.selectedZoneName ||
       reservaData?.selectedZoneName ||
       "";
+    const mesaAsignada =
+      Number(datosReserva?.reservaZonaData?.mesaAsignada) ||
+      Number(reservaData?.mesa) ||
+      null;
 
     const payload = {
       "numero-de-reserva": numeroReservaFormateado,
@@ -554,6 +558,7 @@ export const crearReservaPendienteDesdeCheckout = async ({
       email: datosContacto?.email || reservaData.email || "",
       whatsapp: datosContacto?.whatsapp || reservaData.whatsapp || "",
       region: String(regionSeleccionada || "").trim(),
+      mesa: mesaAsignada,
       fecha: fechaFormateada,
       hora: horaFormateada,
       adultos,
