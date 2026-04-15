@@ -2,15 +2,15 @@ import { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, X } from "lucide-react";
 
-import { ReservaComponent } from "../ReservarComponent";
 import useReservaStore from "../../../store/reservaStore";
 import useCheckoutStore from "../../../store/checkoutStore";
 import PlatosSeleccion from "../PlatosSeleccion";
 import { ResumenReservaModal } from "./ResumenReservaModal";
 import { Button } from "../../ui/Button";
-import { Datos } from "../datos/Datos";
+
 import { CheckoutSuccesComponent } from "../../Checkout/CheckoutSuccesComponent";
 import { useIsMobile } from "../../../hooks/useIsMobile";
+import { ReservaComponent } from "../ReservaComponent";
 
 export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
   const wasOpenRef = useRef(false);
@@ -32,15 +32,30 @@ export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
     setFlowStep,
     goToNextFlowStep,
     resumeOrStartFlowStep,
-    isZonaExpanded,
-    setZonaExpanded,
+
     currentStep,
+    activeMesas,
     pasosReserva,
     setCurrentStep,
     setPasoReserva,
     resetReserva,
   } = useReservaStore();
   const isMobile = useIsMobile();
+  const getReservaPopupWidth = () => {
+    if (isMobile) return "100%";
+    if (flowStep === "succes") return "30rem";
+    if (flowStep === "platos") return "80rem";
+
+    const widthsByStep = {
+      0: "32rem",
+      1: "80rem",
+      2: "58rem",
+      3: "58rem",
+    };
+
+    return widthsByStep[currentStep] || "64rem";
+  };
+
   const clearReservationState = () => {
     resetCheckout();
     resetReserva();
@@ -78,14 +93,15 @@ export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
 
     if (shouldForceReservaFromRegion && hasDatosCompletos) {
       setFlowStep("reserva");
-      setCurrentStep(0);
-      setZonaExpanded(true);
+      setCurrentStep(1);
+
       return;
     }
 
     if (shouldForceReservaFromRegion && !hasDatosCompletos) {
-      setFlowStep("datos");
-      setZonaExpanded(false);
+      setFlowStep("reserva");
+      setCurrentStep(0);
+
       return;
     }
 
@@ -96,7 +112,6 @@ export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
     resumeOrStartFlowStep,
     setCurrentStep,
     setFlowStep,
-    setZonaExpanded,
     hasDatosCompletos,
   ]);
 
@@ -119,7 +134,7 @@ export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
   const handleBackToReservaFromPlatos = () => {
     setShowResumen(false);
     setPasoReserva("platos", { habilitado: false, completado: false });
-    setCurrentStep(2);
+    setCurrentStep(3);
     setFlowStep("reserva");
   };
 
@@ -173,18 +188,12 @@ export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
               animate={{
                 opacity: 1,
                 y: 0,
-                width: isMobile
-                  ? "100%"
-                  : flowStep === "datos" || flowStep === "succes"
-                    ? "30rem"
-                    : flowStep === "platos"
-                      ? "80rem"
-                      : currentStep === 0
-                        ? "70rem"
-                        : "64rem",
+                width: getReservaPopupWidth(),
                 height:
                   flowStep === "platos" && !isMobile
                     ? "50rem"
+                    : flowStep === "reserva" && currentStep === 1 && activeMesas && !isMobile
+                      ? "42rem"
                     : isMobile
                       ? "100dvh"
                       : "40.2060625rem",
@@ -192,25 +201,11 @@ export const ReservaPopupFlow = ({ isOpen, selectedRegion = "", onClose }) => {
               transition={{ duration: 0.2, delay: 0.1, ease: "easeOut" }}
             >
               <AnimatePresence mode="wait">
-                {flowStep === "datos" && (
-                  <motion.div
-                    key="datos"
-                    initial={{ opacity: 0, width: "0" }}
-                    animate={{ opacity: 1, width: "100%" }}
-                    exit={{ opacity: 0, width: "0" }}
-                    transition={{ duration: 0.1, ease: "easeOut" }}
-                    className="flex-1 h-full flex flex-col items-center justify-center lg:py-10 py-0 lg:px-6 px-4 absolute right-0 top-0 z-10 bg-secondary whitespace-nowrap"
-                  >
-                    <Datos onContinue={goToNextFlowStep} />
-                  </motion.div>
-                )}
                 {flowStep === "reserva" && (
                   <div key="reserva-base" className="size-full relative z-0">
                     <ReservaComponent
                       region={selectedRegion}
                       onReservaSinMenuCheckout={() => setFlowStep("platos")}
-                      isZonaExpanded={isZonaExpanded}
-                      setZonaExpanded={setZonaExpanded}
                     />
                   </div>
                 )}

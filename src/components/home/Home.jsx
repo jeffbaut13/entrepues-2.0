@@ -1,13 +1,19 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
-import { CallToActions } from "../common/CallToAction/CallToActions";
+import {
+  CallToActions,
+  RedesSociales,
+} from "../common/CallToAction/CallToActions";
 import ArcScrollReveal from "../ScrollSvg";
 import { Title } from "../ui/Title";
 import { IconoSeparador } from "../ui/IconoSeparador";
 import { ScrollDownLottie } from "../ui/ScrollDownLottie";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { useOutletContext } from "react-router-dom";
+import { Button } from "../ui/Button";
+import { Logo } from "../ui/Logo";
+import { Mail, MapPin, Phone } from "lucide-react";
 
 export const HomeComponent = () => {
   const [showScrollHint, setShowScrollHint] = useState(false);
@@ -29,7 +35,7 @@ export const HomeComponent = () => {
 
   return (
     <>
-      <CallToActions onOpenReservePopup={onOpenReservePopup}/>
+      <CallToActions onOpenReservePopup={onOpenReservePopup} />
       <ArcScrollReveal />
       <div className="hide-logo-section">
         <SectionTwo isMobile={isMobile} />
@@ -57,7 +63,7 @@ const SectionTwo = ({ isMobile }) => {
       >
         <div className="md:w-1/2 w-full md:h-full h-1/2 flex justify-center items-center">
           <motion.div
-            className="max-w-lg text-center"
+            className="text-center"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.4 }}
@@ -76,27 +82,38 @@ const SectionTwo = ({ isMobile }) => {
               }}
               transition={{ duration: 0.6, ease: "easeOut" }}
             >
-              <Title headContent={"La casa"} content={"Del sabor Colombiano"} />
+              <Title
+                headingLevel="h1"
+                theme="light"
+                headContent={"Nuestra"}
+                content={"Historia"}
+              />
             </motion.div>
-            <IconoSeparador />
+            <IconoSeparador theme="light" />
             <motion.p
-              className="text-center max-lg:px-4"
+              className="text-center text-secondary text-lg"
               variants={{
                 hidden: { opacity: 0, y: 18 },
                 visible: { opacity: 1, y: 0 },
               }}
               transition={{ duration: 0.7, ease: "easeOut" }}
             >
-              En un país donde muchos hablan de comida típica, nosotros la{" "}
+              Mijito vea, desde el 95 este Entre Pués abrió sus puertas, así
+              bien <br className="hidden lg:block" />
+              sencillito, pa’ que la gente viniera a comer como en la casa, ¿sí
+              me <br className="hidden lg:block" />
+              entiende? Todo en fogón de carbón, como se ha hecho toda la{" "}
               <br className="hidden lg:block" />
-              hacemos como es, respetando las preparaciones, los tiempos y{" "}
-              <br className="hidden lg:block" /> los sabores como manda la
-              tradición. Cocinamos con tiempo y{" "}
+              vida, con ese saborcito que no se consigue en cualquier parte.
               <br className="hidden lg:block" />
-              con cariño, para que cuando te sientes a la mesa sientas que
+              Aquí hemos ido juntando lo mejor de cada rincón de Colombia,{" "}
               <br className="hidden lg:block" />
-              estás en casa, pero con el cuidado, la calidad y el detalle que
-              <br className="hidden lg:block" /> merece un buen restaurante.
+              pero sin perder lo nuestro, lo bien paisa, lo de antes.{" "}
+              <br className="hidden lg:block" />Y vea, lo más bonito de todo, es
+              que aquí hemos visto crecer las <br className="hidden lg:block" />
+              familias. Los que venían chiquitos, ahora vuelven con sus hijos, y{" "}
+              <br className="hidden lg:block" />
+              eso sí que le alegra a uno el corazón, mijo.
             </motion.p>
           </motion.div>
         </div>
@@ -106,30 +123,10 @@ const SectionTwo = ({ isMobile }) => {
   );
 };
 const SectionThree = ({ isMobile }) => {
-  const imagenes = [
-    {
-      url: 0,
-      title: "La bandeja paisa",
-      content: "Más rica del país",
-    },
-    {
-      url: 0,
-      title: "El sanchocho",
-      content: "Más rico del país",
-    },
-    {
-      url: 0,
-      title: "El ajiaco",
-      content: "Más rico del país",
-    },
-  ];
   return (
     <>
-      <section
-        className="h-dvh w-full bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/imagenes/background_texture.webp')" }}
-      >
-        <div className="w-full h-full flex flex-col justify-center gap-4 items-center">
+      <section className="h-dvh w-full">
+        <div className="w-full h-full flex flex-col justify-between items-center relative">
           <motion.div
             className="max-w-full text-center"
             initial="hidden"
@@ -144,7 +141,7 @@ const SectionThree = ({ isMobile }) => {
             }}
           >
             <motion.h2
-              className="md:text-8xl text-6xl font-parkson pt-16"
+              className="md:text-8xl text-6xl font-parkson pt-16 text-secondary"
               variants={{
                 hidden: { opacity: 0, y: 24 },
                 visible: { opacity: 1, y: 0 },
@@ -153,21 +150,14 @@ const SectionThree = ({ isMobile }) => {
             >
               LOS FAVORITOS DE LA CASA
             </motion.h2>
-            <motion.p
-              className="text-2xl my-6"
-              variants={{
-                hidden: { opacity: 0, y: 18 },
-                visible: { opacity: 1, y: 0 },
-              }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
-            >
-              De esos que uno no olvida y siempre vuelve a pedir.
-            </motion.p>
           </motion.div>
           <motion.div
-            className="flex-1 w-full md:h-full flex md:flex-row flex-col justify-between relative"
             initial="hidden"
             whileInView="visible"
+            className="h-[80dvh] w-full bg-cover bg-top text-secondary"
+            style={{
+              backgroundImage: `url('/imagenes/section_three${isMobile ? "" : ""}.webp')`,
+            }}
             viewport={{ once: true, amount: 0.35 }}
             variants={{
               hidden: { opacity: 0 },
@@ -177,142 +167,68 @@ const SectionThree = ({ isMobile }) => {
               },
             }}
           >
-            {!isMobile && (
-              <picture className="absolute -top-8 left-0 w-full h-25 z-10">
-                <img
-                  className="size-full inline-block"
-                  src="/imagenes/divisor.webp"
-                  alt=""
-                />
-              </picture>
-            )}
-            {imagenes.map((item, i) => (
-              <motion.div
-                key={i}
-                style={{
-                  backgroundImage: `url(/imagenes/section-four/la-cocina-más-rica-del-país-${
-                    i + 1
-                  }.webp)`,
-                  zIndex: i + 1,
-                }}
-                className={`md:h-full h-[13.67619rem] w-full max-lg:!bg-none bg-center bg-no-repeat flex justify-center items-end pb-8 relative ${i == 2 && isMobile ? "-translate-y-16" : i == 1 && isMobile ? "-translate-y-8" : ""}`}
-                variants={{
-                  hidden: { opacity: 0, y: 24, scale: 0.98 },
-                  visible: { opacity: 1, y: 0, scale: 1 },
-                }}
-                transition={{ duration: 0.7, ease: "easeOut" }}
-                whileHover={{ scale: 1.02 }}
-              >
-                <div className="bg-gradient-to-t from-black/60 pointer-events-none absolute md:top-0 max-lg:bottom-0 left-0 size-full z-2 max-lg:translate-y-14 max-lg:from-70%" />
-                {isMobile && (
-                  <picture className={`w-full absolute top-0 left-0 z-1`}>
-                    <img
-                      className="size-full object-cover inline-block"
-                      src={`/imagenes/section-four/la-cocina-más-rica-del-país-${
-                        i + 1
-                      }${isMobile ? "M" : ""}.webp`}
-                      alt=""
-                    />
-                  </picture>
-                )}
-                <h4 className="max-w-xl flex flex-col font-parkson text-secondary text-center z-10 relative">
-                  <span className="flex justify-center items-center gap-4">
-                    <span className="flex-1 h-px rounded-full bg-secondary" />
-                    <span className="w-fit md:!text-4xl !text-2xl">
-                      {item.title}
-                    </span>
-                    <span className="flex-1 h-px rounded-full bg-secondary" />
-                  </span>
-                  <span className="md:!text-7xl !text-5xl !leading-14">
-                    {item.content}
-                  </span>
-                </h4>
-              </motion.div>
-            ))}
+            <div className="relative z-20 pb-24 size-fit flex flex-col items-center justify-end gap-2 text-center mx-auto h-full">
+              <h2 className="font-parkson text-4xl">
+                LA BANDEJA PAISA DE DOÑA SEGUNDA
+              </h2>
+              <h2 className="text-xl mb-6">Desde 1960</h2>
+              <Button
+                target="_blank"
+                type="enlace"
+                href={"/plato-del-dia"}
+                title={"ver historia"}
+                fontSize="2xl"
+              />
+            </div>
           </motion.div>
+          <div className="overlay z-10" />
         </div>
       </section>
     </>
   );
 };
+
 const Footer = ({ isMobile }) => {
   return (
     <>
       <footer
-        className="h-dvh w-full bg-cover bg-center"
+        className="h-[80vh] w-full bg-cover bg-center"
         style={{ backgroundImage: "url('/imagenes/background_texture.webp')" }}
       >
-        <div className="size-full flex justify-center items-center">
-          <motion.div
-            className="max-w-2xl text-center space-y-14 max-lg:px-4"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.4 }}
-            variants={{
-              hidden: { opacity: 0 },
-              visible: {
-                opacity: 1,
-                transition: { staggerChildren: 0.18, ease: "easeOut" },
-              },
-            }}
-          >
-            <motion.p
-              variants={{
-                hidden: { opacity: 0, y: 18 },
-                visible: { opacity: 1, y: 0 },
-              }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
-            >
-              CHÍA, CUNDINAMARCA, 1987
-            </motion.p>
-            <motion.h2
-              className="md:text-8xl text-6xl font-parkson"
-              variants={{
-                hidden: { opacity: 0, y: 24 },
-                visible: { opacity: 1, y: 0 },
-              }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
-            >
-              Nuestra Inspiración
-            </motion.h2>
-            <motion.picture
-              className="h-20 w-auto inline-block"
-              variants={{
-                hidden: { opacity: 0, scale: 0.85 },
-                visible: { opacity: 1, scale: 1 },
-              }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-            >
-              <img
-                className="size-full object-contain inline-block"
-                src="/imagenes/vectorOne.svg"
-                alt="vector decorativo"
-              />
-            </motion.picture>
-            <motion.p
-              className="text-2xl"
-              variants={{
-                hidden: { opacity: 0, y: 18 },
-                visible: { opacity: 1, y: 0 },
-              }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
-            >
-              Entrepués nace del orgullo por lo nuestro y por la cocina
-              colombiana hecha <br className="hidden lg:block" /> como debe ser.
-              De esas recetas que pasan de generación en generación,{" "}
-              <br className="hidden lg:block" />
-              que se preparan con tiempo, con manos sabias y con la familia
-              alrededor. <br className="hidden lg:block" />
-              Queríamos que los sabores tradicionales del país tuvieran una casa
-              donde <br className="hidden lg:block" />
-              se respetaran sin cambios ni atajos. Aquí cada receta tiene
-              historia, cada <br className="hidden lg:block" />
-              ingrediente tiene origen y cada visita se siente como volver a
-              casa.
-            </motion.p>
-          </motion.div>
+        <div className="size-full flex flex-col justify-evenly items-center">
+          <Logo color={"dark"} size={`${isMobile ? "md" : "lg"}`} />
+          <div className="w-fit space-y-2 text-center">
+            <h2 className="text-xl">
+              LA CASA DEL SABOR COLOMBIANO,
+            </h2>
+            <h2 className="text-xl mb-6">Desde 1987</h2>
+          </div>
+          <div className="grid md:grid-cols-3 text-dark gap-24">
+            <div className="flex flex-col items-start justify-center gap-2">
+              <div className="flex items-center justify-center gap-1">
+                <MapPin size={16} /> <p>Km. 9 Autopista Norte Vía Tunja</p>
+              </div>
+              <div className="flex items-center justify-center gap-1">
+                <Phone size={16} /> <p>300 - 214 - 19 - 78</p>
+              </div>
+              <div className="flex items-center justify-center gap-1">
+                <Mail size={16} /> <p>servicio@restauranteentrepues.com</p>
+              </div>
+            </div>
+            <div className="flex flex-col items-center justify-center gap-2">
+              <div className="w-fit flex flex-col items-start justify-center">
+                <h6 className="font-parkson text-3xl">Nuestros Horarios</h6>
+                <p>Lunes 10:00 a.m – 04:00 p.m</p>
+                <p>Martes 09:00 a.m – 05:00 p.m</p>
+              </div>
+            </div>
+            <div className="flex flex-col items-start justify-end">
+              <p>Miércoles y Jueves 08:00 a.m – 05:00 p.m</p>
+              <p>Viernes a Domingo 08:00 a.m – 06:00 p.m</p>
+            </div>
+          </div>
+          <RedesSociales isSectionVisible={true} />
         </div>
-        <div className="w-1/2"></div>
       </footer>
     </>
   );

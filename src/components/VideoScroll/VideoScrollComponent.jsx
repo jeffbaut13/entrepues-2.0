@@ -14,10 +14,16 @@ const REGIONES = [
   { start: 14, title: "orinoquía" },
   { start: 35, title: "pacífica" },
   { start: 40, title: "amazonía" },
-  { start: 46, title: "caribe" },
+  { start: 55, title: "caribe" },
 ];
 
-const SCROLL_AREA = 6000;
+/* Easing natural para evitar saltos bruscos */
+const easeInOutSine = (t) => -(Math.cos(Math.PI * t) - 1) / 2;
+
+const SCROLL_STEP_SECONDS = 3;
+const STEP_TRANSITION_MS = 1500;
+
+const TOUCH_THRESHOLD = 30;
 
 export const VideoScrollComponent = () => {
   const { onOpenReservePopup, setShowHeader } = useOutletContext();
@@ -25,11 +31,16 @@ export const VideoScrollComponent = () => {
   const videoRef = useRef(null);
   const audioRef = useRef(null);
   const containerRef = useRef(null);
-
-  const progressRef = useRef(0);
-  const targetProgressRef = useRef(0);
-
   const animationRef = useRef(null);
+
+  /* Refs de navegación */
+  const isTransitioningRef = useRef(false);
+  const transitionStartRef = useRef(0);
+  const transitionFromRef = useRef(0);
+  const transitionToRef = useRef(0);
+
+  /* Ref para detección de swipe */
+  const touchStartYRef = useRef(0);
 
   const isMobile = useIsMobile();
   const VIDEO_URL = `/video/recorrido/recorrido${isMobile ? "M" : ""}.mp4`;
@@ -55,53 +66,122 @@ export const VideoScrollComponent = () => {
   };
 
   /* =========================
-     RAF LOOP (suaviza el video)
+     NAVEGAR A TIEMPO
+  ========================== */
+
+  const navigateToTime = (targetTime) => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const duration = video.duration || 60;
+    const clampedTargetTime = Math.max(0, Math.min(duration, targetTime));
+
+    const fromTime = video.currentTime;
+    const toTime = clampedTargetTime;
+
+    if (Math.abs(fromTime - toTime) < 0.05) {
+      isTransitioningRef.current = false;
+      return;
+    }
+
+    isTransitioningRef.current = true;
+    transitionStartRef.current = performance.now();
+    transitionFromRef.current = fromTime;
+    transitionToRef.current = toTime;
+  };
+
+  /* =========================
+     RAF LOOP (ease-in-out cinematográfico)
   ========================== */
 
   const animationLoop = () => {
     const video = videoRef.current;
     if (!video) return;
 
-    const duration = video.duration || 60;
+    if (isTransitioningRef.current) {
+      const elapsed = performance.now() - transitionStartRef.current;
+      const rawProgress = Math.min(elapsed / STEP_TRANSITION_MS, 1);
+      const eased = easeInOutSine(rawProgress);
 
-    // interpolación simple
-    progressRef.current +=
-      (targetProgressRef.current - progressRef.current) * 0.12;
+      const from = transitionFromRef.current;
+      const to = transitionToRef.current;
+      const time = from + (to - from) * eased;
 
-    const time = progressRef.current * duration;
+      video.currentTime = time;
 
-    video.currentTime = time;
+      setShowHeader(time > 1.5);
+      setShowScrollHint(time < 3);
+      updateRegion(time);
 
-    setShowHeader(time > 1.5);
-    setShowScrollHint(time < 3);
-
-    updateRegion(time);
+      if (rawProgress >= 1) {
+        video.currentTime = transitionToRef.current;
+        updateRegion(transitionToRef.current);
+        isTransitioningRef.current = false;
+      }
+    } else {
+      const time = video.currentTime;
+      setShowHeader(time > 1.5);
+      setShowScrollHint(time < 3);
+      updateRegion(time);
+    }
 
     animationRef.current = requestAnimationFrame(animationLoop);
   };
 
   /* =========================
-     SCROLL → target progress
+      WHEEL → avance/retroceso fijo por segundos
+     (bloqueado durante transición)
   ========================== */
 
-  const handleScroll = () => {
-    const container = containerRef.current;
-    if (!container) return;
+  const handleWheel = (e) => {
+    e.preventDefault();
 
-    const maxScroll = SCROLL_AREA - window.innerHeight;
+    if (isTransitioningRef.current) return;
 
-    targetProgressRef.current = container.scrollTop / maxScroll;
+    const video = videoRef.current;
+    if (!video) return;
+
+    const direction = e.deltaY > 0 ? 1 : -1;
+    const nextTime = video.currentTime + direction * SCROLL_STEP_SECONDS;
+
+    navigateToTime(nextTime);
   };
 
   /* =========================
-     REGION CLICK
+      TOUCH → swipe en pasos de 2 segundos
+     (bloqueado durante transición)
+  ========================== */
+
+  const handleTouchStart = (e) => {
+    touchStartYRef.current = e.touches[0].clientY;
+  };
+
+  const handleTouchMove = (e) => {
+    e.preventDefault();
+  };
+
+  const handleTouchEnd = (e) => {
+    if (isTransitioningRef.current) return;
+
+    const deltaY = touchStartYRef.current - e.changedTouches[0].clientY;
+
+    if (Math.abs(deltaY) < TOUCH_THRESHOLD) return;
+
+    const video = videoRef.current;
+    if (!video) return;
+
+    const direction = deltaY > 0 ? 1 : -1;
+    const nextTime = video.currentTime + direction * SCROLL_STEP_SECONDS;
+
+    navigateToTime(nextTime);
+  };
+
+  /* =========================
+     REGION CLICK (salto directo, sin bloqueo)
   ========================== */
 
   const handleRegionSelect = (regionName) => {
-    const video = videoRef.current;
-    const container = containerRef.current;
-
-    if (!video || !container) return;
+    if (isTransitioningRef.current) return;
 
     const regionIndex = REGIONES.findIndex(
       (region) => region.title === regionName,
@@ -109,18 +189,7 @@ export const VideoScrollComponent = () => {
 
     if (regionIndex < 0) return;
 
-    const region = REGIONES[regionIndex];
-
-    const duration = video.duration || 60;
-
-    const progress = region.start / duration;
-
-    const maxScroll = SCROLL_AREA - window.innerHeight;
-
-    container.scrollTo({
-      top: progress * maxScroll,
-      behavior: "smooth",
-    });
+    navigateToTime(REGIONES[regionIndex].start);
   };
 
   /* =========================
@@ -191,38 +260,33 @@ export const VideoScrollComponent = () => {
 
     requestAnimationFrame(animationLoop);
 
-    const video = videoRef.current;
-    const container = containerRef.current;
-
-    if (!video || !container) return;
-
-    const startSecond = 2;
-    const duration = video.duration || 60;
-
-    const progress = startSecond / duration;
-
-    const maxScroll = SCROLL_AREA - window.innerHeight;
-
     setTimeout(() => {
-      container.scrollTo({
-        top: progress * maxScroll,
-        behavior: "smooth",
-      });
+      navigateToTime(2);
     }, 1000);
   }, [videoReady]);
 
   /* =========================
-     SCROLL LISTENER
+     WHEEL + TOUCH LISTENERS
   ========================== */
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    container.addEventListener("scroll", handleScroll);
+    container.addEventListener("wheel", handleWheel, { passive: false });
+    container.addEventListener("touchstart", handleTouchStart, {
+      passive: true,
+    });
+    container.addEventListener("touchmove", handleTouchMove, {
+      passive: false,
+    });
+    container.addEventListener("touchend", handleTouchEnd, { passive: true });
 
     return () => {
-      container.removeEventListener("scroll", handleScroll);
+      container.removeEventListener("wheel", handleWheel);
+      container.removeEventListener("touchstart", handleTouchStart);
+      container.removeEventListener("touchmove", handleTouchMove);
+      container.removeEventListener("touchend", handleTouchEnd);
     };
   }, []);
 
@@ -244,9 +308,9 @@ export const VideoScrollComponent = () => {
 
       <div
         ref={containerRef}
-        className="w-full h-dvh overflow-y-auto overflow-x-hidden"
+        className="w-full h-dvh overflow-hidden"
       >
-        <div className="sticky top-0 h-dvh w-full">
+        <div className="relative h-full w-full">
           <video
             ref={videoRef}
             src={VIDEO_URL}
@@ -266,8 +330,6 @@ export const VideoScrollComponent = () => {
             onOpenReservePopup={onOpenReservePopup}
           />
         </div>
-
-        <div style={{ height: `${SCROLL_AREA}px` }} />
 
         <ScrollDownLottie
           color="#FFFFFF"

@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { BookCheck, ChevronLeft } from "lucide-react";
+import { BookCheck, ChevronLeft, Plus } from "lucide-react";
 import {
   normalizarClaveCatalogo,
   obtenerCatalogoNormalizado,
@@ -13,6 +13,7 @@ import useReservaStore from "../../store/reservaStore";
 import useCheckoutStore from "../../store/checkoutStore";
 
 import { capitalizeFirst } from "../../constants/firsLetterUppercase";
+import { IncremenAndDecrementComponent } from "../common/IncrementAndDrecrement";
 import { Button } from "../ui/Button";
 import "swiper/css";
 import "swiper/css/pagination";
@@ -62,6 +63,7 @@ export default function PlatosSeleccion({
   onBackToReserva,
   onPagoSuccess,
 }) {
+  const MENU_INFANTIL_KEY = "menu_infantil";
   // ===========================
   // ESTADOS
   // ===========================
@@ -318,6 +320,13 @@ export default function PlatosSeleccion({
     );
   };
 
+  const obtenerCantidadPlato = (platoId) => {
+    const plato = (platosSeleccionados[asistenteActual] || []).find(
+      (p) => p.id === platoId,
+    );
+    return Number(plato?.cantidad || 0);
+  };
+
   // ===========================
   // MANEJADORES DE EVENTOS
   // ===========================
@@ -359,27 +368,92 @@ export default function PlatosSeleccion({
     resumenSwiperRef.current?.swiper?.slideTo(safeIndex);
   };
 
+  const esAsistenteNino = (asistente) =>
+    normalizarClaveCatalogo(String(asistente || "")).startsWith("nino");
+
+  const moverACategoriaMenuInfantilSiAplica = (asistenteIndex) => {
+    const asistente = asistentesLista[asistenteIndex];
+    if (!esAsistenteNino(asistente)) return;
+
+    const categoriaIndex = categorias.findIndex(
+      (categoria) => categoria.key === MENU_INFANTIL_KEY,
+    );
+
+    if (categoriaIndex < 0) return;
+
+    setCategoriActual(MENU_INFANTIL_KEY);
+    swiperRef.current?.swiper?.slideTo(categoriaIndex);
+  };
+
+  useEffect(() => {
+    if (categorias.length === 0 || asistentesLista.length === 0) return;
+    moverACategoriaMenuInfantilSiAplica(asistenteActual);
+  }, [asistenteActual, categorias, asistentesLista]);
+
   const handleSeleccionarPlato = (plato) => {
     setPlatosSeleccionados((prev) => {
       const actual = prev[asistenteActual] || [];
       const existe = actual.some((p) => p.id === plato.id);
 
       if (existe) {
+        return prev;
+      }
+
+      const platoConCantidad = {
+        ...plato,
+        cantidad: 1,
+      };
+
+      return {
+        ...prev,
+        [asistenteActual]: [...actual, platoConCantidad],
+      };
+    });
+  };
+
+  const incrementarCantidadPlato = (plato) => {
+    setPlatosSeleccionados((prev) => {
+      const actual = prev[asistenteActual] || [];
+      const idx = actual.findIndex((p) => p.id === plato.id);
+
+      if (idx === -1) {
         return {
           ...prev,
-          [asistenteActual]: actual.filter((p) => p.id !== plato.id),
-        };
-      } else {
-        // Agregar plato con cantidad por defecto de 1
-        const platoConCantidad = {
-          ...plato,
-          cantidad: 1,
-        };
-        return {
-          ...prev,
-          [asistenteActual]: [...actual, platoConCantidad],
+          [asistenteActual]: [...actual, { ...plato, cantidad: 1 }],
         };
       }
+
+      return {
+        ...prev,
+        [asistenteActual]: actual.map((item, index) =>
+          index === idx ? { ...item, cantidad: Number(item.cantidad || 0) + 1 } : item,
+        ),
+      };
+    });
+  };
+
+  const decrementarCantidadPlato = (platoId) => {
+    setPlatosSeleccionados((prev) => {
+      const actual = prev[asistenteActual] || [];
+      const idx = actual.findIndex((p) => p.id === platoId);
+      if (idx === -1) return prev;
+
+      const plato = actual[idx];
+      const nextCantidad = Number(plato?.cantidad || 0) - 1;
+
+      if (nextCantidad <= 0) {
+        return {
+          ...prev,
+          [asistenteActual]: actual.filter((p) => p.id !== platoId),
+        };
+      }
+
+      return {
+        ...prev,
+        [asistenteActual]: actual.map((item, index) =>
+          index === idx ? { ...item, cantidad: nextCantidad } : item,
+        ),
+      };
     });
   };
 
@@ -551,7 +625,7 @@ export default function PlatosSeleccion({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
-            className="flex-1 max-lg:w-full lg:h-fit flex lg:flex-col flex-row-reverse gap-4 items-center lg:justify-between justify-center flex-wrap content-center"
+            className="flex-1 max-lg:w-full lg:h-fit flex lg:flex-col flex-row-reverse items-start lg:justify-between justify-start flex-wrap content-center"
           >
             <div className="lg:w-fit w-56">
               <h4 className="text-start font-parkson font-bold">
@@ -561,14 +635,10 @@ export default function PlatosSeleccion({
                   tus platos
                 </span>
               </h4>
-              {!isMobile && (
-                <h2 className="text-start mt-4 !text-xl">
-                  {mensajePlatosUsuario}
-                </h2>
-              )}
+              
             </div>
 
-            <div className="lg:w-96 w-28 space-y-4 lg:mt-12">
+            <div className="lg:w-96 w-28 space-y-4 lg:mt-8">
               <div className="w-full flex items-start gap-2">
                 <div className="flex-1 min-w-0 flex flex-col gap-2">
                   <Swiper
@@ -721,6 +791,9 @@ export default function PlatosSeleccion({
                 getProductosPorCategoria={getProductosPorCategoria}
                 esPlatoSeleccionado={esPlatoSeleccionado}
                 handleSeleccionarPlato={handleSeleccionarPlato}
+                obtenerCantidadPlato={obtenerCantidadPlato}
+                incrementarCantidadPlato={incrementarCantidadPlato}
+                decrementarCantidadPlato={decrementarCantidadPlato}
                 component={
                   <>
                     <div className="w-full flex flex-wrap items-center justify-center gap-4">
@@ -820,6 +893,9 @@ const MenuSelected = ({
   getProductosPorCategoria,
   esPlatoSeleccionado,
   handleSeleccionarPlato,
+  obtenerCantidadPlato,
+  incrementarCantidadPlato,
+  decrementarCantidadPlato,
   component,
 }) => {
   return (
@@ -919,24 +995,43 @@ const MenuSelected = ({
                           ${plato.precio.toLocaleString("es-CO")}
                         </p>
 
-                        <div className="w-fit shrink-0 flex flex-col items-start justify-center p-1">
-                          <div className="w-full flex justify-end">
-                            <span
-                              className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
-                                esPlatoSeleccionado(plato.id)
-                                  ? "bg-[#22ae63]"
-                                  : "bg-dark/15"
-                              }`}
-                            >
-                              <span
-                                className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-                                  esPlatoSeleccionado(plato.id)
-                                    ? "translate-x-7"
-                                    : "translate-x-1"
-                                }`}
-                              />
-                            </span>
-                          </div>
+                        <div
+                          className="w-fit shrink-0 flex flex-col items-start justify-center p-1"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <AnimatePresence mode="wait" initial={false}>
+                            {obtenerCantidadPlato(plato.id) > 0 ? (
+                              <motion.div
+                                key={`cantidad-${plato.id}`}
+                                initial={{ opacity: 0, scale: 0.92, y: 4 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.92, y: -4 }}
+                                transition={{ duration: 0.16, ease: "easeOut" }}
+                                className="rounded-full border border-dark/15 px-2 py-1 bg-white/40"
+                              >
+                                <IncremenAndDecrementComponent
+                                  item={obtenerCantidadPlato(plato.id)}
+                                  increaseQuantity={() => incrementarCantidadPlato(plato)}
+                                  decreaseQuantity={() => decrementarCantidadPlato(plato.id)}
+                                  colorItems="text-dark"
+                                />
+                              </motion.div>
+                            ) : (
+                              <motion.button
+                                key={`add-${plato.id}`}
+                                type="button"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                transition={{ duration: 0.16, ease: "easeOut" }}
+                                onClick={() => incrementarCantidadPlato(plato)}
+                                aria-label={`Agregar ${plato.nombre}`}
+                                className="p-1 w-8 h-8 rounded-full bg-[#65c566]"
+                              >
+                                <Plus className={"text-secondary size-full"} />
+                              </motion.button>
+                            )}
+                          </AnimatePresence>
                         </div>
                       </motion.div>
                     ))

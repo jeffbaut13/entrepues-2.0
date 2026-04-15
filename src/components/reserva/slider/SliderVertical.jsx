@@ -6,6 +6,7 @@ import "swiper/css/pagination";
 import "./styleVertical.css";
 
 import useReservaStore from "../../../store/reservaStore";
+import { Datos } from "../datos/Datos";
 import PasoFecha from "../datepicker/PasoFecha";
 import PasoHora from "../PasoHoraMain";
 import PasoCantidad from "../PasoCantidad";
@@ -13,8 +14,6 @@ import { Button } from "../../ui/Button";
 import { BanknoteArrowUp, ChevronLeft, X } from "lucide-react";
 
 export default function SliderVertical({
-  isZonaExpanded = false,
-  setZonaExpanded = () => {},
   onReservaSinMenuCheckout = () => {},
 }) {
   const swiperRef = useRef(null);
@@ -34,7 +33,6 @@ export default function SliderVertical({
     reservaZonaData,
     updateReservaData,
     setDatosReservaCompletados,
-    goToPrevFlowStep,
     setFlowStep,
   } = useReservaStore();
 
@@ -62,7 +60,7 @@ export default function SliderVertical({
   const safeCompletedSteps = Array.isArray(completedSteps)
     ? completedSteps
     : [false, false, false, false];
-  const stepKeys = ["visitantes", "fecha", "hora", "platos"];
+  const stepKeys = [null, "visitantes", "fecha", "hora"];
 
   const marcarPasoComoConfirmado = (stepIndex) => {
     const currentStepKey = stepKeys[stepIndex];
@@ -124,11 +122,18 @@ export default function SliderVertical({
     setCurrentStep(swiper.activeIndex);
   };
 
+  const handleContinueFromDatos = () => {
+    const newCompleted = [...safeCompletedSteps];
+    newCompleted[0] = true;
+    setCompletedSteps(newCompleted);
+    setCurrentStep(1);
+  };
+
   const handleElegirMenu = async () => {
     const newCompleted = [...safeCompletedSteps];
-    newCompleted[2] = true;
+    newCompleted[3] = true;
     setCompletedSteps(newCompleted);
-    marcarPasoComoConfirmado(2);
+    marcarPasoComoConfirmado(3);
     setDatosReservaCompletados(true);
   };
 
@@ -177,9 +182,9 @@ export default function SliderVertical({
       } catch (_) {}
 
       const newCompleted = [...safeCompletedSteps];
-      newCompleted[2] = true;
+      newCompleted[3] = true;
       setCompletedSteps(newCompleted);
-      marcarPasoComoConfirmado(2);
+      marcarPasoComoConfirmado(3);
       setPasoReserva("platos", { habilitado: false, completado: false });
       setDatosReservaCompletados(true);
 
@@ -192,17 +197,17 @@ export default function SliderVertical({
   };
 
   const confirmarPaso = async () => {
-    if (currentStep === 0 && !canContinueFromCantidad) {
+    if (currentStep === 1 && !canContinueFromCantidad) {
       alert("Selecciona una zona, una mesa y al menos 1 adulto para continuar");
       return;
     }
 
-    if (currentStep === 1 && !canContinueFromFecha) {
+    if (currentStep === 2 && !canContinueFromFecha) {
       alert("Selecciona una fecha para continuar");
       return;
     }
 
-    if (currentStep === 2 && !canContinueFromHora) {
+    if (currentStep === 3 && !canContinueFromHora) {
       alert("Selecciona una hora para continuar");
       return;
     }
@@ -211,19 +216,10 @@ export default function SliderVertical({
     newCompleted[currentStep] = true;
     marcarPasoComoConfirmado(currentStep);
 
-    if (currentStep === 0) {
-      setZonaExpanded(false);
-    }
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
-    } else {
-      // Al completar los 4 pasos, marcar resumen como mostrado
-      // Esto se dispara desde el store
-      if (swiperRef.current && swiperRef.current.swiper) {
-        swiperRef.current.swiper.slideTo(4);
-      }
     }
 
     setCompletedSteps(newCompleted);
@@ -248,16 +244,23 @@ export default function SliderVertical({
         simulateTouch={false}
         keyboard={false}
       >
-        {/* PASO 0: Fecha */}
+        {/* Paso 0 datos */}
         <SwiperSlide className="size-full">
-          <div className="w-full h-full flex flex-col items-center justify-center">
-            <div className="w-full flex-1 flex flex-col items-center justify-center">
+          <div className="w-full h-full flex flex-col items-center justify-center  ">
+            <div className="w-full max-w-xl flex-1 flex items-center justify-center">
+              <Datos onContinue={handleContinueFromDatos} />
+            </div>
+          </div>
+        </SwiperSlide>
+
+        {/* PASO 1: cantidad yo region */}
+        <SwiperSlide className="size-full">
+          <div className="size-full h-full flex flex-col items-center justify-center py-4">
+            <div className="size-full flex-1 flex flex-col items-center justify-center">
               <PasoCantidad
                 adults={adults}
                 children={children}
                 mascotas={mascotas}
-                isZonaExpanded={isZonaExpanded}
-                setZonaExpanded={setZonaExpanded}
                 setAdults={setAdults}
                 setChildren={setChildren}
                 setMascotas={setMascotas}
@@ -265,28 +268,32 @@ export default function SliderVertical({
                 canConfirm={canContinueFromCantidad}
               />
 
-              {!isZonaExpanded && (
-                <div className="flex w-full max-w-lg justify-center gap-6">
-                  <ConfirmarPasoBoton
-                    confirmarPaso={goToPrevFlowStep}
-                    texto="Anterior"
-                    variantType="button-secondary"
-                  />
-                  <ConfirmarPasoBoton
-                    confirmarPaso={confirmarPaso}
-                    isDisabled={!canContinueFromCantidad}
-                  />
-                </div>
-              )}
+              <div className="flex w-full max-w-lg justify-center gap-6">
+                <ConfirmarPasoBoton
+                  confirmarPaso={goToPreviousStep}
+                  texto="Anterior"
+                  variantType="button-secondary"
+                />
+                <ConfirmarPasoBoton
+                  confirmarPaso={confirmarPaso}
+                  isDisabled={!canContinueFromCantidad}
+                />
+              </div>
             </div>
           </div>
         </SwiperSlide>
 
-        {/* PASO 1: Hora */}
+        {/* PASO 2: fecha */}
         <SwiperSlide className="size-full">
-          <div className="w-full h-full flex flex-col items-center justify-center py-8">
-            <div className="w-full max-w-lg flex-1 flex flex-col">
-              <div className="flex-1 flex items-center justify-center">
+          <div className="w-full h-full flex flex-col items-center justify-center py-4">
+            <div className="w-full flex-1 flex items-center lg:px-14">
+              <div className="flex flex-1 flex-col items-start justify-center">
+                <h2 className="font-parkson mb-4 !text-4xl text-start">
+                  <TitleSlider head="Elige la fecha" content="De tu reserva" />
+                </h2>
+              </div>
+
+              <div className="flex-1 border-l border-black/20 pl-14 flex items-center justify-center">
                 <PasoFecha
                   selectedDate={selectedDate}
                   setSelectedDate={setSelectedDate}
@@ -307,11 +314,17 @@ export default function SliderVertical({
           </div>
         </SwiperSlide>
 
-        {/* PASO 2: Cantidad de personas */}
+        {/* PASO 3: horas */}
         <SwiperSlide className="slide-content">
-          <div className="w-full h-full flex flex-col items-center justify-center py-8">
-            <div className="w-full max-w-sm flex-1 flex flex-col">
-              <div className="flex-1 flex items-center justify-center">
+          <div className="w-full h-full flex flex-col items-center justify-center py-4">
+            <div className="w-full flex-1 flex items-center lg:px-14">
+              <div className="flex flex-1 flex-col items-start justify-center">
+                <h2 className="font-parkson mb-4 !text-4xl text-start">
+                  <TitleSlider head="Elige la hora" content="De tu reserva" />
+                </h2>
+              </div>
+
+              <div className="flex-1 border-l border-black/20 pl-14 flex items-center justify-center">
                 <PasoHora
                   hour={hour}
                   minute={minute}
@@ -320,6 +333,7 @@ export default function SliderVertical({
                 />
               </div>
             </div>
+
             <div className="flex w-full max-w-lg justify-center gap-6">
               <ConfirmarPasoBoton
                 confirmarPaso={goToPreviousStep}
@@ -356,5 +370,15 @@ const ConfirmarPasoBoton = ({
       customClass={`mt-4`}
       disabled={isDisabled}
     />
+  );
+};
+
+const TitleSlider = ({ head, content }) => {
+  return (
+    <>
+      <span className="lg:!text-5xl !text-5xl">{head} </span>
+      <br className="max-lg:hidden" />
+      <span className="lg:!text-7xl lg:!leading-14 !text-5xl">{content}</span>
+    </>
   );
 };

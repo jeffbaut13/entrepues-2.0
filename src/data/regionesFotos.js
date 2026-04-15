@@ -27,6 +27,12 @@ const regionesFotos = {
     "/imagenes/regiones/CARIBE/DSC08563.jpg",
     "/imagenes/regiones/CARIBE/DSC08565.jpg",
   ],
+  "ZONA-PET": [
+    "/imagenes/regiones/ZONA-PET/PET-1.jpg",
+    "/imagenes/regiones/ZONA-PET/PET-2.jpg",
+    "/imagenes/regiones/ZONA-PET/PET-3.jpg",
+  ],
+  GENERAL: ["/imagenes/regiones/GENERAL/GENERAL.jpg"],
 };
 
 export default regionesFotos;

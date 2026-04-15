@@ -5,7 +5,7 @@ import {
   obtenerSiguienteNumeroReserva,
 } from "./firestore";
 
-const CATEGORIAS = [
+const CATEGORIAS_FIRESTORE = [
   "desayunos",
   "entradas",
   "platos_fuertes",
@@ -13,7 +13,19 @@ const CATEGORIAS = [
   "postres",
 ];
 
+const CATEGORIA_MENU_INFANTIL = "menu_infantil";
+const CATEGORIAS_MENU = [
+  "desayunos",
+  "entradas",
+  "platos_fuertes",
+  CATEGORIA_MENU_INFANTIL,
+  "bebidas",
+  "postres",
+];
+const CATEGORIA_ORIGEN_MENU_INFANTIL = "platos_fuertes";
+
 export const NOMBRES_CATEGORIAS_PERSONALIZADOS = {
+  menu_infantil: "Menú infantil",
   platos_fuertes: "Almuerzos",
   entradas: "Pa'picar",
 };
@@ -39,7 +51,7 @@ export const resolverCategoriaKey = (categoria = "") => {
   const categoriaNormalizada = normalizarClaveCatalogo(categoria);
 
   if (!categoriaNormalizada) return "";
-  if (CATEGORIAS.includes(categoriaNormalizada)) return categoriaNormalizada;
+  if (CATEGORIAS_MENU.includes(categoriaNormalizada)) return categoriaNormalizada;
 
   const entradaPorNombrePersonalizado = Object.entries(
     NOMBRES_CATEGORIAS_PERSONALIZADOS
@@ -75,7 +87,7 @@ const parsearPrecio = (precio) => {
 const obtenerCategoriasOrdenadas = (estructuraCategorias = {}) => {
   const disponibles = Object.keys(estructuraCategorias);
 
-  const prioritarias = CATEGORIAS.filter((catEsperada) =>
+  const prioritarias = CATEGORIAS_MENU.filter((catEsperada) =>
     disponibles.some(
       (catReal) =>
         normalizarClaveCatalogo(catReal) ===
@@ -99,6 +111,47 @@ const obtenerCategoriasOrdenadas = (estructuraCategorias = {}) => {
   );
 
   return [...prioritarias.filter(Boolean), ...extras];
+};
+
+const expandirCategoriasVirtuales = (estructuraCategorias = {}) => {
+  const estructuraExpandida = Object.fromEntries(
+    Object.entries(estructuraCategorias).map(([categoriaKey, categoriaValue]) => [
+      categoriaKey,
+      {
+        ...categoriaValue,
+        subcategorias: { ...(categoriaValue?.subcategorias || {}) },
+      },
+    ]),
+  );
+
+  const categoriaOrigen =
+    estructuraExpandida[CATEGORIA_ORIGEN_MENU_INFANTIL]?.subcategorias || {};
+
+  const entryMenuInfantil = Object.entries(categoriaOrigen).find(
+    ([nombreSubcategoria]) =>
+      normalizarClaveCatalogo(nombreSubcategoria) === CATEGORIA_MENU_INFANTIL,
+  );
+
+  if (!entryMenuInfantil) {
+    return estructuraExpandida;
+  }
+
+  const [nombreSubcategoriaMenuInfantil, dataMenuInfantil] = entryMenuInfantil;
+
+  estructuraExpandida[CATEGORIA_MENU_INFANTIL] = {
+    nombre: nombreSubcategoriaMenuInfantil,
+    subcategorias: {
+      [nombreSubcategoriaMenuInfantil]: {
+        ...dataMenuInfantil,
+      },
+    },
+  };
+
+  delete estructuraExpandida[CATEGORIA_ORIGEN_MENU_INFANTIL]?.subcategorias?.[
+    nombreSubcategoriaMenuInfantil
+  ];
+
+  return estructuraExpandida;
 };
 
 /**
@@ -136,6 +189,7 @@ const parsearProductos = (subcategoriaData, nombreSubcategoria) => {
  * @returns {Object}
  */
 export const normalizarCatalogo = (estructuraCategorias = {}) => {
+  const estructuraExpandida = expandirCategoriasVirtuales(estructuraCategorias);
   const categorias = [];
   const subcategorias = [];
   const productos = [];
@@ -152,10 +206,10 @@ export const normalizarCatalogo = (estructuraCategorias = {}) => {
     },
   };
 
-  const categoriasOrdenadas = obtenerCategoriasOrdenadas(estructuraCategorias);
+  const categoriasOrdenadas = obtenerCategoriasOrdenadas(estructuraExpandida);
 
   categoriasOrdenadas.forEach((nombreCategoriaOriginal) => {
-    const categoriaData = estructuraCategorias[nombreCategoriaOriginal] || {};
+    const categoriaData = estructuraExpandida[nombreCategoriaOriginal] || {};
     const categoriaKey = normalizarClaveCatalogo(nombreCategoriaOriginal);
     const categoriaNombre = categoriaData?.nombre || nombreCategoriaOriginal;
 
@@ -381,7 +435,7 @@ export const obtenerTodasLasCategorias = async () => {
   try {
     const estructuraCategorias = {};
 
-    for (const nombreCategoria of CATEGORIAS) {
+    for (const nombreCategoria of CATEGORIAS_FIRESTORE) {
       const categoriaRef = collection(db, nombreCategoria);
       const subcategoriasSnapshot = await getDocs(categoriaRef);
 

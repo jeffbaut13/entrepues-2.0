@@ -7,7 +7,6 @@ export const Button = ({
   Icon,
   onClick,
   motionProps,
-  props = {},
   target = "_self",
   href,
   width = "ajustado",
@@ -15,6 +14,7 @@ export const Button = ({
   fontSize = "lg",
   customClass = "",
   disabled = false,
+  ...props
 }) => {
   const getWidthClass = (width) => {
     switch (width) {
@@ -84,20 +84,20 @@ export const Button = ({
   switch (type) {
     case "enlace":
       return (
-        <motion.button
+        <motion.a
           disabled={disabled}
-          to={href}
+          href={href}
           target={target}
           className={`w-fit ${getWidthClass(width)} ${getFontSizeClass(
             fontSize,
           )} ${listas[type]} ${customClass}`}
           {...motionProps}
           {...props}
-          onClick={onClick ? onClick : () => handleNavigate(href)}
+          //onClick={onClick ? onClick : () => handleNavigate(href)}
         >
           {Icon && <Icon size={getIconSize(iconSize)} />}
           {title}
-        </motion.button>
+        </motion.a>
       );
     case "button-primary":
       return (

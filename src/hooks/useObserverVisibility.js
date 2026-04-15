@@ -4,9 +4,7 @@ export const useObserverVisibility = (selector, options = {}) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Si el selector empieza con ".", es una clase; si no, es un ID
-    const elements = document.querySelectorAll(selector);
-    if (elements.length === 0) return;
+    if (!selector) return;
 
     const observerOptions = {
       threshold: 0.1,
@@ -14,22 +12,54 @@ export const useObserverVisibility = (selector, options = {}) => {
     };
 
     const observer = new IntersectionObserver((entries) => {
-      // Si alguno de los elementos es visible, setear isVisible a true
       const anyVisible = entries.some((entry) => entry.isIntersecting);
       setIsVisible(anyVisible);
     }, observerOptions);
 
-    elements.forEach((element) => {
-      observer.observe(element);
+    const observedElements = new Set();
+
+    const syncObservedElements = () => {
+      const elements = Array.from(document.querySelectorAll(selector));
+
+      // Observar nuevos elementos
+      elements.forEach((element) => {
+        if (!observedElements.has(element)) {
+          observer.observe(element);
+          observedElements.add(element);
+        }
+      });
+
+      // Dejar de observar elementos removidos del DOM
+      Array.from(observedElements).forEach((element) => {
+        if (!elements.includes(element)) {
+          observer.unobserve(element);
+          observedElements.delete(element);
+        }
+      });
+
+      if (elements.length === 0) {
+        setIsVisible(false);
+      }
+    };
+
+    // Primera sincronización y luego reaccionar a cambios del DOM
+    syncObservedElements();
+
+    const mutationObserver = new MutationObserver(() => {
+      syncObservedElements();
+    });
+
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
     });
 
     return () => {
-      elements.forEach((element) => {
-        observer.unobserve(element);
-      });
+      mutationObserver.disconnect();
+      observedElements.forEach((element) => observer.unobserve(element));
       observer.disconnect();
     };
-  }, [selector, options]);
+  }, [selector, options.root, options.rootMargin, options.threshold]);
 
   return isVisible;
 };

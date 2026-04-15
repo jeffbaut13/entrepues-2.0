@@ -20,7 +20,7 @@ const VideoScrollLayout = () => {
 
   return (
     <>
-      <Header loading={true} logo={showHeader} />
+      <Header loading={true} logo={showHeader} fullwidth />
       <Outlet
         context={{
           onOpenReservePopup: openReservePopup,

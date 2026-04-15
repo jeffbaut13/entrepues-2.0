@@ -107,10 +107,7 @@ button {
   overflow: hidden;
   --hover-color: white; /* valor por defecto */
 }
-p,
-span {
-  @apply text-lg;
-}
+ 
 h4 {
   @apply text-xl;
 }

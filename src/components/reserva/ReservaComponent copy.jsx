@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Calendar, Timer, User } from "lucide-react";
 
@@ -15,6 +14,8 @@ const normalizeRegionParam = (value = "") =>
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
 
 const resolveRegionName = (value = "") => {
@@ -24,36 +25,13 @@ const resolveRegionName = (value = "") => {
     pacifico: "pacífica",
     orinoquia: "orinoquía",
     amazonia: "amazonía",
+    "zona pet": "zona-pet",
+    zonapet: "zona-pet",
   };
 
   return aliases[normalized] || normalized;
 };
-
-export const ReservarComponent = () => {
-  return (
-    <motion.main
-      className="w-full h-dvh flex flex-col overflow-hidden relative"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-    >
-      <motion.div
-        className="absolute top-0 left-0 w-full h-full z-1 scale-102"
-        pointerEvents="none"
-      >
-        <img
-          src="/imagenes/background_texture.webp"
-          alt="Background textura"
-          className="size-full object-cover object-center"
-        />
-      </motion.div>
-
-      <div className="relative flex-1 w-full z-20 overflow-y-auto overflow-x-hidden flex items-center justify-center">
-        <ReservaComponent />
-      </div>
-    </motion.main>
-  );
-};
+ 
 
 export const ReservaComponent = ({
   region,
@@ -88,6 +66,14 @@ export const ReservaComponent = ({
   const mascotas = reservaData.mascotas;
 
   const pasos = [
+    {
+      key: "datos",
+      titulo: "Tus datos",
+      icon: User,
+      descripcion: "",
+      habilitado: true,
+      completado: false,
+    },
     {
       key: "visitantes",
       titulo: "¿Cuantos nos visitán?",
@@ -144,6 +130,8 @@ export const ReservaComponent = ({
     switch (stepKey) {
       case "visitantes":
         return <TitleSlider head="¿Dónde " content="Quieres comer?" />;
+      case "datos":
+        return <TitleSlider head="Queremos" content="conocerte" />;
       case "fecha":
         return <TitleSlider head="Elige la fecha" content="de tu reserva" />;
       case "hora":
@@ -167,7 +155,7 @@ export const ReservaComponent = ({
         parsed?.estado === "temporal" && parsed?.uiState?.showMenu === true;
 
       if (debeAbrirMenu) {
-        setCurrentStep(2);
+        setCurrentStep(3);
       }
     } catch (error) {
       console.error(
@@ -194,12 +182,13 @@ export const ReservaComponent = ({
 
   useEffect(() => {
     // Mantener expansión de zona solo en el paso Visitantes.
-    if (currentStep !== 0 && isZonaExpanded) {
+    if (currentStep !== 1 && isZonaExpanded) {
       setZonaExpanded(false);
     }
   }, [currentStep, isZonaExpanded, setZonaExpanded]);
 
-  const showContent = isMobile && !isZonaExpanded;
+  const isMapExpandedStep = currentStep === 1 && isZonaExpanded;
+  const showContent = isMobile && !isMapExpandedStep;
   return (
     <>
       <motion.div
@@ -297,7 +286,11 @@ export const ReservaComponent = ({
 
         <div
           className={`lg:absolute right-0 top-0 lg:h-full z-10 lg:p-6  ${
-            isZonaExpanded ? "w-full h-full" : "lg:w-[37.875rem] w-full h-126"
+            currentStep === 0
+              ? "lg:w-[34rem] w-full h-auto"
+              : isZonaExpanded
+                ? "w-full h-full"
+                : "lg:w-[37.875rem] w-full h-126"
           } transition-all duration-500 ease-in-out`}
         >
           <div

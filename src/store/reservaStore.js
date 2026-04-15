@@ -10,6 +10,8 @@ const normalizeZoneName = (value = "") =>
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
 
 const DEFAULT_RESERVA_DATA = {
@@ -28,7 +30,7 @@ export const RESERVA_ZONAS_CONFIG = [
   {
     id: "zona-1",
     nombre: "caribe",
-    permiteMascotas: true,
+    permiteMascotas: false,
     mesasBase: [4, 6],
   },
   {
@@ -45,8 +47,8 @@ export const RESERVA_ZONAS_CONFIG = [
   },
   {
     id: "zona-4",
-    nombre: "insular",
-    permiteMascotas: false,
+    nombre: "zona-pet",
+    permiteMascotas: true,
     mesasBase: [4, 6],
   },
   {
@@ -75,11 +77,11 @@ const buildDetalleAsistentes = (reservaData = {}) => {
 
   const asistentesAdultos = Array.from(
     { length: adultosCount },
-    (_, i) => `Adulto ${i + 1}`
+    (_, i) => `Adulto ${i + 1}`,
   );
   const asistentesNinos = Array.from(
     { length: ninosCount },
-    (_, i) => `Niño ${i + 1}`
+    (_, i) => `Niño ${i + 1}`,
   );
 
   return {
@@ -91,7 +93,7 @@ const buildDetalleAsistentes = (reservaData = {}) => {
 
 const getNextCapacityInPlan = (mesasBase = [], capacidadActual) => {
   const capacities = [...new Set((mesasBase || []).map(Number))].filter(
-    (value) => value > 0
+    (value) => value > 0,
   );
 
   if (capacities.length <= 1) {
@@ -107,7 +109,9 @@ const getNextCapacityInPlan = (mesasBase = [], capacidadActual) => {
 };
 
 const buildMesasPlan = (zona, capacidadInicial, totalOcupacion) => {
-  const capacidadesZona = (zona?.mesasBase || []).map(Number).filter((v) => v > 0);
+  const capacidadesZona = (zona?.mesasBase || [])
+    .map(Number)
+    .filter((v) => v > 0);
   if (capacidadesZona.length === 0) {
     return [];
   }
@@ -134,7 +138,10 @@ const buildMesasPlan = (zona, capacidadInicial, totalOcupacion) => {
   let capacidadAcumulada = capacidadBase;
 
   while (capacidadAcumulada < objetivo) {
-    const siguiente = getNextCapacityInPlan(capacidadesZona, plan[plan.length - 1]);
+    const siguiente = getNextCapacityInPlan(
+      capacidadesZona,
+      plan[plan.length - 1],
+    );
     plan.push(siguiente);
     capacidadAcumulada += siguiente;
   }
@@ -167,13 +174,25 @@ const buildMesaOptions = (zona, totalOcupacion) => {
 const buildZonaReservaData = (
   reservaData,
   selectedZoneId,
-  preferredMesaBase = null
+  preferredMesaBase = null,
 ) => {
-  const zonaSeleccionada =
-    RESERVA_ZONAS_CONFIG.find((zona) => zona.id === selectedZoneId) ||
-    RESERVA_ZONAS_CONFIG[0];
-
   const totalOcupacion = getTotalOcupacion(reservaData);
+  const zonaSeleccionada = RESERVA_ZONAS_CONFIG.find(
+    (zona) => zona.id === selectedZoneId,
+  );
+
+  if (!zonaSeleccionada) {
+    return {
+      zonas: RESERVA_ZONAS_CONFIG,
+      selectedZoneId: null,
+      selectedZoneName: "general",
+      permiteMascotas: false,
+      totalOcupacion,
+      opcionesMesa: [],
+      mesaSeleccionada: null,
+    };
+  }
+
   const opcionesMesa = buildMesaOptions(zonaSeleccionada, totalOcupacion);
 
   const mesaSeleccionada =
@@ -206,7 +225,7 @@ const INITIAL_PASOS_RESERVA = {
   platos: { completado: false, habilitado: false },
 };
 
-const FLOW_STEPS = ["datos", "reserva", "platos"];
+const FLOW_STEPS = ["reserva", "platos"];
 const FLOW_STEPS_VALID = [...FLOW_STEPS, "succes"];
 
 const buildFreshReservaData = () => ({
@@ -218,15 +237,16 @@ export const useReservaStore = create(
   persist(
     (set, get) => ({
       isBookingOpen: false,
-      flowStep: "datos",
+      flowStep: "reserva",
       currentStep: 0,
+      activeMesas: false,
       completedSteps: [false, false, false, false],
       pasosReserva: INITIAL_PASOS_RESERVA,
-      isZonaExpanded: false,
+
       isDatosReservaCompletados: false,
       reservaData: DEFAULT_RESERVA_DATA,
       detalleAsistentes: EMPTY_DETALLE_ASISTENTES,
-      reservaZonaData: buildZonaReservaData(DEFAULT_RESERVA_DATA, "zona-1"),
+      reservaZonaData: buildZonaReservaData(DEFAULT_RESERVA_DATA, null),
 
       actualizarDetalleAsistentes: (reservaData = get().reservaData) => {
         const detalle = buildDetalleAsistentes(reservaData);
@@ -241,14 +261,11 @@ export const useReservaStore = create(
       limpiarDetalleAsistentes: () =>
         set({ detalleAsistentes: EMPTY_DETALLE_ASISTENTES }),
 
-      setZonaExpanded: (value) =>
-        set({ isZonaExpanded: value !== undefined ? Boolean(value) : true }),
-
       seleccionarZona: (zoneName) =>
         set((state) => {
           const zoneNameNormalized = normalizeZoneName(zoneName);
           const zona = RESERVA_ZONAS_CONFIG.find(
-            (item) => normalizeZoneName(item.nombre) === zoneNameNormalized
+            (item) => normalizeZoneName(item.nombre) === zoneNameNormalized,
           );
           if (!zona) return state;
 
@@ -268,19 +285,20 @@ export const useReservaStore = create(
             reservaZonaData: buildZonaReservaData(
               nextReservaData,
               zona.id,
-              preferredMesaBase
+              preferredMesaBase,
             ),
           };
         }),
 
       seleccionarMesaBase: (capacidadBase) =>
         set((state) => {
-          const zonaId = state.reservaZonaData?.selectedZoneId || "zona-1";
+          const zonaId = state.reservaZonaData?.selectedZoneId;
+          if (!zonaId) return state;
           return {
             reservaZonaData: buildZonaReservaData(
               state.reservaData,
               zonaId,
-              capacidadBase
+              capacidadBase,
             ),
           };
         }),
@@ -304,7 +322,7 @@ export const useReservaStore = create(
         try {
           localStorage.setItem(
             "checkout:reserva:temp",
-            JSON.stringify(checkoutData)
+            JSON.stringify(checkoutData),
           );
           return { ok: true, data: checkoutData };
         } catch (error) {
@@ -345,13 +363,13 @@ export const useReservaStore = create(
           return { flowStep: FLOW_STEPS[prevIndex] };
         }),
 
-      resetFlowStep: () => set({ flowStep: "datos" }),
+      resetFlowStep: () => set({ flowStep: "reserva" }),
 
       resumeOrStartFlowStep: () =>
         set((state) => {
           const persistedFlowStep = FLOW_STEPS.includes(state.flowStep)
             ? state.flowStep
-            : "datos";
+            : "reserva";
 
           const hasReservaProgress =
             Boolean(state.pasosReserva?.visitantes?.completado) ||
@@ -363,7 +381,6 @@ export const useReservaStore = create(
           if (persistedFlowStep === "reserva" && hasReservaProgress) {
             return {
               flowStep: persistedFlowStep,
-              isZonaExpanded: true,
             };
           }
 
@@ -380,6 +397,8 @@ export const useReservaStore = create(
         localStorage.setItem("reserva:currentStep", JSON.stringify(step));
       },
 
+      setActiveMesas: (value) => set({ activeMesas: Boolean(value) }),
+
       setCompletedSteps: (steps) =>
         set({ completedSteps: Array.isArray(steps) ? steps : [] }),
 
@@ -393,11 +412,10 @@ export const useReservaStore = create(
 
       updateReservaData: (data) =>
         set((state) => {
-          const selectedZoneId =
-            state.reservaZonaData?.selectedZoneId || "zona-1";
-          const zona =
-            RESERVA_ZONAS_CONFIG.find((item) => item.id === selectedZoneId) ||
-            RESERVA_ZONAS_CONFIG[0];
+          const selectedZoneId = state.reservaZonaData?.selectedZoneId || null;
+          const zona = RESERVA_ZONAS_CONFIG.find(
+            (item) => item.id === selectedZoneId,
+          );
 
           const newData = { ...state.reservaData, ...data };
           const totalOcupacion = getTotalOcupacion(newData);
@@ -417,7 +435,7 @@ export const useReservaStore = create(
             reservaZonaData: buildZonaReservaData(
               newData,
               selectedZoneId,
-              preferredMesaBase
+              preferredMesaBase,
             ),
           };
         }),
@@ -426,15 +444,16 @@ export const useReservaStore = create(
         set(() => {
           const nextReservaData = buildFreshReservaData();
           return {
-            flowStep: "datos",
+            flowStep: "reserva",
             currentStep: 0,
+            activeMesas: false,
             completedSteps: [false, false, false, false],
             pasosReserva: INITIAL_PASOS_RESERVA,
-            isZonaExpanded: false,
+
             isDatosReservaCompletados: false,
             reservaData: nextReservaData,
             detalleAsistentes: EMPTY_DETALLE_ASISTENTES,
-            reservaZonaData: buildZonaReservaData(nextReservaData, "zona-1"),
+            reservaZonaData: buildZonaReservaData(nextReservaData, null),
           };
         }),
     }),
@@ -442,7 +461,7 @@ export const useReservaStore = create(
       name: STORAGE_KEY,
       version: 1,
       partialize: (state) => {
-        const { isZonaExpanded, ...persistedState } = state;
+        const { ...persistedState } = state;
         return persistedState;
       },
       migrate: (persistedState, version) => {
@@ -450,13 +469,13 @@ export const useReservaStore = create(
           return persistedState;
         }
         if (version < 1) {
-          const { isZonaExpanded, ...rest } = persistedState;
+          const { ...rest } = persistedState;
           return rest;
         }
         return persistedState;
       },
-    }
-  )
+    },
+  ),
 );
 
 export default useReservaStore;

@@ -5,7 +5,7 @@ import { Loader } from "../LoaderComponents/Loader";
 import { LoaderProvider } from "../../context/LoaderContext";
 import { Header } from "../header/Header";
 import { useLoaderStore } from "../../store/loaderStore";
-import { ReservaComponent } from "../reserva/ReservarComponent";
+ 
 import { ReservaPopupFlow } from "../reserva/popup/ReservaPopupFlow";
 import { useState } from "react";
 

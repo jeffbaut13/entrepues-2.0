@@ -7,6 +7,7 @@ export const MesasSelectorx4 = ({
   strokeSecondary = "var(--secondary)",
   strokeDark = "var(--dark)",
   petSeats = [],
+  childSeats = [],
 }) => {
   const width = () => {
     switch (size) {
@@ -15,7 +16,7 @@ export const MesasSelectorx4 = ({
       case "md":
         return "w-18";
       case "lg":
-        return "w-32";
+        return "w-22";
       default:
         return "w-8";
     }
@@ -26,6 +27,9 @@ export const MesasSelectorx4 = ({
     if (petSeats.includes(sillaNumber)) {
       return "fill-[#ffffff00]";
     }
+    if (childSeats.includes(sillaNumber)) {
+      return "fill-[#a7d6f2] stroke-secondary";
+    }
     return sillaNumber < index ? colorRelleno : "fill-[#ffffff00]";
   };
 
@@ -33,6 +37,9 @@ export const MesasSelectorx4 = ({
   const getStrokeForSilla = (sillaNumber) => {
     if (petSeats.includes(sillaNumber)) {
       return "transparent";
+    }
+    if (childSeats.includes(sillaNumber)) {
+      return "#a7d6f2";
     }
     return sillaNumber < index ? strokeSecondary : strokeDark;
   };
@@ -2368,6 +2375,7 @@ export const MesasSelectorx6 = ({
   strokeSecondary = "var(--secondary)",
   strokeDark = "var(--dark)",
   petSeats = [],
+  childSeats = [],
   size = "lg",
 }) => {
   const width = () => {
@@ -2377,7 +2385,7 @@ export const MesasSelectorx6 = ({
       case "md":
         return "w-24";
       case "lg":
-        return "w-46";
+        return "w-30";
       default:
         return "w-8";
     }
@@ -2387,6 +2395,9 @@ export const MesasSelectorx6 = ({
     if (petSeats.includes(sillaNumber)) {
       return "fill-[#ffffff00]";
     }
+    if (childSeats.includes(sillaNumber)) {
+      return "fill-[#a7d6f2] stroke-secondary";
+    }
     return sillaNumber < index ? colorRelleno : "fill-[#ffffff00]";
   };
 
@@ -2394,6 +2405,9 @@ export const MesasSelectorx6 = ({
   const getStrokeForSilla = (sillaNumber) => {
     if (petSeats.includes(sillaNumber)) {
       return "transparent";
+    }
+    if (childSeats.includes(sillaNumber)) {
+      return "#a7d6f2";
     }
     return sillaNumber < index ? strokeSecondary : strokeDark;
   };

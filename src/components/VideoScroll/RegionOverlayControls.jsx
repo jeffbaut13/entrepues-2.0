@@ -44,7 +44,7 @@ export const RegionOverlayControls = ({
                     title={
                       <>
                         <Title
-                          headContent={"Región"}
+                          headContent={""}
                           content={text.title}
                           theme="light"
                           headingLevel="h3"
@@ -57,7 +57,7 @@ export const RegionOverlayControls = ({
                               : ""
                           }`}
                         />
-                        <span className="w-2 h-2 inline-block bg-secondary rounded-full absolute left-1/2 -translate-x-1/2 -bottom-1" />
+                        <span className="w-px h-8 inline-block bg-secondary rounded-full absolute left-1/2 -translate-x-1/2 bottom-0" />
                       </>
                     }
                     onClick={() => onSelectRegion(text.title)}
@@ -66,13 +66,13 @@ export const RegionOverlayControls = ({
               <span className="w-full h-px rounded-full bg-white absolute bottom-0" />
             </div>
 
-            <Button
+            {/* <Button
               title={"Reservar en esta región"}
               width="min"
               type="button-primary"
               fontSize="2xl"
               onClick={() => onOpenReservePopup?.(zoneActive)}
-            />
+            /> */}
           </motion.div>
         </>
       )}

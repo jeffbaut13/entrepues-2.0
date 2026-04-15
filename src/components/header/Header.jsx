@@ -12,7 +12,7 @@ import { useHeaderChangeStore } from "../../store/headerChangeStore";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { useEffect } from "react";
 
-export const Header = ({ loading, logo }) => {
+export const Header = ({ loading, logo, fullwidth = false }) => {
   const { isHome, isDark, isLight, isBg } = useRouteMode();
   const isMobile = useIsMobile();
 
@@ -57,7 +57,7 @@ export const Header = ({ loading, logo }) => {
   return (
     <>
       <AnimatePresence mode="wait">
-        {loading && (
+        {loading && !isSectionTwoVisible && (
           <motion.header
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -69,7 +69,9 @@ export const Header = ({ loading, logo }) => {
             {(isHome || isLight) && (
               <div className="bg-gradient-to-t to-black/65 w-full h-62 absolute top-0 left-0 z-0 pointer-events-none" />
             )}
-            <div className="mx-auto max-w-7xl w-full md:px-0 md:h-32 max-lg:mt-6 grid grid-cols-3 items-center gap-4 place-items-center relative z-10">
+            <div
+              className={`mx-auto ${fullwidth ? "px-6" : "max-w-7xl md:px-0"} w-full  md:h-32 max-lg:mt-6 grid grid-cols-3 items-center gap-4 place-items-center relative z-10 `}
+            >
               {headerRender(isSectionTwoVisible, isMobile)}
             </div>
           </motion.header>
@@ -115,7 +117,7 @@ const HeaderTheme = ({ darkTheme, logo, isMobile }) => {
           href={"/"}
           iconSize={`${isMobile ? "small" : "medium"}`}
           Icon={Home}
-          customClass={`max-lg:!px-2 max-lg:ml-4 !backdrop-blur-none !bg-transparent !border-none  ${
+          customClass={`max-lg:!px-2 max-lg:ml-4 !backdrop-blur-none !bg-transparent !border-none ${
             darkTheme ? "!text-dark" : "!text-white"
           }`}
         />
@@ -128,6 +130,7 @@ const HeaderTheme = ({ darkTheme, logo, isMobile }) => {
           onClick={() => navigate(-1)}
         />
       </motion.div>
+      <div />
       <AnimatePresence mode="wait">
         {logo ? (
           <motion.div
@@ -136,17 +139,17 @@ const HeaderTheme = ({ darkTheme, logo, isMobile }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+            className="justify-self-end px-4"
           >
             <Logo
               color={darkTheme ? "dark" : "white"}
-              size={`${isMobile ? "sm" : "lg"}`}
+              size={`${isMobile ? "sm" : "sm"}`}
             />
           </motion.div>
         ) : (
           <div />
         )}
       </AnimatePresence>
-      <div />
     </>
   );
 };
