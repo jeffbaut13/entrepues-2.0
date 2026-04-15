@@ -330,7 +330,7 @@ export const CheckoutComponent = ({
                   <div className="space-y-4 mb-6">
                     <div className="flex items-center">
                       <div>
-                        <p>
+                        <p className="capitalize">
                           {formatearFecha(
                             datosReserva.reservaData?.selectedDate,
                           )}

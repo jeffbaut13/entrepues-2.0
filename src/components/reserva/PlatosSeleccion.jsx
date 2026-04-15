@@ -753,7 +753,7 @@ export default function PlatosSeleccion({
                                 transition={{ duration: 0.2 }}
                                 className="!text-xl italic font-bold opacity-50 h-12 flex items-center justify-center"
                               >
-                                <p>Elige almenos un plato</p>
+                                <p>Elige al menos un plato</p>
                               </motion.div>
                             )}
                           </motion.div>
@@ -850,7 +850,7 @@ export default function PlatosSeleccion({
                             guardando || pagoEnProceso
                               ? "Guardando..."
                               : ctaEsPago
-                                ? "Finalizar orden"
+                                ? "Pagar"
                                 : "Siguiente"
                           }
                           type="button-dark"

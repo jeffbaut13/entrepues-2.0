@@ -57,7 +57,14 @@ export const RegionOverlayControls = ({
                               : ""
                           }`}
                         />
-                        <span className="w-px h-8 inline-block bg-secondary rounded-full absolute left-1/2 -translate-x-1/2 bottom-0" />
+                        {activeTextIndex ===
+                        regiones.findIndex(
+                          (region) => region.title === text.title,
+                        ) ? (
+                          <span className="w-px h-8 inline-block bg-secondary rounded-full absolute left-1/2 -translate-x-1/2 bottom-0" />
+                        ) : (
+                          ""
+                        )}
                       </>
                     }
                     onClick={() => onSelectRegion(text.title)}

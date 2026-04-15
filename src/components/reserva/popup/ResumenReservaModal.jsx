@@ -86,8 +86,10 @@ export const ResumenReservaModal = () => {
 
               <div className="space-y-4 mb-6">
                 <div>
-                  <p>{formatearFecha(datosReserva?.reservaData?.selectedDate)}</p>
-                  <p>
+                  <p className="first-letter:capitalize">
+                    {formatearFecha(datosReserva?.reservaData?.selectedDate)}
+                  </p>
+                  <p className="first-letter:capitalize">
                     {formatearHora(
                       datosReserva?.reservaData?.hour,
                       datosReserva?.reservaData?.minute,
@@ -95,12 +97,17 @@ export const ResumenReservaModal = () => {
                   </p>
                   {datosReserva?.reservaZonaData?.selectedZoneName && (
                     <p className="font-bold mt-4">
-                      Region: {datosReserva.reservaZonaData.selectedZoneName}
+                      Región:{" "}
+                      <span className="capitalize">
+                        {datosReserva.reservaZonaData.selectedZoneName}
+                      </span>
                     </p>
                   )}
-                  {mesaAsignada && <p className="font-bold">Mesa: {mesaAsignada}</p>}
+                  {mesaAsignada && (
+                    <p className="font-bold">Mesa: {mesaAsignada}</p>
+                  )}
                   <p>
-                    para {datosReserva?.reservaData?.adults || 0} adulto(s)
+                    Mesa para {datosReserva?.reservaData?.adults || 0} adulto(s)
                     {Number(datosReserva?.reservaData?.children || 0) > 0
                       ? `, ${datosReserva.reservaData.children} nino(s)`
                       : ""}
@@ -109,7 +116,7 @@ export const ResumenReservaModal = () => {
               </div>
 
               <div className="mb-6">
-                <h3 className="font-bold mb-3">Platos Seleccionados</h3>
+                <h3 className="font-bold mb-3">Platos seleccionados</h3>
                 <div className="bg-dark/5 rounded-lg p-4 max-h-62 overflow-auto">
                   {(datosReserva?.platosSeleccionados || []).map(
                     (asistente, index) => (
@@ -154,20 +161,22 @@ export const ResumenReservaModal = () => {
                 </div>
                 <div className="flex justify-between text-lg font-bold pt-2">
                   <span>Total</span>
-                  <span>${Number(montoFinal || 0).toLocaleString("es-CO")}</span>
+                  <span>
+                    ${Number(montoFinal || 0).toLocaleString("es-CO")}
+                  </span>
                 </div>
               </div>
 
               <div className="pt-6 flex justify-center">
-                <Button
+                {/* <Button
                   type="button-dark"
-                  Icon={Check}
+                  //Icon={Check}
                   iconSize="small"
                   fontSize="2xl"
-                  title="OK"
+                  title="Cerrar"
                   onClick={() => setShowResumen(false)}
                   className="px-6 py-2 rounded-full bg-dark text-white font-medium hover:opacity-90 transition"
-                />
+                /> */}
               </div>
             </div>
           </motion.div>

@@ -98,9 +98,8 @@ const SectionTwo = ({ isMobile }) => {
             >
               Mijito vea, desde el 95 este Entre Pués abrió sus puertas, así
               bien <br className="hidden lg:block" />
-              sencillito, pa’ que la gente viniera a comer como en la casa, ¿sí
-              me <br className="hidden lg:block" />
-              entiende? Todo en fogón de carbón, como se ha hecho toda la{" "}
+              sencillito, pa’ que la gente viniera a comer como en la casa. <br className="hidden lg:block" />
+              Todo en fogón de carbón, como se ha hecho toda la{" "}
               <br className="hidden lg:block" />
               vida, con ese saborcito que no se consigue en cualquier parte.
               <br className="hidden lg:block" />
@@ -146,7 +145,7 @@ const SectionThree = ({ isMobile }) => {
               }}
               transition={{ duration: 0.7, ease: "easeOut" }}
             >
-              LOS FAVORITOS DE LA CASA
+              EL FAVORITO DE LA SEMANA
             </motion.h2>
           </motion.div>
           <motion.div
@@ -170,13 +169,14 @@ const SectionThree = ({ isMobile }) => {
                 LA BANDEJA PAISA DE DOÑA SEGUNDA
               </h2>
               <h2 className="text-xl mb-6">Desde 1960</h2>
-              <Button
+              <a
+                href="/receta-semanal"
                 target="_blank"
-                type="enlace"
-                href={"/receta-semanal"}
-                title={"ver historia"}
-                fontSize="2xl"
-              />
+                rel="noopener noreferrer"
+                className="tracking-widest font-parkson text-2xl bg-dark/40 backdrop-blur-md hover:bg-black text-secondary border border-secondary/40 hover:border-black px-6 rounded-full py-1.5 pb-2 transition-all ease-in-out duration-300"
+              >
+                ver historia
+              </a>
             </div>
           </motion.div>
           <div className="overlay z-10" />

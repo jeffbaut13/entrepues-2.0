@@ -75,7 +75,7 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
   };
 
   const numeroReserva = reserva?.["numero-de-reserva"] || "----";
-  const nombreReserva = reserva?.nombre || "";
+  const nombreReserva = capitalizeSentence(reserva?.nombre || "");
   const shareUrl =
     typeof window !== "undefined" && window.location?.origin
       ? window.location.origin
@@ -91,6 +91,7 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
   const mensajeWhatsApp = [
     `¡Ea pues, ${nombreReserva || "parcero"}!`,
     "Tu reserva en EntrePues ya está lista pa´ servir.",
+    " ",
     "Mijo, tenga a la mano estos los detalles:",
     `📅 ${fechaReserva}`,
     `⏰ ${horaReserva}`,
@@ -98,6 +99,8 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
     `🐾 Aquí está la mesa lista ${mesaReservaTexto}`,
     `📌 #${numeroReserva}`,
     "Qué bueno tenerlos por acá, ¡los esperamos!",
+    " ",
+    " ",
   ]
     .filter(Boolean)
     .join("\n");
@@ -154,46 +157,47 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.35 }}
-            className="space-y-2"
+            className="flex flex-col justify-center items-center gap-2"
           >
             <p>
               Compártela por WhatsApp <br />a tus acompañantes y nos vemos{" "}
               <br /> pronto en la mesa.
             </p>
-            <div className="flex flex-col gap-2 items-center justify-center">
-              <WhatsappShareButton
-                url={shareUrl}
-                title={mensajeWhatsApp}
-                separator=""
-                className="rounded-full "
-              >
-                <Button
-                  type="button-secondary"
-                  title={
-                    <>
-                      <i className="w-6">
-                        <img
-                          src="/iconos/whatsapp.svg"
-                          alt="compartir reserva por WhatsApp"
-                          className="w-full h-full object-contain"
-                        />
-                      </i>
-                      Compartir
-                    </>
-                  }
-                  fontSize="lg"
-                  customClass="bg-green-400 px-4"
-                />
-              </WhatsappShareButton>
-              <Button
-                onClick={handleFinalizar}
-                title="Finalizar"
-                width="ajustado"
-                type="button-dark"
-                fontSize="2xl"
-              />
-            </div>
+            <Button
+              type="button-secondary"
+              title={
+                <WhatsappShareButton
+                  url={shareUrl}
+                  title={mensajeWhatsApp}
+                  separator=""
+                  className="rounded-full"
+                >
+                  <div className="flex items-center gap-3 rounded-full px-4 py-2 transition-all duration-300 hover:opacity-60">
+                    <i className="w-6">
+                      <img
+                        src="/iconos/whatsapp.svg"
+                        alt="compartir reserva por WhatsApp"
+                      />
+                    </i> Compartir
+                  </div>
+                </WhatsappShareButton>
+              }
+              fontSize="lg"
+              customClass="bg-green-400 px-4"
+            />
           </motion.div>
+
+          {/* Boton de compartir whatsapp */}
+
+          <Button
+            onClick={handleFinalizar}
+            title="Finalizar"
+            Icon={X}
+            width="ajustado"
+            type="just-icon"
+            customClass="absolute top-2 right-2"
+            fontSize="2xl"
+          />
         </motion.div>
       </div>
     </div>
