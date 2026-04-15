@@ -149,8 +149,8 @@ export default function SliderVertical({
     newCompleted[currentStep] = true;
     setCompletedSteps(newCompleted);
 
-    const nextStepIndex = getStepIndex("fecha");
-    if (nextStepIndex >= 0) {
+    const nextStepIndex = currentStep + 1;
+    if (nextStepIndex < orderedSteps.length) {
       setCurrentStep(nextStepIndex);
     }
   };
@@ -297,11 +297,13 @@ export default function SliderVertical({
           />
 
           <div className="flex w-full max-w-lg justify-center gap-6">
-            <ConfirmarPasoBoton
-              confirmarPaso={goToPreviousStep}
-              texto="Anterior"
-              variantType="button-secondary"
-            />
+            {!stepinvert && (
+              <ConfirmarPasoBoton
+                confirmarPaso={goToPreviousStep}
+                texto="Anterior"
+                variantType="button-secondary"
+              />
+            )}
             <ConfirmarPasoBoton
               confirmarPaso={confirmarPaso}
               isDisabled={!canContinueFromCantidad}

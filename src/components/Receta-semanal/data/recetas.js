@@ -10,8 +10,8 @@ export const RECETAS_CONFIG = {
       label: "Ver menu",
     },
     hero: {
-      desktopBg: "/imagenes/backgroundTwo.webp",
-      mobileBg: "/imagenes/backgroundTwoM.webp",
+      desktopBg: "/imagenes/section_three.webp",
+      mobileBg: "/imagenes/section-four/la-cocina-más-rica-del-país-1.webp",
       overlayOpacityClass: "bg-dark/55",
     },
     ingredientsTitle: "Ingredientes",
@@ -34,7 +34,7 @@ export const RECETAS_CONFIG = {
       "Emplata por capas: frijoles, arroz, proteinas y remata con maduro, aguacate y arepa.",
     ],
     showcase: {
-      image: "/platos/Bandeja-Paisa.jpg",
+      image: "/imagenes/section-four/la-cocina-más-rica-del-país-1.webp",
       title: "La bandeja paisa de la casa",
       description:
         "Tradicion servida en abundancia, con alma antioquena y sabor colombiano.",
