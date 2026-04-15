@@ -12,6 +12,7 @@ import { useIsMobile } from "../../hooks/useIsMobile";
 import { useOutletContext } from "react-router-dom";
 import { Button } from "../ui/Button";
 import { SiteFooter } from "../footer/SiteFooter";
+import { scheduleVideoScrollFramePreload } from "../../lib/videoScrollFramePreloader";
 
 export const HomeComponent = () => {
   const [showScrollHint, setShowScrollHint] = useState(false);
@@ -29,6 +30,10 @@ export const HomeComponent = () => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
+  }, []);
+
+  useEffect(() => {
+    scheduleVideoScrollFramePreload();
   }, []);
 
   return (

@@ -16,9 +16,19 @@ const formatRegionName = (value = "") => {
   const normalized = String(value || "")
     .trim()
     .toLowerCase();
+
+  const regionLabels = {
+    andina: "Andina",
+    orinoquia: "Orinoquía",
+    pacifica: "Pacífica",
+    amazonia: "Amazonía",
+    caribe: "Caribe",
+    "zona-pet": "Zona Pet",
+    general: "Zona general",
+  };
+
   if (!normalized) return "Zona general";
-  if (normalized === "zona-pet") return "Zona Pet";
-  if (normalized === "general") return "Zona general";
+  if (regionLabels[normalized]) return regionLabels[normalized];
 
   return normalized
     .split(/[-\s]+/)

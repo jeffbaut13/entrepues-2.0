@@ -20,6 +20,31 @@ export const CheckoutComponent = ({
   onBackToMenu,
   onSuccess,
 }) => {
+  const REGION_LABELS = {
+    andina: "Andina",
+    orinoquia: "Orinoquía",
+    pacifica: "Pacífica",
+    amazonia: "Amazonía",
+    caribe: "Caribe",
+    "zona-pet": "Zona Pet",
+    general: "Zona general",
+  };
+
+  const formatRegionLabel = (value = "") => {
+    const normalized = String(value || "")
+      .trim()
+      .toLowerCase();
+
+    if (!normalized) return "";
+    if (REGION_LABELS[normalized]) return REGION_LABELS[normalized];
+
+    return normalized
+      .split(/[-\s]+/)
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
+  };
+
   const navigate = useNavigate();
   const [activeCollapse, setActiveCollapse] = useState(1);
   const { limpiarDatosCheckout, resetReserva } = useReservaStore();
@@ -345,8 +370,7 @@ export const CheckoutComponent = ({
                         {regionSeleccionada && (
                           <p className="font-bold mt-4">
                             Región:{" "}
-                            {regionSeleccionada.charAt(0).toUpperCase() +
-                              regionSeleccionada.slice(1)}
+                            {formatRegionLabel(regionSeleccionada)}
                           </p>
                         )}
                         {mesaAsignada && (

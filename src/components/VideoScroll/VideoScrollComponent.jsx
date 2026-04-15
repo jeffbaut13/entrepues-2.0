@@ -4,6 +4,10 @@ import { useOutletContext } from "react-router-dom";
 import { Volume2, VolumeX } from "lucide-react";
 import { ScrollDownLottie } from "../ui/ScrollDownLottie";
 import { RegionOverlayControls } from "./RegionOverlayControls";
+import {
+  getVideoScrollFrameSrc,
+  startVideoScrollFramePreload,
+} from "../../lib/videoScrollFramePreloader";
 
 const AUDIO_URL = "/audios/audio.mp3";
 const FRAME_COUNT = 677;
@@ -11,7 +15,7 @@ const VIDEO_DURATION_SECONDS = 56.41;
 const FRAMES_PER_SECOND = FRAME_COUNT / VIDEO_DURATION_SECONDS;
 const SCROLL_STEP_SECONDS = 2;
 const INPUT_STEP_FRAMES = Math.round(SCROLL_STEP_SECONDS * FRAMES_PER_SECOND);
-const INPUT_CAPTURE_MS = 2000;
+const INPUT_CAPTURE_MS = 1000;
 const SPRING_STIFFNESS = 22;
 const SPRING_DAMPING = 10;
 const MAX_VELOCITY = 220;
@@ -19,12 +23,12 @@ const TOUCH_THRESHOLD = 30;
 
 const REGIONES = [
   { start: 0, title: "Bienvenido" },
-  { start: 2, title: "andina" },
-  { start: 14, title: "orinoquia" },
-  { start: 35, title: "pacifica" },
-  { start: 40, title: "amazonia" },
-  { start: 46, title: "caribe" },
-  { start: 51, title: "Zona pet" },
+  { start: 2, title: "Andina" },
+  { start: 14, title: "Orinoquía" },
+  { start: 35, title: "Pacífica" },
+  { start: 40, title: "Amazonía" },
+  { start: 46, title: "Caribe" },
+  { start: 51, title: "Zona Pet" },
 ];
 
 const getReachableRegionStart = (start) =>
@@ -38,9 +42,6 @@ const getAlignedRegionStart = (start) => {
   const aligned = alignTimeToStepGrid(reachable);
   return Math.max(0, Math.min(aligned, VIDEO_DURATION_SECONDS - 0.05));
 };
-
-const getFrameSrc = (frameIndex) =>
-  `/video/recorrido/frames-webp-hq/frame_${String(frameIndex + 1).padStart(4, "0")}.webp`;
 
 export const VideoScrollComponent = () => {
   const { onOpenReservePopup, setShowHeader, setVideoScrollTime } =
@@ -74,7 +75,7 @@ export const VideoScrollComponent = () => {
     useState(false);
 
   const zoneActive = REGIONES[activeTextIndex]?.title || REGIONES[0].title;
-  const currentFrameSrc = getFrameSrc(currentFrame);
+  const currentFrameSrc = getVideoScrollFrameSrc(currentFrame);
 
   const frameToTime = (frameIndex) => frameIndex / FRAMES_PER_SECOND;
 
@@ -125,7 +126,7 @@ export const VideoScrollComponent = () => {
 
     preloadTargets.forEach((index) => {
       const img = new Image();
-      img.src = getFrameSrc(index);
+      img.src = getVideoScrollFrameSrc(index);
     });
   };
 
@@ -263,7 +264,7 @@ export const VideoScrollComponent = () => {
 
     setIsRegionJumpFlashVisible(true);
 
-    // Pequena rafaga visual para enmascarar el salto abrupto de frame.
+    // Pequeña ráfaga visual para enmascarar el salto abrupto de frame.
     regionJumpTimeoutRef.current = setTimeout(() => {
       snapToFrame(nextFrame);
     }, 55);
@@ -300,12 +301,16 @@ export const VideoScrollComponent = () => {
   };
 
   useEffect(() => {
+    startVideoScrollFramePreload();
+  }, []);
+
+  useEffect(() => {
     preloadNearbyFrames(currentFrame);
   }, [currentFrame]);
 
   useEffect(() => {
     const firstFrame = new Image();
-    firstFrame.src = getFrameSrc(0);
+    firstFrame.src = getVideoScrollFrameSrc(0);
     firstFrame.onload = () => {
       currentPositionRef.current = 0;
       targetFrameRef.current = 0;
