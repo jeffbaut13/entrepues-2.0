@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
+﻿import { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, X } from "lucide-react";
+import { X } from "lucide-react";
 
 import useReservaStore from "../../../store/reservaStore";
 import useCheckoutStore from "../../../store/checkoutStore";
@@ -12,27 +12,23 @@ import { CheckoutSuccesComponent } from "../../Checkout/CheckoutSuccesComponent"
 import { useIsMobile } from "../../../hooks/useIsMobile";
 import { ReservaComponent } from "../ReservaComponent";
 
-export const ReservaPopupFlow = ({ stepinvert, isOpen, selectedRegion = "", onClose }) => {
+export const ReservaPopupFlow = ({
+  stepinvert = false,
+  isOpen,
+  selectedRegion = "",
+  onRegionChange,
+  onClose,
+}) => {
   const wasOpenRef = useRef(false);
   const shouldForceReservaFromRegion =
     String(selectedRegion || "").trim().length > 0;
-  const { datosContacto, resetCheckout, showResumen, setShowResumen } =
-    useCheckoutStore();
-
-  const hasDatosCompletos =
-    String(datosContacto?.nombre || "").trim().length >= 3 &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-      String(datosContacto?.email || "").trim(),
-    ) &&
-    /^\d{10}$/.test(String(datosContacto?.whatsapp || "").replace(/\D/g, ""));
+  const { resetCheckout, setShowResumen } = useCheckoutStore();
 
   const {
     detalleAsistentes,
     flowStep,
     setFlowStep,
-    goToNextFlowStep,
     resumeOrStartFlowStep,
-
     currentStep,
     activeMesas,
     pasosReserva,
@@ -40,9 +36,20 @@ export const ReservaPopupFlow = ({ stepinvert, isOpen, selectedRegion = "", onCl
     setPasoReserva,
     resetReserva,
   } = useReservaStore();
+
   const isMobile = useIsMobile();
-  const datosStepIndex = stepinvert ? 1 : 0;
-  const cantidadStepIndex = stepinvert ? 0 : 1;
+
+  // Orden condicional de pasos
+  const orderedSteps = stepinvert
+    ? ["region", "cantidad", "datos", "fecha", "hora"]
+    : ["datos", "region", "cantidad", "fecha", "hora"];
+
+  // Índices calculados dinámicamente
+  const regionStepIndex = orderedSteps.indexOf("region");
+  const cantidadStepIndex = orderedSteps.indexOf("cantidad");
+  const datosStepIndex = orderedSteps.indexOf("datos");
+  const fechaStepIndex = orderedSteps.indexOf("fecha");
+  const horaStepIndex = orderedSteps.indexOf("hora");
 
   const getReservaPopupWidth = () => {
     if (isMobile) return "100%";
@@ -50,13 +57,30 @@ export const ReservaPopupFlow = ({ stepinvert, isOpen, selectedRegion = "", onCl
     if (flowStep === "platos") return "80rem";
 
     const widthsByStep = {
+      [regionStepIndex]: "80rem",
+      [cantidadStepIndex]: "40rem",
       [datosStepIndex]: "32rem",
-      [cantidadStepIndex]: "80rem",
-      2: "58rem",
-      3: "58rem",
+      [fechaStepIndex]: "58rem",
+      [horaStepIndex]: "58rem",
     };
 
     return widthsByStep[currentStep] || "64rem";
+  };
+
+  const getReservaPopupHeight = () => {
+    if (isMobile) return "100dvh";
+    if (flowStep === "succes") return "40rem";
+    if (flowStep === "platos") return "50rem";
+
+    const heightsByStep = {
+      [regionStepIndex]: "40rem",
+      [cantidadStepIndex]: "25rem",
+      [datosStepIndex]: "45rem",
+      [fechaStepIndex]: "34rem",
+      [horaStepIndex]: "34rem",
+    };
+
+    return heightsByStep[currentStep] || "auto";
   };
 
   const clearReservationState = () => {
@@ -96,34 +120,41 @@ export const ReservaPopupFlow = ({ stepinvert, isOpen, selectedRegion = "", onCl
 
     const visitantesCompletado = Boolean(pasosReserva?.visitantes?.completado);
 
-    if (shouldForceReservaFromRegion && hasDatosCompletos) {
+    if (shouldForceReservaFromRegion) {
       setFlowStep("reserva");
-      setCurrentStep(visitantesCompletado ? 2 : cantidadStepIndex);
 
-      return;
-    }
+      // Desde video scroll: si ya se capturo region/cantidad en el mini popup,
+      // el flujo debe continuar en datos.
+      if (stepinvert) {
+        if (visitantesCompletado) {
+          setCurrentStep(datosStepIndex);
+          return;
+        }
 
-    if (shouldForceReservaFromRegion && !hasDatosCompletos) {
-      setFlowStep("reserva");
+        setCurrentStep(regionStepIndex);
+        return;
+      }
+
       setCurrentStep(datosStepIndex);
-
       return;
     }
 
     resumeOrStartFlowStep();
   }, [
     isOpen,
+    stepinvert,
     shouldForceReservaFromRegion,
     resumeOrStartFlowStep,
     setCurrentStep,
     setFlowStep,
-    hasDatosCompletos,
     pasosReserva?.visitantes?.completado,
+    regionStepIndex,
+    datosStepIndex,
   ]);
 
   useEffect(() => {
     if (
-      !(shouldForceReservaFromRegion && hasDatosCompletos) &&
+      !shouldForceReservaFromRegion &&
       flowStep === "reserva" &&
       pasosReserva.platos.habilitado
     ) {
@@ -133,14 +164,13 @@ export const ReservaPopupFlow = ({ stepinvert, isOpen, selectedRegion = "", onCl
     flowStep,
     pasosReserva.platos.habilitado,
     shouldForceReservaFromRegion,
-    hasDatosCompletos,
     setFlowStep,
   ]);
 
   const handleBackToReservaFromPlatos = () => {
     setShowResumen(false);
     setPasoReserva("platos", { habilitado: false, completado: false });
-    setCurrentStep(3);
+    setCurrentStep(horaStepIndex);
     setFlowStep("reserva");
   };
 
@@ -195,14 +225,7 @@ export const ReservaPopupFlow = ({ stepinvert, isOpen, selectedRegion = "", onCl
                 opacity: 1,
                 y: 0,
                 width: getReservaPopupWidth(),
-                height:
-                  flowStep === "platos" && !isMobile
-                    ? "50rem"
-                    : flowStep === "reserva" && currentStep === cantidadStepIndex && activeMesas && !isMobile
-                      ? "42rem"
-                    : isMobile
-                      ? "100dvh"
-                      : "40.2060625rem",
+                height: getReservaPopupHeight(),
               }}
               transition={{ duration: 0.2, delay: 0.1, ease: "easeOut" }}
             >
@@ -212,10 +235,12 @@ export const ReservaPopupFlow = ({ stepinvert, isOpen, selectedRegion = "", onCl
                     <ReservaComponent
                       stepinvert={stepinvert}
                       region={selectedRegion}
+                      onRegionChange={onRegionChange}
                       onReservaSinMenuCheckout={() => setFlowStep("platos")}
                     />
                   </div>
                 )}
+
                 {flowStep === "platos" && (
                   <motion.div
                     key="platos"

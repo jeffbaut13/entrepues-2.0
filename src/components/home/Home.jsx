@@ -92,7 +92,7 @@ const SectionTwo = ({ isMobile }) => {
                 visible: { opacity: 1, y: 0 },
               }}
               transition={{ duration: 0.7, ease: "easeOut" }}
-              className="max-w-xl space-y-6"
+              className="max-w-xl space-y-16 mt-4"
             >
               <p
                 className="text-center text-secondary text-lg"
@@ -102,44 +102,22 @@ const SectionTwo = ({ isMobile }) => {
                 }}
                 transition={{ duration: 0.7, ease: "easeOut" }}
               >
-                Mijito vea, desde el ´95 EntrePues abrió sus puertas, así bien
-                sencillito, pa’ que la gente viniera a comer como en la casa.
+                Aquí hemos ido juntando lo mejor de cada rincón de{" "}
+                <br className="hidden md:block" /> Colombia, pero sin perder lo
+                nuestro. Aquí hemos visto <br className="hidden md:block" />{" "}
+                crecer las familias, los que venían chiquitos, ahora{" "}
+                <br className="hidden md:block" /> vuelven con sus hijos, y eso
+                sí que le alegra a uno el <br className="hidden md:block" />{" "}
+                corazón. Así que mijito, ¡EntrePues!
               </p>
-              <p
-                className="text-center text-secondary text-lg"
-                variants={{
-                  hidden: { opacity: 0, y: 18 },
-                  visible: { opacity: 1, y: 0 },
-                }}
-                transition={{ duration: 0.7, ease: "easeOut" }}
+              <a
+                href="/video"
+                target="_blank"
+                rel="noopener noreferrer"
+                className=" tracking-widest font-parkson text-2xl bg-dark/40 backdrop-blur-md hover:bg-black text-secondary border border-secondary/40 hover:border-black px-6 rounded-full py-1.5 pb-2 transition-all ease-in-out duration-300"
               >
-                Todo en fogón de carbón, como se ha hecho toda la vida, con ese
-                saborcito que no se consigue en cualquier parte.
-              </p>
-              <p
-                className="text-center text-secondary text-lg"
-                variants={{
-                  hidden: { opacity: 0, y: 18 },
-                  visible: { opacity: 1, y: 0 },
-                }}
-                transition={{ duration: 0.7, ease: "easeOut" }}
-              >
-                Aquí hemos ido juntando lo mejor de cada rincón de Colombia,
-                pero sin perder lo nuestro, lo bien paisa, lo de antes.
-              </p>
-              <p
-                className="text-center text-secondary text-lg"
-                variants={{
-                  hidden: { opacity: 0, y: 18 },
-                  visible: { opacity: 1, y: 0 },
-                }}
-                transition={{ duration: 0.7, ease: "easeOut" }}
-              >
-                Y vea, lo más bonito de todo, es que aquí hemos visto crecer las
-                familias. Los que venían chiquitos, ahora vuelven con sus hijos,
-                y eso sí que le alegra a uno el corazón. Así que mijito,
-                ¡EntrePues!
-              </p>
+                ver historia
+              </a>
             </motion.div>
           </motion.div>
         </div>
@@ -182,7 +160,7 @@ const SectionThree = ({ isMobile }) => {
             whileInView="visible"
             className="h-[80dvh] w-full bg-cover bg-top text-secondary"
             style={{
-              backgroundImage: `url('/imagenes/receta-semanalsection_three${isMobile ? "" : ""}.webp')`,
+              backgroundImage: `url('/imagenes/receta-semanal/section_three${isMobile ? "" : ""}.webp')`,
             }}
             viewport={{ once: true, amount: 0.35 }}
             variants={{
@@ -195,7 +173,9 @@ const SectionThree = ({ isMobile }) => {
           >
             <div className="relative z-20 pb-16 size-fit flex flex-col items-center justify-end text-center mx-auto h-full">
               <h2 className="font-parkson text-5xl">LA BANDEJA PAISA</h2>
-              <h2 className="font-parkson text-8xl leading-18">DE DOÑA SEGUNDA</h2>
+              <h2 className="font-parkson text-8xl leading-18">
+                DE DOÑA SEGUNDA
+              </h2>
               <h2 className="text-xl my-6">Desde 1960</h2>
               <a
                 href="/receta-semanal"

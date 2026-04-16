@@ -1,9 +1,11 @@
-import { create } from "zustand";
+﻿import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { REGIONES, RESERVA_ZONAS_ORDER, regionToSlug } from "../data/puntos";
 
 const STORAGE_KEY = "reserva:state:v1";
 const MAX_OCUPACION_TOTAL = 12;
 const MAX_MASCOTAS = 4;
+export const MESA_AUN_SIN_SELECCION = "sin seleccionar";
 
 const normalizeZoneName = (value = "") =>
   String(value)
@@ -13,6 +15,26 @@ const normalizeZoneName = (value = "") =>
     .replace(/[-_]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+
+const normalizeMesaAsignada = (value) => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+
+    if (!trimmed) {
+      return null;
+    }
+
+    const numericValue = Number(trimmed);
+    return Number.isNaN(numericValue) ? trimmed : numericValue;
+  }
+
+  const numericValue = Number(value);
+  return Number.isNaN(numericValue) ? null : numericValue;
+};
 
 const DEFAULT_RESERVA_DATA = {
   selectedDate: new Date().toISOString(),
@@ -27,44 +49,16 @@ const DEFAULT_RESERVA_DATA = {
   whatsapp: "",
 };
 
-export const RESERVA_ZONAS_CONFIG = [
-  {
-    id: "zona-1",
-    nombre: "caribe",
-    permiteMascotas: false,
+export const RESERVA_ZONAS_CONFIG = RESERVA_ZONAS_ORDER.map((slug, index) => {
+  const region = REGIONES.find((item) => regionToSlug(item.slug) === slug);
+
+  return {
+    id: `zona-${index + 1}`,
+    nombre: region?.slug || slug,
+    permiteMascotas: slug === "zona-pet",
     mesasBase: [4, 6],
-  },
-  {
-    id: "zona-2",
-    nombre: "pacífica",
-    permiteMascotas: false,
-    mesasBase: [4, 6],
-  },
-  {
-    id: "zona-3",
-    nombre: "amazonía",
-    permiteMascotas: false,
-    mesasBase: [4, 6],
-  },
-  {
-    id: "zona-4",
-    nombre: "zona-pet",
-    permiteMascotas: true,
-    mesasBase: [4, 6],
-  },
-  {
-    id: "zona-5",
-    nombre: "orinoquía",
-    permiteMascotas: false,
-    mesasBase: [4, 6],
-  },
-  {
-    id: "zona-6",
-    nombre: "andina",
-    permiteMascotas: false,
-    mesasBase: [4, 6],
-  },
-];
+  };
+});
 
 const EMPTY_DETALLE_ASISTENTES = { adultos: 0, ninos: 0, asistentes: [] };
 const getTotalOcupacion = (reservaData = {}) =>
@@ -191,7 +185,7 @@ const buildZonaReservaData = (
       totalOcupacion,
       opcionesMesa: [],
       mesaSeleccionada: null,
-      mesaAsignada: Number(reservaData?.mesa) || null,
+      mesaAsignada: normalizeMesaAsignada(reservaData?.mesa),
     };
   }
 
@@ -210,7 +204,7 @@ const buildZonaReservaData = (
     totalOcupacion,
     opcionesMesa,
     mesaSeleccionada,
-    mesaAsignada: Number(reservaData?.mesa) || null,
+    mesaAsignada: normalizeMesaAsignada(reservaData?.mesa),
   };
 };
 
@@ -219,7 +213,7 @@ const buildZonaReservaData = (
  * 1. Estado del modal de reserva (UI)
  * 2. Datos de la reserva
  * 3. Persistencia en localStorage
- * 4. Envío a Firestore
+ * 4. Envio a Firestore
  */
 const INITIAL_PASOS_RESERVA = {
   visitantes: { completado: false, habilitado: true },
@@ -243,7 +237,7 @@ export const useReservaStore = create(
       flowStep: "reserva",
       currentStep: 0,
       activeMesas: false,
-      completedSteps: [false, false, false, false],
+      completedSteps: [false, false, false, false, false],
       pasosReserva: INITIAL_PASOS_RESERVA,
 
       isDatosReservaCompletados: false,
@@ -308,17 +302,11 @@ export const useReservaStore = create(
 
       setMesaAsignada: (mesa) =>
         set((state) => {
-          const mesaNormalizada =
-            mesa === null || mesa === undefined || mesa === ""
-              ? null
-              : Number(mesa);
+          const mesaNormalizada = normalizeMesaAsignada(mesa);
 
           const nextReservaData = {
             ...state.reservaData,
-            mesa:
-              mesaNormalizada !== null && !Number.isNaN(mesaNormalizada)
-                ? mesaNormalizada
-                : null,
+            mesa: mesaNormalizada,
           };
 
           return {
@@ -341,7 +329,7 @@ export const useReservaStore = create(
           reservaZonaData: {
             selectedZoneId: reservaZonaData?.selectedZoneId || null,
             selectedZoneName: reservaZonaData?.selectedZoneName || null,
-            mesaAsignada: reservaZonaData?.mesaAsignada || null,
+            mesaAsignada: reservaZonaData?.mesaAsignada ?? null,
           },
           platosSeleccionados,
           uiState: { showMenu: true },
@@ -406,7 +394,7 @@ export const useReservaStore = create(
             Number(state.reservaData?.children || 0) > 0 ||
             Number(state.reservaData?.mascotas || 0) > 0;
 
-          // Si retoma en Reserva y ya había progreso, abrimos selector de zona expandido.
+          // Si retoma en Reserva y ya habia progreso, abrimos selector de zona expandido.
           if (persistedFlowStep === "reserva" && hasReservaProgress) {
             return {
               flowStep: persistedFlowStep,
@@ -476,7 +464,7 @@ export const useReservaStore = create(
             flowStep: "reserva",
             currentStep: 0,
             activeMesas: false,
-            completedSteps: [false, false, false, false],
+            completedSteps: [false, false, false, false, false],
             pasosReserva: INITIAL_PASOS_RESERVA,
 
             isDatosReservaCompletados: false,
@@ -508,3 +496,8 @@ export const useReservaStore = create(
 );
 
 export default useReservaStore;
+
+
+
+
+

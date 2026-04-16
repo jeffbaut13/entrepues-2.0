@@ -5,7 +5,7 @@ export const fetchVideos = async () => {
   const { cloudName, apiKey, apiSecret } = cloudinaryConfig;
   const auth = btoa(`${apiKey}:${apiSecret}`);
 
-  console.log(auth);
+ 
 
   try {
     const response = await axios({

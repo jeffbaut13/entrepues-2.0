@@ -1,4 +1,9 @@
 import { ZonePet } from "./ZonePet";
+import {
+  formatRegionLabel,
+  MAPA_REGION_LAYOUT,
+  normalizeRegionName,
+} from "../../data/puntos";
 
 export const Mapa = ({
   handleShowZone,
@@ -9,13 +14,6 @@ export const Mapa = ({
 }) => {
   const MAP_WIDTH = 603.55;
   const MAP_HEIGHT = 378.36;
-
-  const normalizeRegionName = (value) =>
-    String(value || "")
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .trim()
-      .toLowerCase();
 
   const fontSize = () => {
     switch (sizeText) {
@@ -36,15 +34,6 @@ export const Mapa = ({
       default:
         return "";
     }
-  };
-
-  const REGION_LABELS = {
-    zonaPet: "ZONA PET",
-    caribe: "CARIBE",
-    pacifica: "PACÍFICA",
-    amazonia: "AMAZONÍA",
-    orinoquia: "ORINOQUÍA",
-    andina: "ANDINA",
   };
 
   const isRegionActive = (name) =>
@@ -87,81 +76,22 @@ export const Mapa = ({
   const toPctX = (value) => `${(value / MAP_WIDTH) * 100}%`;
   const toPctY = (value) => `${(value / MAP_HEIGHT) * 100}%`;
 
-  const regions = [
-    {
-      name: "zona-pet",
-      label: REGION_LABELS.zonaPet,
-      box: { x: 0, y: 32.59, width: 65.53, height: 345.19 },
-      labelPos: { x: 20.5, y: 205.18 },
-      icon: (iconClassName) => <ZonePet size={iconClassName} />,
-      col: true,
-    },
-    {
-      name: "caribe",
-      label: REGION_LABELS.caribe,
-      box: { x: 65.53, y: 32.59, width: 85.53, height: 345.19 },
-      labelPos: { x: 70.03, y: 205.18 },
-      icon: (iconClassName) => (
+  const regions = MAPA_REGION_LAYOUT.map((region) => ({
+    name: region.slug,
+    label: formatRegionLabel(region.slug).toUpperCase(),
+    box: region.box,
+    labelPos: region.labelPos,
+    col: region.col,
+    icon: (iconClassName) =>
+      region.icon?.type === "zone-pet" ? (
+        <ZonePet size={iconClassName} />
+      ) : (
         <IconoZona
-          url={"iconos/zonas/caribe.svg"}
+          url={region.icon?.url || "iconos/zonas/caribe.svg"}
           className={iconClassName}
         />
       ),
-      col: false,
-    },
-    {
-      name: "pacífica",
-      label: REGION_LABELS.pacifica,
-      box: { x: 151.06, y: 32.63, width: 156.26, height: 85.15 },
-      labelPos: { x: 177.86, y: 75.21 },
-      icon: (iconClassName) => (
-        <IconoZona
-          url={"iconos/zonas/pacifica.svg"}
-          className={iconClassName}
-        />
-      ),
-      col: false,
-    },
-    {
-      name: "Amazonía",
-      label: REGION_LABELS.amazonia,
-      box: { x: 151.06, y: 117.86, width: 151.66, height: 260 },
-      labelPos: { x: 175.31, y: 247.86 },
-      icon: (iconClassName) => (
-        <IconoZona
-          url={"iconos/zonas/amazonia.svg"}
-          className={iconClassName}
-        />
-      ),
-      col: false,
-    },
-    {
-      name: "orinoquía",
-      label: REGION_LABELS.orinoquia,
-      box: { x: 301, y: 232.73, width: 196.94, height: 144 },
-      labelPos: { x: 349.52, y: 304.73 },
-      icon: (iconClassName) => (
-        <IconoZona
-          url={"iconos/zonas/orinoquia.svg"}
-          className={iconClassName}
-        />
-      ),
-      col: false,
-    },
-    {
-      name: "andina",
-      label: REGION_LABELS.andina,
-      box: { x: 390.88, y: 15.13, width: 212.17, height: 216.76 },
-      labelPos: { x: 507.3, y: 123.51 },
-      icon: (iconClassName) => (
-        <IconoZona
-          url={"iconos/zonas/andina.svg"}
-          className={iconClassName}
-        />
-      ),
-      col: false,
-    },
-  ];
+  }));
 
   const handleMapaClick = (name) => {
     if (typeof handleShowZone === "function") {

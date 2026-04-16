@@ -113,41 +113,34 @@ export const validateReservaPayload = (payload) => {
     return { valid: false, errors: ["Payload debe ser un objeto válido"] };
   }
 
-  // Validar numero-de-reserva (ahora es string de 4 dígitos)
-  const numeroReserva = payload["numero-de-reserva"];
+  const numeroReserva = payload?.detalles?.numeroReserva;
   if (!numeroReserva || typeof numeroReserva !== "string" || !/^\d{4}$/.test(numeroReserva)) {
     errors.push("Número de reserva debe ser un string de 4 dígitos");
   }
 
-  // Validar nombre
-  if (!isValidName(payload.nombre)) {
+  if (!isValidName(payload?.contacto?.nombre)) {
     errors.push("Nombre debe tener entre 2 y 100 caracteres");
   }
 
-  // Validar email
-  if (!isValidEmail(payload.email)) {
+  if (!isValidEmail(payload?.contacto?.email)) {
     errors.push("Email inválido");
   }
 
-  // Validar WhatsApp
-  if (!isValidWhatsapp(payload.whatsapp)) {
+  if (!isValidWhatsapp(payload?.contacto?.whatsapp)) {
     errors.push("WhatsApp debe tener entre 10 y 15 dígitos");
   }
 
-  // Validar fecha
-  if (!isValidDate(payload.fecha)) {
+  if (!isValidDate(payload?.detalles?.fecha)) {
     errors.push("Fecha inválida");
   }
 
-  // Validar hora
-  if (!isValidTime(payload.hora)) {
+  if (!isValidTime(payload?.detalles?.hora)) {
     errors.push("Hora debe estar en formato HH:MM am/pm");
   }
 
-  // Validar cantidad de personas (nota: el objeto usa "ninos" para Firestore)
-  let adultos = payload.adultos ?? payload.adults ?? 0;
-  let ninos = payload.ninos ?? payload.children ?? payload.niños ?? 0;
-  let mascotas = payload.mascotas ?? 0;
+  let adultos = payload?.asistentes?.resumen?.adultos ?? 0;
+  let ninos = payload?.asistentes?.resumen?.ninos ?? 0;
+  let mascotas = payload?.asistentes?.resumen?.mascotas ?? 0;
   
   if (!isValidGuestCount(adultos, ninos, mascotas)) {
     errors.push(
@@ -167,30 +160,62 @@ export const validateReservaPayload = (payload) => {
  * @returns {Object} Payload sanitizado
  */
 export const sanitizeReservaPayload = (payload) => {
+  const contacto = {
+    nombre: String(payload?.contacto?.nombre || "").trim(),
+    email: String(payload?.contacto?.email || "").trim().toLowerCase(),
+    whatsapp: String(payload?.contacto?.whatsapp || "").trim(),
+    observaciones: String(payload?.contacto?.observaciones || "").trim(),
+  };
+
+  const detalles = {
+    numeroReserva: String(payload?.detalles?.numeroReserva || "0000"),
+    numeroMesa: payload?.detalles?.numeroMesa ?? null,
+    region: String(payload?.detalles?.region || "").trim(),
+    zonaId: payload?.detalles?.zonaId ?? null,
+    fechaISO: payload?.detalles?.fechaISO ?? null,
+    fecha: String(payload?.detalles?.fecha || "").trim(),
+    hora: String(payload?.detalles?.hora || "").trim(),
+    servicio: String(payload?.detalles?.servicio || "").trim(),
+    estado: String(payload?.detalles?.estado || "pending").trim(),
+  };
+
+  const asistentes = {
+    resumen: {
+      adultos: Number(payload?.asistentes?.resumen?.adultos) || 0,
+      ninos: Number(payload?.asistentes?.resumen?.ninos) || 0,
+      mascotas: Number(payload?.asistentes?.resumen?.mascotas) || 0,
+      total: Number(payload?.asistentes?.resumen?.total) || 0,
+    },
+    totalPlatos: Number(payload?.asistentes?.totalPlatos) || 0,
+    quienesVan: Array.isArray(payload?.asistentes?.quienesVan)
+      ? payload.asistentes.quienesVan
+      : [],
+    observaciones: String(payload?.asistentes?.observaciones || "").trim(),
+  };
+
+  const detallesPago = {
+    montoTotal: Number(payload?.detallesPago?.montoTotal) || 0,
+    subtotal: Number(payload?.detallesPago?.subtotal) || 0,
+    impuestos: Number(payload?.detallesPago?.impuestos) || 0,
+    currency: String(payload?.detallesPago?.currency || "COP").trim(),
+    metodoPago: String(payload?.detallesPago?.metodoPago || "tarjeta").trim(),
+    estado: String(payload?.detallesPago?.estado || "pending").trim(),
+    estadoPasarela: String(payload?.detallesPago?.estadoPasarela || "").trim(),
+    estadoTransaccion: String(payload?.detallesPago?.estadoTransaccion || "").trim(),
+    pasarela: payload?.detallesPago?.pasarela || {},
+    id: String(payload?.detallesPago?.id || "").trim(),
+    referencia: String(payload?.detallesPago?.referencia || "").trim(),
+    fechaPago: payload?.detallesPago?.fechaPago ?? null,
+  };
+
   return {
-    "numero-de-reserva": String(payload["numero-de-reserva"] || "0000"),
-    nombre: String(payload.nombre || "").trim(),
-    email: String(payload.email || "").trim().toLowerCase(),
-    whatsapp: String(payload.whatsapp || "").trim(),
-    ...(payload.region !== undefined && { region: String(payload.region || "").trim() }),
-    fecha: String(payload.fecha || "").trim(),
-    hora: String(payload.hora || "").trim(),
-    adultos: Number(payload.adultos) || 0,
-    ninos: Number(payload.ninos || payload.niños || payload.children) || 0,
-    mascotas: Number(payload.mascotas) || 0,
-    // Productos y detalles del carrito
-    ...(payload.productos && { productos: payload.productos }),
-    ...(payload.cantidadProductos !== undefined && { cantidadProductos: Number(payload.cantidadProductos) }),
-    ...(payload.totalProductos !== undefined && { totalProductos: Number(payload.totalProductos) }),
-    ...(payload.montoTotal !== undefined && { montoTotal: Number(payload.montoTotal) }),
-    // Estado y metadata
-    estado: String(payload.estado || "confirmada").trim(),
-    fechaCreacion: payload.fechaCreacion || new Date().toISOString(),
-    // Opcional: servicio si existe
-    ...(payload.servicio && { servicio: String(payload.servicio).trim() }),
-    ...(payload.metodoPago && { metodoPago: String(payload.metodoPago).trim() }),
-    ...(payload.checkout && { checkout: payload.checkout }),
-    ...(payload.pasarela && { pasarela: payload.pasarela }),
-    ...(payload.transaccion && { transaccion: payload.transaccion }),
+    contacto,
+    detalles,
+    asistentes,
+    detallesPago,
+    metadata: {
+      origen: String(payload?.metadata?.origen || "").trim(),
+      versionPayload: String(payload?.metadata?.versionPayload || "v2").trim(),
+    },
   };
 };

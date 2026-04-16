@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 
@@ -7,6 +7,7 @@ import ContadorAsistentes from "../reserva/ContadorAsistentes";
 import MesasDisplay from "../reserva/MesasDisplay";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { Button } from "../ui/Button";
+import { formatRegionLabel } from "../../data/puntos";
 
 const MAX_OCUPACION_TOTAL = 12;
 const MAX_MASCOTAS = 4;
@@ -36,6 +37,7 @@ export const PuntosDeReserva = ({
   const isMobile = useIsMobile();
   const [isExpanded, setIsExpanded] = useState(false);
   const [errorAsistentes, setErrorAsistentes] = useState("");
+  const hoverContainerRef = useRef(null);
 
   const {
     reservaData,
@@ -75,6 +77,23 @@ export const PuntosDeReserva = ({
     () => buildPositionStyle({ top, right, bottom, left }),
     [top, right, bottom, left],
   );
+
+  const leftPercent = useMemo(() => {
+    if (left === undefined || left === null) return null;
+
+    const rawValue = typeof left === "number" ? left : parseFloat(String(left));
+    return Number.isFinite(rawValue) ? rawValue : null;
+  }, [left]);
+
+  const isRightAnchoredDesktop =
+    !isMobile && leftPercent !== null && leftPercent > 70;
+  const panelTransformOrigin = isMobile
+    ? "center center"
+    : isRightAnchoredDesktop
+      ? "right bottom"
+      : "left bottom";
+  const effectiveZIndex = isExpanded ? zIndex + 200 : zIndex;
+  const regionLabel = formatRegionLabel(region);
 
   const syncAsistentes = (nextAdults, nextChildren) => {
     const total = Number(nextAdults || 0) + Number(nextChildren || 0);
@@ -134,6 +153,25 @@ export const PuntosDeReserva = ({
     }
   }, [isVisible]);
 
+  useEffect(() => {
+    if (isMobile || !isExpanded) return;
+
+    const handleDocumentMouseMove = (event) => {
+      const container = hoverContainerRef.current;
+      if (!container) return;
+
+      if (!container.contains(event.target)) {
+        setIsExpanded(false);
+      }
+    };
+
+    document.addEventListener("mousemove", handleDocumentMouseMove);
+
+    return () => {
+      document.removeEventListener("mousemove", handleDocumentMouseMove);
+    };
+  }, [isExpanded, isMobile]);
+
   const updateReservaField = (field, value) => {
     updateReservaData({ [field]: value });
   };
@@ -160,6 +198,16 @@ export const PuntosDeReserva = ({
     setIsExpanded((prev) => !prev);
   };
 
+  const handleMouseEnter = () => {
+    if (isMobile) return;
+    setIsExpanded(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (isMobile) return;
+    setIsExpanded(false);
+  };
+
   const handleContinue = () => {
     if (!canContinue) return;
 
@@ -175,15 +223,18 @@ export const PuntosDeReserva = ({
   return (
     <motion.div
       className={`absolute ${className}`}
-      style={{ ...positionStyle, zIndex }}
-      onHoverStart={isMobile ? undefined : handleExpand}
-      onHoverEnd={isMobile ? undefined : handleCollapse}
+      style={{ ...positionStyle, zIndex: effectiveZIndex }}
       initial={{ scale: 0, transformOrigin: "left bottom" }}
       animate={{ scale: 1, transformOrigin: "left bottom" }}
       exit={{ scale: 0, transformOrigin: "left bottom" }}
       transition={{ duration: 0.22, ease: "easeOut" }}
     >
-      <div className="pointer-events-auto">
+      <div
+        ref={hoverContainerRef}
+        className="pointer-events-auto relative size-10"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         <AnimatePresence initial={false} mode="wait">
           {!isExpanded ? (
             <motion.button
@@ -207,9 +258,11 @@ export const PuntosDeReserva = ({
               animate={{ scale: 1 }}
               exit={{ scale: 0.96, y: 8 }}
               transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-              style={{ transformOrigin: "left bottom" }}
+              style={{ transformOrigin: panelTransformOrigin }}
               className={`rounded-[2rem] border border-white/70 bg-white/92 shadow-[0_24px_80px_rgba(0,0,0,0.22)] backdrop-blur-md p-4 overflow-hidden ${
-                isMobile ? "w-fit max-w-[92vw]" : "w-fit"
+                isMobile
+                  ? "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-fit max-w-[92vw]"
+                  : `absolute bottom-0 w-fit ${isRightAnchoredDesktop ? "right-0" : "left-0"}`
               }`}
               onClick={(event) => event.stopPropagation()}
             >
@@ -220,7 +273,7 @@ export const PuntosDeReserva = ({
                   <div className="min-w-0">
                     {mesa && (
                       <p className="font-parkson text-3xl mt-1">
-                        {name} #{mesa} {region ? `en zona ${region}` : ""}
+                        {name} #{mesa} {region ? `en zona ${regionLabel}` : ""}
                       </p>
                     )}
                   </div>

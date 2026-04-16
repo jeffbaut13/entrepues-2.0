@@ -51,10 +51,11 @@ export default function ReservasManager() {
   const reservasFiltradas = reservas.filter((r) => {
     const query = searchQuery.toLowerCase();
     return (
-      (r.name || "").toLowerCase().includes(query) ||
+      (r.nombre || "").toLowerCase().includes(query) ||
       (r.email || "").toLowerCase().includes(query) ||
       (r.whatsapp || "").toLowerCase().includes(query) ||
-      (r.id || "").toLowerCase().includes(query)
+      (r.id || "").toLowerCase().includes(query) ||
+      (r.numeroReserva || "").toLowerCase().includes(query)
     );
   });
 
@@ -132,7 +133,14 @@ export default function ReservasManager() {
                 {reservasFiltradas.map((reserva) => (
                   <tr key={reserva.id} className="hover:bg-[#352821]/10 transition-colors">
                     <td className="p-4">
-                      <span className="font-medium">{reserva.name || "—"}</span>
+                      <div className="space-y-0.5">
+                        <span className="font-medium">{reserva.nombre || "—"}</span>
+                        {reserva.numeroReserva && (
+                          <p className="text-xs text-[#fff6ea]/40">
+                            #{reserva.numeroReserva}
+                          </p>
+                        )}
+                      </div>
                     </td>
                     <td className="p-4">
                       <div className="space-y-0.5">
@@ -151,20 +159,20 @@ export default function ReservasManager() {
                       </div>
                     </td>
                     <td className="p-4 text-[#fff6ea]/70">
-                      {reserva.selectedDate || reserva.date || "—"}
+                      {reserva.fecha || "—"}
                     </td>
                     <td className="p-4 text-[#fff6ea]/70">
                       <div className="flex items-center gap-1">
                         <Clock size={12} className="text-amber-500/50" />
-                        {reserva.hour || "—"}:{reserva.minute || "00"}
+                        {reserva.hora || "—"}
                       </div>
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-1 text-[#fff6ea]/70">
                         <Users size={12} className="text-amber-500/50" />
-                        {(reserva.adults || 0) + (reserva.children || 0)}
+                        {reserva.totalAsistentes || 0}
                         <span className="text-xs text-[#fff6ea]/40 ml-1">
-                          ({reserva.adults || 0}A + {reserva.children || 0}N
+                          ({reserva.adultos || 0}A + {reserva.ninos || 0}N
                           {reserva.mascotas ? ` + ${reserva.mascotas}M` : ""})
                         </span>
                       </div>
@@ -234,18 +242,81 @@ export default function ReservasManager() {
               </button>
             </div>
             <div className="p-4 space-y-3">
-              {Object.entries(selectedReserva).map(([key, value]) => (
-                <div key={key} className="flex gap-3">
-                  <span className="text-xs text-[#fff6ea]/40 w-32 flex-shrink-0 font-mono">
-                    {key}
-                  </span>
-                  <span className="text-sm text-[#fff6ea]/80 break-all">
-                    {typeof value === "object" && value !== null
-                      ? JSON.stringify(value, null, 2)
-                      : String(value ?? "—")}
-                  </span>
-                </div>
-              ))}
+              <DetailSection
+                title="Contacto"
+                items={[
+                  ["Nombre", selectedReserva.contacto?.nombre],
+                  ["Email", selectedReserva.contacto?.email],
+                  ["WhatsApp", selectedReserva.contacto?.whatsapp],
+                  ["Observaciones", selectedReserva.contacto?.observaciones],
+                ]}
+              />
+
+              <DetailSection
+                title="Reserva"
+                items={[
+                  ["No. reserva", selectedReserva.reserva?.numeroReserva],
+                  ["Región", selectedReserva.reserva?.region],
+                  ["Mesa", selectedReserva.reserva?.mesa],
+                  ["Fecha", selectedReserva.reserva?.fecha],
+                  ["Hora", selectedReserva.reserva?.hora],
+                  ["Servicio", selectedReserva.reserva?.servicio],
+                  ["Estado", selectedReserva.reserva?.estado],
+                ]}
+              />
+
+              <DetailSection
+                title="Asistentes"
+                items={[
+                  ["Adultos", selectedReserva.asistentes?.adultos],
+                  ["Niños", selectedReserva.asistentes?.ninos],
+                  ["Mascotas", selectedReserva.asistentes?.mascotas],
+                  ["Total", selectedReserva.asistentes?.total],
+                ]}
+              />
+
+              <DetailSection
+                title="Checkout"
+                items={[
+                  ["Subtotal", selectedReserva.checkout?.subtotal],
+                  ["Impuestos", selectedReserva.checkout?.impuestos],
+                  ["Total", selectedReserva.checkout?.total],
+                  ["Moneda", selectedReserva.checkout?.currency],
+                  ["Estado", selectedReserva.checkout?.estado],
+                ]}
+              />
+
+              <DetailSection
+                title="Transacción"
+                items={[
+                  ["ID", selectedReserva.transaccion?.id],
+                  ["Referencia", selectedReserva.transaccion?.referencia],
+                  ["Estado", selectedReserva.transaccion?.estado],
+                  ["Pasarela", selectedReserva.transaccion?.pasarela],
+                ]}
+              />
+
+              <DetailSection
+                title="Productos"
+                items={[
+                  ["Total productos", selectedReserva.productos?.totalProductos],
+                  ["Monto total", selectedReserva.productos?.montoTotal],
+                ]}
+              />
+
+              <DetalleConsumoAsistentes
+                asistentes={selectedReserva.asistentes?.detalle}
+              />
+
+              <DetailSection
+                title="Metadata"
+                items={[
+                  ["Origen", selectedReserva.metadata?.origen],
+                  ["Versión payload", selectedReserva.metadata?.versionPayload],
+                  ["Creado Firestore", formatTimestamp(selectedReserva.createdAt)],
+                  ["Actualizado Firestore", formatTimestamp(selectedReserva.updatedAt)],
+                ]}
+              />
             </div>
           </div>
         </div>
@@ -253,3 +324,91 @@ export default function ReservasManager() {
     </div>
   );
 }
+
+const DetailSection = ({ title, items }) => {
+  const visibleItems = items.filter(([, value]) => value !== undefined && value !== null && value !== "");
+
+  if (visibleItems.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-lg border border-[#352821]/30 p-3">
+      <h4 className="text-sm font-medium text-amber-400 mb-3">{title}</h4>
+      <div className="space-y-2">
+        {visibleItems.map(([label, value]) => (
+          <div key={label} className="flex gap-3">
+            <span className="text-xs text-[#fff6ea]/40 w-32 flex-shrink-0">{label}</span>
+            <span className="text-sm text-[#fff6ea]/80 break-all">
+              {typeof value === "object" ? JSON.stringify(value, null, 2) : String(value)}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const DetalleConsumoAsistentes = ({ asistentes }) => {
+  const asistentesNormalizados = Array.isArray(asistentes)
+    ? asistentes.filter((item) => item && typeof item === "object")
+    : [];
+
+  if (asistentesNormalizados.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-lg border border-[#352821]/30 p-3">
+      <h4 className="text-sm font-medium text-amber-400 mb-3">
+        Qué comerá cada persona
+      </h4>
+
+      <div className="space-y-3">
+        {asistentesNormalizados.map((asistente, index) => {
+          const nombreAsistente =
+            asistente?.asistente || `Asistente ${index + 1}`;
+          const platos = Array.isArray(asistente?.platos)
+            ? asistente.platos
+            : [];
+
+          return (
+            <div
+              key={`${nombreAsistente}-${index}`}
+              className="rounded-md bg-[#0f0b09]/50 border border-[#352821]/25 p-2.5"
+            >
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <p className="text-sm text-[#fff6ea] font-medium">
+                  {nombreAsistente}
+                </p>
+                <span className="text-xs text-[#fff6ea]/50">
+                  {Number(asistente?.totalPlatos || 0)} plato(s)
+                </span>
+              </div>
+
+              {platos.length > 0 ? (
+                <ul className="space-y-1.5">
+                  {platos.map((plato, platoIndex) => (
+                    <li
+                      key={`${nombreAsistente}-plato-${platoIndex}`}
+                      className="text-xs text-[#fff6ea]/75 flex items-start justify-between gap-2"
+                    >
+                      <span className="min-w-0 break-words">
+                        {plato?.nombre || "Plato sin nombre"}
+                      </span>
+                      <span className="shrink-0 text-[#fff6ea]/60">
+                        x{Number(plato?.cantidad || 1)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-[#fff6ea]/45">Sin platos seleccionados</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};

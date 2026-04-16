@@ -7,37 +7,34 @@ import { ScrollDownLottie } from "../ui/ScrollDownLottie";
 import { RegionOverlayControls } from "./RegionOverlayControls";
 import { VideoScrollLoader } from "./VideoScrollLoader";
 import { CanvasScrollSequence } from "./CanvasScrollSequence";
+import { VideoScrollAuthoringTools } from "./VideoScrollAuthoringTools";
+import {
+  REGIONES,
+  VIDEO_SCROLL_CHECKPOINTS,
+  VIDEO_SCROLL_TIMELINE,
+  frameToTime,
+  regionToSlug,
+  timeToFrame,
+} from "../../data/puntos";
 
 const AUDIO_URL = "/audios/audio.mp3";
-const FRAME_COUNT = 677;
-const VIDEO_DURATION_SECONDS = 56.41;
-const FRAMES_PER_SECOND = FRAME_COUNT / VIDEO_DURATION_SECONDS;
-const STEP_FRAMES = 48;
-const TRANSITION_DURATION_MS = 1000;
-const COOLDOWN_MS = 200;
+const FRAME_COUNT = VIDEO_SCROLL_TIMELINE.frameCount;
+const STEP_FRAMES = 12;
+const TRANSITION_DURATION_MS = 2000;
+const COOLDOWN_MS = 500;
 const PRELOAD_RADIUS = 16;
 const TRANSITION_EASING = "easeInOutCubic";
-
-const REGIONES = [
-  { start: 0, title: "Bienvenido" },
-  { start: 4, title: "Andina" },
-  { start: 14, title: "Orinoquía" },
-  { start: 35, title: "Pacífica" },
-  { start: 40, title: "Amazonía" },
-  { start: 46, title: "Caribe" },
-  { start: 51, title: "Zona Pet" },
-];
 
 const getFrameSrc = (index) =>
   `/video/recorrido/frames-webp-hq/frame_${String(index + 1).padStart(4, "0")}.webp`;
 
-const timeToFrame = (time) =>
-  Math.max(0, Math.min(FRAME_COUNT - 1, Math.round(time * FRAMES_PER_SECOND)));
-
-const frameToTime = (frame) => frame / FRAMES_PER_SECOND;
-
-export const VideoScrollComponent = () => {
-  const { onOpenReservePopup, setShowHeader, setVideoScrollTime } =
+export const VideoScrollComponent = ({ showAuthoringTools = false }) => {
+  const {
+    onOpenReservePopup,
+    registerVideoRegionChangeHandler,
+    setShowHeader,
+    setVideoScrollTime,
+  } =
     useOutletContext();
 
   const sequenceRef = useRef(null);
@@ -58,8 +55,12 @@ export const VideoScrollComponent = () => {
     useState(false);
   const [isFrameLoadingOverlayVisible, setIsFrameLoadingOverlayVisible] =
     useState(false);
+  const [currentFrame, setCurrentFrame] = useState(0);
 
   const zoneActive = REGIONES[activeTextIndex]?.title || REGIONES[0].title;
+  const checkpointFrames = [...VIDEO_SCROLL_CHECKPOINTS]
+    .sort((a, b) => a.time - b.time)
+    .map((checkpoint) => checkpoint.frame);
 
   const syncUiState = (time) => {
     setVideoScrollTime?.(time);
@@ -116,16 +117,46 @@ export const VideoScrollComponent = () => {
   };
 
   const handleFrameChange = (frame) => {
+    setCurrentFrame(frame);
     syncUiState(frameToTime(frame));
+  };
+
+  const handleScrubFrameChange = (nextFrame) => {
+    setCurrentFrame(nextFrame);
+    sequenceRef.current?.jumpToFrame(nextFrame, { immediate: true });
+    syncUiState(frameToTime(nextFrame));
   };
 
   const handleFrameLoadStateChange = (isLoading) => {
     setIsFrameLoadingOverlayVisible(isLoading);
   };
 
+  const handleStepAccepted = ({ direction, fromFrame, toFrame }) => {
+    const fromTime = Number(frameToTime(fromFrame).toFixed(2));
+    const toTime = Number(frameToTime(toFrame).toFixed(2));
+  };
+
+  const resolveTargetFrame = ({ direction, fromFrame }) => {
+    const EPSILON = 0.5;
+
+    if (direction > 0) {
+      const next = checkpointFrames.find(
+        (frame) => frame > fromFrame + EPSILON,
+      );
+      return next ?? checkpointFrames[checkpointFrames.length - 1] ?? fromFrame;
+    }
+
+    const prev = [...checkpointFrames]
+      .reverse()
+      .find((frame) => frame < fromFrame - EPSILON);
+
+    return prev ?? checkpointFrames[0] ?? fromFrame;
+  };
+
   const handleRegionSelect = (regionName) => {
+    const targetSlug = regionToSlug(regionName);
     const regionIndex = REGIONES.findIndex(
-      (region) => region.title === regionName,
+      (region) => region.slug === targetSlug,
     );
 
     if (regionIndex < 0) return;
@@ -147,6 +178,7 @@ export const VideoScrollComponent = () => {
 
     regionJumpTimeoutRef.current = setTimeout(() => {
       sequenceRef.current?.jumpToFrame(targetFrame, { immediate: true });
+      setCurrentFrame(targetFrame);
       syncUiState(REGIONES[regionIndex].start);
     }, 70);
 
@@ -156,12 +188,22 @@ export const VideoScrollComponent = () => {
   };
 
   useEffect(() => {
+    registerVideoRegionChangeHandler?.(handleRegionSelect);
+
+    return () => {
+      registerVideoRegionChangeHandler?.(null);
+    };
+  }, [handleRegionSelect, registerVideoRegionChangeHandler]);
+
+  useEffect(() => {
     if (!sequenceReady) return;
 
     tryPlayAudio();
 
     bootTimeoutRef.current = setTimeout(() => {
-      sequenceRef.current?.jumpToFrame(timeToFrame(4));
+      const initialFrame = timeToFrame(4);
+      sequenceRef.current?.jumpToFrame(initialFrame);
+      setCurrentFrame(initialFrame);
     }, 1000);
 
     return () => {
@@ -172,7 +214,8 @@ export const VideoScrollComponent = () => {
   useEffect(() => {
     return () => {
       if (bootTimeoutRef.current) clearTimeout(bootTimeoutRef.current);
-      if (regionJumpTimeoutRef.current) clearTimeout(regionJumpTimeoutRef.current);
+      if (regionJumpTimeoutRef.current)
+        clearTimeout(regionJumpTimeoutRef.current);
       if (regionFlashEndTimeoutRef.current) {
         clearTimeout(regionFlashEndTimeoutRef.current);
       }
@@ -198,8 +241,10 @@ export const VideoScrollComponent = () => {
             preloadRadius={PRELOAD_RADIUS}
             className="h-full w-full"
             cacheKey="descubrenos-sequence"
+            resolveTargetFrame={resolveTargetFrame}
             onFrameChange={handleFrameChange}
             onFrameLoadStateChange={handleFrameLoadStateChange}
+            onStepAccepted={handleStepAccepted}
             onReady={() => setSequenceReady(true)}
           />
 
@@ -233,6 +278,15 @@ export const VideoScrollComponent = () => {
           position="lg"
         />
       </div>
+
+      <VideoScrollAuthoringTools
+        visible={showAuthoringTools}
+        currentFrame={currentFrame}
+        totalFrames={FRAME_COUNT}
+        onScrubFrameChange={handleScrubFrameChange}
+        frameToTime={frameToTime}
+        regiones={REGIONES}
+      />
 
       <button
         type="button"

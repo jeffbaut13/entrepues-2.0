@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import { useEffect } from "react";
 
 function ScrollToTop() {
@@ -43,10 +48,12 @@ function AppRouter() {
 
           <Route path="/carta" element={<CartaPage />} />
           <Route path="/receta-semanal" element={<RecetaSemanalPage />} />
-
         </Route>
         <Route path="/descubrenos" element={<VideoScrollLayout />}>
-          <Route index element={<VideoScrollComponent />} />
+          <Route
+            index
+            element={<VideoScrollComponent showAuthoringTools={false} />}
+          />
         </Route>
 
         {/* Panel de Administración */}

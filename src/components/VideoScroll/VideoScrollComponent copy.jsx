@@ -198,11 +198,7 @@ export const VideoScrollComponent = () => {
         const settledFrame = Math.round(target);
         if (lastSettledFrameRef.current !== settledFrame) {
           lastSettledFrameRef.current = settledFrame;
-          console.log("[VideoScroll] Scroll settled", {
-            frame: settledFrame,
-            time: Number(frameToTime(settledFrame).toFixed(2)),
-            region: REGIONES[lastRegionIndexRef.current]?.title || "unknown",
-          });
+           
         }
       }
     }

@@ -1,11 +1,8 @@
-import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+﻿import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import useReservaStore from "../../store/reservaStore";
 import ContadorAsistentes from "./ContadorAsistentes";
 import MesasDisplay from "./MesasDisplay";
-import RegionImageSlider from "./RegionImageSlider";
-
-import { Mapa } from "../ui/Mapa";
 import { useIsMobile } from "../../hooks/useIsMobile";
 
 const MAX_OCUPACION_TOTAL = 12;
@@ -15,12 +12,9 @@ const PasoCantidad = ({
   adults = 0,
   children = 0,
   mascotas = 0,
-
   setAdults,
   setChildren,
   setMascotas,
-  onConfirm,
-  canConfirm = false,
 }) => {
   const [errorAsistentes, setErrorAsistentes] = useState("");
   const isMobile = useIsMobile();
@@ -29,9 +23,6 @@ const PasoCantidad = ({
     actualizarDetalleAsistentes,
     limpiarDetalleAsistentes,
     reservaZonaData,
-    seleccionarZona,
-    activeMesas,
-    setActiveMesas,
   } = useReservaStore();
 
   const adultsNum = Math.max(0, Number(adults) || 0);
@@ -58,7 +49,7 @@ const PasoCantidad = ({
 
   const showMaxAsistentesError = () => {
     setErrorAsistentes(
-      `Has alcanzado el máximo de ${MAX_OCUPACION_TOTAL} asistentes.`,
+      `Has alcanzado el maximo de ${MAX_OCUPACION_TOTAL} asistentes.`,
     );
   };
 
@@ -78,79 +69,56 @@ const PasoCantidad = ({
     }
   }, [permiteMascotas, mascotasNum, setMascotas]);
 
-  const pushZone = (name) => {
-    seleccionarZona(name);
-    setActiveMesas(true);
-  };
-
   return (
     <>
       <h2 className="font-parkson mb-4 !text-4xl">
-        {selectedZoneName === "general"
-          ? "¿Dónde quieres comer?"
-          : permiteMascotas
-            ? "¿Cuántas personas y peluditos nos visitarán?"
-            : "¿Cuántos vendrán?"}
+        {permiteMascotas
+          ? "Cuantas personas y peluditos nos visitaran?"
+          : "Cuantos vendran?"}
       </h2>
+
       <div className="size-full flex flex-col items-center justify-center gap-8">
-        <div
-          className={`w-full flex max-lg:flex-col ${activeMesas ? "lg:h-82" : "lg:h-96"} gap-6 px-14 transition-all duration-300`}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25 }}
+          className="max-w-5xl min-h-0 flex max-lg:flex-col items-center justify-center gap-6"
         >
-          <div className="flex-1 min-w-0 h-full border border-black/8 rounded-xl overflow-hidden">
-            <div className="w-full h-full p-6">
-              <Mapa
-                handleShowZone={pushZone}
-                regionActive={reservaZonaData?.selectedZoneName || ""}
-                size={"w-full h-full flex"}
-                sizeText={`${isMobile ? "lg" : "xl"}`}
-              />
-            </div>
+          <div className="flex-1 min-w-[14rem]">
+            <ContadorAsistentes
+              errorAsistentes={errorAsistentes}
+              permiteMascotas={permiteMascotas}
+              adultsNum={adultsNum}
+              childrenNum={childrenNum}
+              mascotasNum={mascotasNum}
+              setAdults={setAdults}
+              setChildren={setChildren}
+              setMascotas={setMascotas}
+              syncAsistentes={syncAsistentes}
+              showMaxAsistentesError={showMaxAsistentesError}
+              MAX_OCUPACION_TOTAL={MAX_OCUPACION_TOTAL}
+              MAX_MASCOTAS={MAX_MASCOTAS}
+              totalOcupacion={totalOcupacion}
+            />
           </div>
 
-          <RegionImageSlider selectedZoneName={selectedZoneName} />
-        </div>
-        <AnimatePresence mode="wait">
-          {activeMesas && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              transition={{ duration: 0.3 }}
-              className="max-w-96 min-h-0 flex max-lg:flex-col items-center justify-center gap-4"
-            >
-              <div className="flex-1">
-                <ContadorAsistentes
-                  errorAsistentes={errorAsistentes}
-                  permiteMascotas={permiteMascotas}
-                  adultsNum={adultsNum}
-                  childrenNum={childrenNum}
-                  mascotasNum={mascotasNum}
-                  setAdults={setAdults}
-                  setChildren={setChildren}
-                  setMascotas={setMascotas}
-                  syncAsistentes={syncAsistentes}
-                  showMaxAsistentesError={showMaxAsistentesError}
-                  MAX_OCUPACION_TOTAL={MAX_OCUPACION_TOTAL}
-                  MAX_MASCOTAS={MAX_MASCOTAS}
-                  totalOcupacion={totalOcupacion}
-                />
-              </div>
-              <div className="flex-1">
-                <MesasDisplay
-                  selectedZoneName={selectedZoneName}
-                  mesaSeleccionada={mesaSeleccionada}
-                  isMobile={isMobile}
-                  totalOcupacion={totalOcupacion}
-                  totalPersonas={totalPersonas}
-                  childrenNum={childrenNum}
-                  mascotasNum={mascotasNum}
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+          <div className="flex-1 min-w-[14rem]">
+            <MesasDisplay
+              selectedZoneName={selectedZoneName}
+              mesaSeleccionada={mesaSeleccionada}
+              isMobile={isMobile}
+              totalOcupacion={totalOcupacion}
+              totalPersonas={totalPersonas}
+              childrenNum={childrenNum}
+              mascotasNum={mascotasNum}
+            />
+          </div>
+        </motion.div>
       </div>
     </>
   );
 };
 
 export default PasoCantidad;
+
+

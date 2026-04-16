@@ -12,7 +12,7 @@ export const SiteFooter = ({
 
   return (
     <footer
-      className={`h-[60vh] w-full bg-cover bg-center ${className} bg-secondary pb-10`}
+      className={`h-[80vh] w-full bg-cover bg-center ${className} bg-secondary py-16`}
       
     >
       <div className="size-full flex flex-col justify-between items-center px-6">

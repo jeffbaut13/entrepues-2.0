@@ -59,8 +59,10 @@ export const CanvasScrollSequence = forwardRef(function CanvasScrollSequence(
     wheelThreshold = 30,
     cacheKey = "video-scroll-sequence",
     cacheSize = 80,
+    resolveTargetFrame,
     onFrameChange,
     onFrameLoadStateChange,
+    onStepAccepted,
     onReady,
   },
   ref,
@@ -184,7 +186,9 @@ export const CanvasScrollSequence = forwardRef(function CanvasScrollSequence(
     easing,
     wheelThreshold,
     reducedMotion: prefersReducedMotion,
+    resolveTargetFrame,
     onFrameChange: drawCurrentFrame,
+    onStepAccepted,
   });
 
   useImperativeHandle(

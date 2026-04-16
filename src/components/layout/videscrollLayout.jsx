@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
@@ -6,72 +6,30 @@ import { Header } from "../header/Header";
 import { ReservaPopupFlow } from "../reserva/popup/ReservaPopupFlow";
 import { PuntosDeReserva } from "../VideoScroll/PuntosDeReserva";
 import useReservaStore from "../../store/reservaStore";
+import { VIDEO_SCROLL_POINTS_FLAT, timeToFrame } from "../../data/puntos";
+import { logVideoScrollDebugTables } from "../../data/puntos.debug";
 
-const VIDEO_SCROLL_POINTS = [
-  /* Primer checkpoint */
-  {
-    id: "punto-01",
-    region: "andina",
-    mesa: 1,
-    name: "mesa",
-    timeShow: 4,
-    timeout: 4.4,
-    left: "16%",
-    bottom: "28%",
-  },
-  {
-    id: "punto-02",
-    keyId: "punto-02-a",
-    region: "andina",
-    mesa: 4,
-    name: "Mesa en la barra",
-    timeShow: 4,
-    timeout: 4.4,
-    left: "60%",
-    bottom: "46%",
-  },
-  /* Segundo checkpoint */
-  {
-    id: "punto-02",
-    keyId: "punto-02-b",
-    region: "andina",
-    mesa: 2,
-    name: "mesa",
-    timeShow: 8,
-    timeout: 8.4,
-    left: "26%",
-    bottom: "41%",
-  },
-  {
-    id: "punto-03",
-    region: "andina",
-    mesa: 3,
-    name: "mesa",
-    timeShow: 8,
-    timeout: 8.4,
-    left: "16%",
-    bottom: "36%",
-  },
-  {
-    id: "punto-04",
-    region: "andina",
-    mesa: 4,
-    name: "Mesa en la barra",
-    timeShow: 8,
-    timeout: 8.4,
-    left: "60%",
-    bottom: "46%",
-  },
-  /* Segundo checkpoint */
-];
+const DEBUG_VIDEO_SCROLL_TIME = true;
+const getPointRenderKey = (point, index) =>
+  [
+    point.checkpoint,
+    point.timeShow,
+    point.timeout,
+    point.mesa,
+    point.keyId || point.id,
+    index,
+  ].join("-");
 
 const VideoScrollLayout = () => {
   const [isReservePopupOpen, setIsReservePopupOpen] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState("");
   const [showHeader, setShowHeader] = useState(false);
   const [currentVideoTime, setCurrentVideoTime] = useState(0);
+  const regionChangeHandlerRef = useRef(null);
   const setMesaAsignada = useReservaStore((state) => state.setMesaAsignada);
+  const seleccionarZona = useReservaStore((state) => state.seleccionarZona);
   const CHECKPOINT_EPSILON = 0.16;
+  const lastLoggedTimeRef = useRef(-1);
 
   const isPointVisible = (point) => {
     const start = Number(point.timeShow || 0);
@@ -86,6 +44,9 @@ const VideoScrollLayout = () => {
 
   const openReservePopup = (regionName = "", options = {}) => {
     setSelectedRegion(regionName || "");
+    if (regionName) {
+      seleccionarZona(regionName);
+    }
     setMesaAsignada(options?.mesa ?? null);
     setIsReservePopupOpen(true);
   };
@@ -94,6 +55,46 @@ const VideoScrollLayout = () => {
     setIsReservePopupOpen(false);
   };
 
+  const registerVideoRegionChangeHandler = (handler) => {
+    regionChangeHandlerRef.current = handler;
+  };
+
+  const handlePopupRegionChange = (regionName = "") => {
+    setSelectedRegion(regionName || "");
+
+    if (regionName) {
+      seleccionarZona(regionName);
+      regionChangeHandlerRef.current?.(regionName);
+    }
+  };
+
+  useEffect(() => {
+    if (!DEBUG_VIDEO_SCROLL_TIME) return;
+
+    // Evita ruido excesivo en consola sin perder precisión para calibrar puntos.
+    if (Math.abs(currentVideoTime - lastLoggedTimeRef.current) < 0.08) {
+      return;
+    }
+
+    lastLoggedTimeRef.current = currentVideoTime;
+
+    const visiblePoints = VIDEO_SCROLL_POINTS_FLAT.filter((point) => {
+      const start = Number(point.timeShow || 0);
+      const rawTimeout = Number(point.timeout || 0);
+      const end = rawTimeout > start ? rawTimeout : start + rawTimeout;
+
+      return (
+        currentVideoTime >= start - CHECKPOINT_EPSILON &&
+        currentVideoTime <= end + CHECKPOINT_EPSILON
+      );
+    }).map((point) => point.keyId || point.id);
+  }, [currentVideoTime]);
+
+  useEffect(() => {
+    if (!DEBUG_VIDEO_SCROLL_TIME) return;
+    logVideoScrollDebugTables();
+  }, []);
+
   return (
     <>
       <Header loading={true} logo={showHeader} fullwidth />
@@ -101,6 +102,7 @@ const VideoScrollLayout = () => {
       <Outlet
         context={{
           onOpenReservePopup: openReservePopup,
+          registerVideoRegionChangeHandler,
           setShowHeader,
           showHeader,
           setVideoScrollTime: setCurrentVideoTime,
@@ -111,14 +113,14 @@ const VideoScrollLayout = () => {
         stepinvert={true}
         isOpen={isReservePopupOpen}
         selectedRegion={selectedRegion}
+        onRegionChange={handlePopupRegionChange}
         onClose={closeReservePopup}
       />
 
-      {VIDEO_SCROLL_POINTS.map((point) => (
-        <AnimatePresence key={point.keyId || point.id}>
+      {VIDEO_SCROLL_POINTS_FLAT.map((point, index) => (
+        <AnimatePresence key={getPointRenderKey(point, index)}>
           {isPointVisible(point) && (
             <PuntosDeReserva
-              key={point.keyId || point.id}
               region={point.region}
               name={point.name}
               mesa={point.mesa}

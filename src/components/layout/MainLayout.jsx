@@ -5,6 +5,9 @@ import { Loader } from "../LoaderComponents/Loader";
 import { LoaderProvider } from "../../context/LoaderContext";
 import { Header } from "../header/Header";
 import { useLoaderStore } from "../../store/loaderStore";
+import useReservaStore, {
+  MESA_AUN_SIN_SELECCION,
+} from "../../store/reservaStore";
  
 import { ReservaPopupFlow } from "../reserva/popup/ReservaPopupFlow";
 import { useState } from "react";
@@ -17,9 +20,11 @@ import { useState } from "react";
 export default function MainLayout() {
   const [isReservePopupOpen, setIsReservePopupOpen] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState("");
+  const setMesaAsignada = useReservaStore((state) => state.setMesaAsignada);
 
   const openReservePopup = (regionName = "") => {
     setSelectedRegion(regionName || "");
+    setMesaAsignada(MESA_AUN_SIN_SELECCION);
 
     setIsReservePopupOpen(true);
   };

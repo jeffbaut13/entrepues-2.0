@@ -5,36 +5,12 @@ import { WhatsappShareButton } from "react-share";
 import { Button } from "../ui/Button";
 import useCheckoutStore from "../../store/checkoutStore";
 import { X } from "lucide-react";
+import { formatRegionLabel } from "../../data/puntos";
 
 const capitalizeSentence = (value = "") => {
   const text = String(value || "").trim();
   if (!text) return "";
   return text.charAt(0).toUpperCase() + text.slice(1);
-};
-
-const formatRegionName = (value = "") => {
-  const normalized = String(value || "")
-    .trim()
-    .toLowerCase();
-
-  const regionLabels = {
-    andina: "Andina",
-    orinoquia: "Orinoquía",
-    pacifica: "Pacífica",
-    amazonia: "Amazonía",
-    caribe: "Caribe",
-    "zona-pet": "Zona Pet",
-    general: "Zona general",
-  };
-
-  if (!normalized) return "Zona general";
-  if (regionLabels[normalized]) return regionLabels[normalized];
-
-  return normalized
-    .split(/[-\s]+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
 };
 
 const formatMesaPhrase = (adultos = 0, ninos = 0, mascotas = 0) => {
@@ -84,19 +60,24 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
     }
   };
 
-  const numeroReserva = reserva?.["numero-de-reserva"] || "----";
-  const nombreReserva = capitalizeSentence(reserva?.nombre || "");
+  const detallesReserva = reserva?.detalles || {};
+  const asistentesReserva = reserva?.asistentes || {};
+  const resumenAsistentes = asistentesReserva?.resumen || {};
+  const contactoReserva = reserva?.contacto || {};
+
+  const numeroReserva = detallesReserva?.numeroReserva || "----";
+  const nombreReserva = capitalizeSentence(contactoReserva?.nombre || "");
   const shareUrl =
     typeof window !== "undefined" && window.location?.origin
       ? window.location.origin
       : "https://restauranteentrepues.com";
-  const fechaReserva = capitalizeSentence(reserva?.fecha || "");
-  const horaReserva = reserva?.hora || "";
-  const regionReserva = formatRegionName(reserva?.region || "general");
+  const fechaReserva = capitalizeSentence(detallesReserva?.fecha || "");
+  const horaReserva = detallesReserva?.hora || "";
+  const regionReserva = formatRegionLabel(detallesReserva?.region || "general");
   const mesaReservaTexto = formatMesaPhrase(
-    reserva?.adultos,
-    reserva?.ninos,
-    reserva?.mascotas,
+    resumenAsistentes?.adultos,
+    resumenAsistentes?.ninos,
+    resumenAsistentes?.mascotas,
   );
   const mensajeWhatsApp = [
     `¡Ea pues, ${nombreReserva || "parcero"}!`,

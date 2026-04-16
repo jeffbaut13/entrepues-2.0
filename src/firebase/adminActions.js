@@ -21,6 +21,204 @@ import { app, db } from "./config";
 
 const storage = getStorage(app);
 
+const normalizeReservaAdminDoc = (id, data = {}) => {
+  const detalles = data?.detalles || {};
+  const detallesPago = data?.detallesPago || {};
+
+  const contacto = {
+    nombre: data?.contacto?.nombre || data?.nombre || data?.name || "",
+    email: data?.contacto?.email || data?.email || "",
+    whatsapp: data?.contacto?.whatsapp || data?.whatsapp || "",
+    observaciones:
+      data?.contacto?.observaciones || data?.observaciones || "",
+  };
+
+  const reserva = {
+    numeroReserva: detalles?.numeroReserva || data?.["numero-de-reserva"] || "",
+    region:
+      detalles?.region ||
+      data?.reserva?.region ||
+      data?.region ||
+      data?.selectedZoneName ||
+      "",
+    zonaId: detalles?.zonaId || data?.reserva?.zonaId || data?.selectedZoneId || null,
+    mesa:
+      detalles?.numeroMesa ??
+      data?.reserva?.mesa ??
+      data?.mesa ??
+      data?.mesaAsignada ??
+      null,
+    fechaISO: detalles?.fechaISO || data?.reserva?.fechaISO || data?.selectedDate || null,
+    fecha: detalles?.fecha || data?.reserva?.fecha || data?.fecha || data?.date || "",
+    hora: detalles?.hora || data?.reserva?.hora || data?.hora || "",
+    servicio: detalles?.servicio || data?.reserva?.servicio || data?.servicio || "",
+    estado: detalles?.estado || data?.reserva?.estado || data?.estado || "",
+  };
+
+  const asistentes = {
+    adultos:
+      data?.asistentes?.resumen?.adultos ??
+      data?.asistentes?.adultos ??
+      data?.adultos ??
+      data?.adults ??
+      0,
+    ninos:
+      data?.asistentes?.resumen?.ninos ??
+      data?.asistentes?.ninos ??
+      data?.ninos ??
+      data?.children ??
+      data?.niños ??
+      0,
+    mascotas:
+      data?.asistentes?.resumen?.mascotas ??
+      data?.asistentes?.mascotas ??
+      data?.mascotas ??
+      0,
+    total:
+      data?.asistentes?.resumen?.total ??
+      data?.asistentes?.total ??
+      ((data?.asistentes?.resumen?.adultos ??
+        data?.asistentes?.adultos ??
+        data?.adultos ??
+        data?.adults ??
+        0) +
+        (data?.asistentes?.resumen?.ninos ??
+          data?.asistentes?.ninos ??
+          data?.ninos ??
+          data?.children ??
+          data?.niños ??
+          0) +
+        (data?.asistentes?.resumen?.mascotas ??
+          data?.asistentes?.mascotas ??
+          data?.mascotas ??
+          0)),
+    detalle:
+      data?.asistentes?.quienesVan ||
+      data?.asistentes?.detalle ||
+      data?.productos?.detalleAsistentes ||
+      [],
+    totalPlatos:
+      data?.asistentes?.totalPlatos ??
+      data?.productos?.totalProductos ??
+      data?.totalProductos ??
+      0,
+  };
+
+  const checkout = {
+    subtotal: detallesPago?.subtotal ?? data?.checkout?.subtotal ?? 0,
+    impuestos: detallesPago?.impuestos ?? data?.checkout?.impuestos ?? 0,
+    total:
+      detallesPago?.montoTotal ??
+      detallesPago?.total ??
+      data?.checkout?.total ??
+      data?.montoTotal ??
+      0,
+    currency: detallesPago?.currency || data?.checkout?.currency || "COP",
+    estado: detallesPago?.estado || data?.checkout?.estado || "",
+  };
+
+  const transaccion = {
+    id: detallesPago?.id || data?.transaccion?.id || "",
+    referencia: detallesPago?.referencia || data?.transaccion?.referencia || "",
+    estado: detallesPago?.estadoTransaccion || data?.transaccion?.estado || "",
+    pasarela:
+      detallesPago?.estadoPasarela ||
+      data?.transaccion?.pasarela ||
+      data?.pasarela?.estado ||
+      "",
+  };
+
+  const productos = {
+    totalProductos:
+      data?.asistentes?.totalPlatos ??
+      data?.productos?.totalProductos ??
+      data?.totalProductos ??
+      0,
+    montoTotal:
+      detallesPago?.montoTotal ??
+      data?.productos?.montoTotal ??
+      data?.montoTotal ??
+      0,
+    detalleAsistentes:
+      data?.asistentes?.quienesVan || data?.productos?.detalleAsistentes || [],
+  };
+
+  const metadata = {
+    origen: data?.metadata?.origen || "",
+    versionPayload: data?.metadata?.versionPayload || "",
+  };
+
+  return {
+    id,
+    ...data,
+    contacto,
+    reserva,
+    asistentes,
+    checkout,
+    transaccion,
+    productos,
+    metadata,
+
+    // Compatibilidad para la UI actual/admin.
+    nombre: contacto.nombre,
+    email: contacto.email,
+    whatsapp: contacto.whatsapp,
+    observaciones: contacto.observaciones,
+    region: reserva.region,
+    mesa: reserva.mesa,
+    fecha: reserva.fecha,
+    hora: reserva.hora,
+    estado: reserva.estado,
+    servicio: reserva.servicio,
+    adultos: asistentes.adultos,
+    ninos: asistentes.ninos,
+    mascotas: asistentes.mascotas,
+    totalAsistentes: asistentes.total,
+    numeroReserva: reserva.numeroReserva,
+  };
+};
+
+const buildReservaAdminUpdatePayload = (datos = {}) => {
+  const payload = { ...datos };
+
+  if (datos.detalles || datos.detallesPago) {
+    return payload;
+  }
+
+  if (datos.contacto) {
+    payload.nombre = datos.contacto.nombre ?? payload.nombre;
+    payload.email = datos.contacto.email ?? payload.email;
+    payload.whatsapp = datos.contacto.whatsapp ?? payload.whatsapp;
+    payload.observaciones =
+      datos.contacto.observaciones ?? payload.observaciones;
+  }
+
+  if (datos.reserva) {
+    payload.region = datos.reserva.region ?? payload.region;
+    payload.mesa = datos.reserva.mesa ?? payload.mesa;
+    payload.fecha = datos.reserva.fecha ?? payload.fecha;
+    payload.hora = datos.reserva.hora ?? payload.hora;
+    payload.servicio = datos.reserva.servicio ?? payload.servicio;
+    payload.estado = datos.reserva.estado ?? payload.estado;
+
+    if (datos.reserva.numeroReserva !== undefined) {
+      payload["numero-de-reserva"] = datos.reserva.numeroReserva;
+    }
+  }
+
+  if (datos.asistentes) {
+    payload.adultos = datos.asistentes.adultos ?? payload.adultos;
+    payload.ninos = datos.asistentes.ninos ?? payload.ninos;
+    payload.mascotas = datos.asistentes.mascotas ?? payload.mascotas;
+  }
+
+  if (datos.checkout) {
+    payload.montoTotal = datos.checkout.total ?? payload.montoTotal;
+  }
+
+  return payload;
+};
+
 // ===== CATEGORÍAS (colecciones de productos) =====
 
 const CATEGORIAS = [
@@ -189,8 +387,7 @@ export const obtenerReservas = async () => {
     const reservasRef = collection(db, "reservas");
     const snapshot = await getDocs(reservasRef);
     return snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
+      ...normalizeReservaAdminDoc(doc.id, doc.data()),
     }));
   } catch (error) {
     console.error("Error obteniendo reservas:", error);
@@ -206,7 +403,7 @@ export const obtenerReservaPorId = async (reservaId) => {
     const reservaRef = doc(db, "reservas", reservaId);
     const snap = await getDoc(reservaRef);
     if (!snap.exists()) return null;
-    return { id: snap.id, ...snap.data() };
+    return normalizeReservaAdminDoc(snap.id, snap.data());
   } catch (error) {
     console.error("Error obteniendo reserva:", error);
     throw error;
@@ -219,8 +416,9 @@ export const obtenerReservaPorId = async (reservaId) => {
 export const actualizarReserva = async (reservaId, datos) => {
   try {
     const reservaRef = doc(db, "reservas", reservaId);
+    const payload = buildReservaAdminUpdatePayload(datos);
     await updateDoc(reservaRef, {
-      ...datos,
+      ...payload,
       updatedAt: serverTimestamp(),
     });
     return { ok: true };

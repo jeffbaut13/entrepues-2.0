@@ -542,60 +542,80 @@ export const crearReservaPendienteDesdeCheckout = async ({
 
     const numeroReserva = await obtenerSiguienteNumeroReserva();
     const numeroReservaFormateado = String(numeroReserva).padStart(4, "0");
-    const ahora = new Date().toISOString();
+    const nombreContacto = datosContacto?.nombre || reservaData.name || "";
+    const emailContacto = datosContacto?.email || reservaData.email || "";
+    const whatsappContacto =
+      datosContacto?.whatsapp || reservaData.whatsapp || "";
+    const notasContacto = datosContacto?.notas || "";
     const regionSeleccionada =
       datosReserva?.reservaZonaData?.selectedZoneName ||
       reservaData?.selectedZoneName ||
       "";
+    const zonaId = datosReserva?.reservaZonaData?.selectedZoneId || null;
+    const mesaAsignadaRaw =
+      datosReserva?.reservaZonaData?.mesaAsignada ?? reservaData?.mesa ?? null;
     const mesaAsignada =
-      Number(datosReserva?.reservaZonaData?.mesaAsignada) ||
-      Number(reservaData?.mesa) ||
-      null;
+      mesaAsignadaRaw === null || mesaAsignadaRaw === undefined || mesaAsignadaRaw === ""
+        ? null
+        : mesaAsignadaRaw;
+    const totalAsistentes = adultos + ninos + mascotas;
+    const subtotal = Number(montoTotal || 0);
+    const impuestosCalculados = Number(impuestos || 0);
+    const totalFinal = Number(montoFinal || 0);
 
     const payload = {
-      "numero-de-reserva": numeroReservaFormateado,
-      nombre: datosContacto?.nombre || reservaData.name || "",
-      email: datosContacto?.email || reservaData.email || "",
-      whatsapp: datosContacto?.whatsapp || reservaData.whatsapp || "",
-      region: String(regionSeleccionada || "").trim(),
-      mesa: mesaAsignada,
-      fecha: fechaFormateada,
-      hora: horaFormateada,
-      adultos,
-      ninos,
-      mascotas,
-      estado: estadoReserva,
-      fechaCreacion: ahora,
-      fechaActualizacion: ahora,
-      servicio: servicioReserva,
-      observaciones: datosContacto?.notas || "",
-      metodoPago: metodoPago || "tarjeta",
-      pasarela: {
-        habilitada: false,
-        proveedor: null,
-        estado: estadoPasarela,
+      contacto: {
+        nombre: nombreContacto,
+        email: emailContacto,
+        whatsapp: whatsappContacto,
+        observaciones: notasContacto,
       },
-      checkout: {
-        subtotal: Number(montoTotal || 0),
-        impuestos: Number(impuestos || 0),
-        total: Number(montoFinal || 0),
+      detalles: {
+        numeroReserva: numeroReservaFormateado,
+        numeroMesa: mesaAsignada,
+        region: String(regionSeleccionada || "").trim(),
+        zonaId,
+        fechaISO: reservaData.selectedDate || null,
+        fecha: fechaFormateada,
+        hora: horaFormateada,
+        servicio: servicioReserva,
+        estado: estadoReserva,
+      },
+      asistentes: {
+        resumen: {
+          adultos,
+          ninos,
+          mascotas,
+          total: totalAsistentes,
+        },
+        totalPlatos: totalProductos,
+        quienesVan: detalleAsistentes,
+        observaciones: notasContacto,
+      },
+      detallesPago: {
+        montoTotal: totalFinal,
+        subtotal,
+        impuestos: impuestosCalculados,
         currency: "COP",
+        metodoPago: metodoPago || "tarjeta",
         estado: estadoCheckout,
-      },
-      transaccion: {
+        estadoPasarela,
+        estadoTransaccion,
+        pasarela: {
+          habilitada: false,
+          proveedor: null,
+          estado: estadoPasarela,
+        },
         id: transaccion?.id || `TXN-${Date.now()}`,
         referencia: transaccion?.referencia || `REF-${Date.now()}`,
-        estado: estadoTransaccion,
-        pasarela: estadoPasarela,
+        fechaPago: null,
       },
-      productos: {
-        totalProductos,
-        montoTotal: Number(montoFinal || 0),
-        detalleAsistentes,
+      metadata: {
+        origen: datosReserva?.uiState?.withoutMenu
+          ? "reserva_sin_menu"
+          : "checkout_con_menu",
+        versionPayload: "v2",
       },
-      cantidadProductos: totalProductos,
-      totalProductos,
-      montoTotal: Number(montoFinal || 0),
     };
 
     const res = await guardarReservaEnFirestore(payload);

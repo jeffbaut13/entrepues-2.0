@@ -132,7 +132,6 @@ export const useCheckoutStore = create(
 
             set(buildCheckoutStateFromReserva(datos, get().datosContacto));
 
-            console.log("✅ Datos de reserva cargados:", datos);
             return { ok: true, data: datos };
           }
 
@@ -146,7 +145,10 @@ export const useCheckoutStore = create(
 
       cargarDatosReservaDesdeResultado: (datos) => {
         try {
-          if (!datos?.reservaData || !Array.isArray(datos?.platosSeleccionados)) {
+          if (
+            !datos?.reservaData ||
+            !Array.isArray(datos?.platosSeleccionados)
+          ) {
             throw new Error("Resultado de reserva incompleto");
           }
 
@@ -176,7 +178,7 @@ export const useCheckoutStore = create(
           Object.prototype.hasOwnProperty.call(datosSerializados, "whatsapp")
         ) {
           datosSerializados.whatsapp = serializarWhatsapp(
-            datosSerializados.whatsapp
+            datosSerializados.whatsapp,
           );
         }
 
@@ -307,7 +309,7 @@ export const useCheckoutStore = create(
           try {
             localStorage.setItem(
               "checkout:firebase:response",
-              JSON.stringify(reservaPersistida)
+              JSON.stringify(reservaPersistida),
             );
           } catch (_) {}
 
@@ -392,8 +394,6 @@ export const useCheckoutStore = create(
             estado: "confirmada",
             fechaConfirmacion: new Date().toISOString(),
           };
-
-          console.log("💾 Guardando reserva confirmada:", reservaConfirmada);
 
           // Limpiar datos temporales
           localStorage.removeItem("checkout:reserva:temp");
@@ -514,9 +514,8 @@ export const useCheckoutStore = create(
 
         localStorage.setItem(
           "checkout:reserva:temp",
-          JSON.stringify(datosPrueba)
+          JSON.stringify(datosPrueba),
         );
-        console.log("🧪 Datos de prueba guardados en localStorage");
 
         return get().cargarDatosReserva();
       },
@@ -524,8 +523,8 @@ export const useCheckoutStore = create(
     {
       name: "checkout:state:v1",
       version: 0,
-    }
-  )
+    },
+  ),
 );
 
 export default useCheckoutStore;

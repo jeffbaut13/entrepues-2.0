@@ -1,3 +1,5 @@
+import { formatRegionLabel, normalizeRegionName, regionToSlug } from "../../data/puntos";
+
 export const MapaSvgCopy = ({
   handleShowZone,
   theme,
@@ -5,13 +7,6 @@ export const MapaSvgCopy = ({
   sizeText,
   size,
 }) => {
-  const normalizeRegionName = (value) =>
-    String(value || "")
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .trim()
-      .toLowerCase();
-
   const fontSize = () => {
     switch (sizeText) {
       case "sm":
@@ -26,11 +21,11 @@ export const MapaSvgCopy = ({
   };
 
   const REGION_LABELS = {
-    caribe: "CARIBE",
-    pacifica: "PACÍFICA",
-    amazonia: "AMAZONÍA",
-    orinoquia: "ORINOQUÍA",
-    andina: "ANDINA",
+    caribe: formatRegionLabel("caribe").toUpperCase(),
+    pacifica: formatRegionLabel("pacifica").toUpperCase(),
+    amazonia: formatRegionLabel("amazonia").toUpperCase(),
+    orinoquia: formatRegionLabel("orinoquia").toUpperCase(),
+    andina: formatRegionLabel("andina").toUpperCase(),
   };
 
   const isRegionActive = (name) =>
@@ -63,8 +58,8 @@ export const MapaSvgCopy = ({
   const handleMapaClick = (e) => {
     const region = e.target.closest("g[data-name]");
     if (!region) return;
-    const name = region.dataset.name;
-    if (name === "Capa 1" || name === "Capa 2") return;
+    const name = regionToSlug(region.dataset.name);
+    if (name === "capa-1" || name === "capa-2") return;
     if (typeof handleShowZone === "function") {
       handleShowZone(name);
     }

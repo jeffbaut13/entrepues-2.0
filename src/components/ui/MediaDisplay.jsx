@@ -48,7 +48,7 @@ export const MediaDisplay = ({
         const response = await fetch(videoSrc, { method: 'HEAD' });
         setHasVideo(response.ok);
       } catch (error) {
-        console.log(`Video ${videoSrc} no está disponible:`, error);
+         
         setHasVideo(false);
       } finally {
         setMediaLoaded(true);
@@ -59,7 +59,7 @@ export const MediaDisplay = ({
   }, [videoSrc]);
 
   const handleVideoError = () => {
-    console.log(`Error al cargar video: ${videoSrc}`);
+     
     setVideoError(true);
   };
 
@@ -106,8 +106,7 @@ export const MediaDisplay = ({
           poster={posterImage || imageSrc}
           style={{ width: '100%', height: '100%' }}
           onError={handleVideoError}
-          //onLoadStart={() => console.log(`Cargando video: ${videoSrc}`)}
-          //onLoadedData={() => console.log(`Video cargado exitosamente: ${videoSrc}`)}
+          
         >
           <source src={videoSrc} type="video/mp4" />
           {/* Fallback para navegadores que no soportan el formato */}
@@ -126,7 +125,7 @@ export const MediaDisplay = ({
           style={{ width: '100%', height: '100%' }}
           loading="lazy"
           onError={(e) => {
-            console.log(`Error cargando imagen: ${imageSrc}`);
+            
             e.target.src = '/imagenes/placeholder.jpg'; // Imagen de placeholder opcional
           }}
         />

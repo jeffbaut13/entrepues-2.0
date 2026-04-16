@@ -19,7 +19,9 @@ export const useControlledScrollSequence = ({
   reducedMotion = false,
   initialFrame = 0,
   easing = "easeInOutCubic",
+  resolveTargetFrame,
   onFrameChange,
+  onStepAccepted,
   onStateChange,
 }) => {
   const [currentFrame, setCurrentFrame] = useState(() =>
@@ -127,15 +129,34 @@ export const useControlledScrollSequence = ({
     (direction) => {
       if (currentStateRef.current !== "idle") return false;
 
-      const nextFrame = clampFrame(
-        currentFrameRef.current + direction * stepFrames,
-        totalFrames,
-      );
+      const fromFrame = currentFrameRef.current;
+      const resolvedTarget =
+        typeof resolveTargetFrame === "function"
+          ? resolveTargetFrame({
+              direction,
+              fromFrame,
+              stepFrames,
+              totalFrames,
+            })
+          : fromFrame + direction * stepFrames;
 
+      const nextFrame = clampFrame(resolvedTarget, totalFrames);
+
+      onStepAccepted?.({
+        direction,
+        fromFrame,
+        toFrame: nextFrame,
+      });
       animateToFrame(nextFrame);
       return true;
     },
-    [animateToFrame, stepFrames, totalFrames],
+    [
+      animateToFrame,
+      onStepAccepted,
+      resolveTargetFrame,
+      stepFrames,
+      totalFrames,
+    ],
   );
 
   const handleWheelIntent = useCallback(

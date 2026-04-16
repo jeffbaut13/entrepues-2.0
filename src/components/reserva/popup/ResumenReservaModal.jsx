@@ -110,7 +110,7 @@ export const ResumenReservaModal = () => {
                   <p>
                     Mesa para {datosReserva?.reservaData?.adults || 0} adulto(s)
                     {Number(datosReserva?.reservaData?.children || 0) > 0
-                      ? `, ${datosReserva.reservaData.children} nino(s)`
+                      ? `, ${datosReserva.reservaData.children} niño(s)`
                       : ""}
                     {totalMascotas > 0
                       ? `, ${totalMascotas} ${

@@ -529,7 +529,7 @@ export default function PlatosSeleccion({
       const reservaSnapshot = useReservaStore.getState();
       const checkoutSnapshot = useCheckoutStore.getState();
 
-      console.log("[ReservaStore]", {
+      /* console.log("[ReservaStore]", {
         reservaData: reservaSnapshot.reservaData,
         reservaZonaData: reservaSnapshot.reservaZonaData,
         detalleAsistentes: reservaSnapshot.detalleAsistentes,
@@ -540,7 +540,7 @@ export default function PlatosSeleccion({
         impuestos: checkoutSnapshot.impuestos,
         montoFinal: checkoutSnapshot.montoFinal,
       });
-      console.log("[CheckoutPayload]", checkoutData);
+      console.log("[CheckoutPayload]", checkoutData); */
 
       const pago = await iniciarPago({ sinMenu: false });
       if (!pago.ok) {
@@ -977,7 +977,7 @@ const MenuSelected = ({
                     productosCategoria.map((plato) => (
                       <motion.div
                         key={plato.id}
-                        className={`group p-1.5 max-h-20 flex items-center gap-2 rounded-2xl border border-[#e6e6e6] transition-all cursor-pointer ${
+                        className={`group p-1.5 h-20 min-h-20 flex items-center gap-2 rounded-2xl border border-[#e6e6e6] transition-all cursor-pointer ${
                           esPlatoSeleccionado(plato.id) ? "bg-[#e6e6e6]" : ""
                         } hover:bg-dark/10 relative overflow-hidden`}
                         onClick={() => handleSeleccionarPlato(plato)}
@@ -1055,8 +1055,8 @@ const PlatoThumbnail = ({ src, alt }) => {
   const [hasError, setHasError] = useState(false);
 
   return (
-    <picture className="relative lg:w-20 w-16 max-lg:aspect-square lg:h-full h-16 shrink-0 inline-block rounded-2xl overflow-hidden border border-[#e6e6e6] bg-[#f5f1ea]">
-      {!isLoaded && (
+    <picture className="relative w-20 h-20 max-lg:w-16 max-lg:h-16 shrink-0 block rounded-2xl overflow-hidden border border-[#e6e6e6] bg-[#f5f1ea]">
+      {!isLoaded && !hasError && (
         <span className="absolute inset-0 inline-block animate-pulse bg-gradient-to-br from-[#efe7da] via-[#f7f3eb] to-[#e8dece]" />
       )}
 
