@@ -40,12 +40,12 @@ export const Datos = ({ onContinue, back }) => {
         : "";
 
   const emailLower = emailInput.toLowerCase();
-  const emailDominioValido = /^[^\s@]+@[^\s@]+\.com$/.test(emailLower);
+  const emailDominioValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailLower);
   const emailError =
     emailInput.length === 0
       ? "Debes ingresar tu email."
       : !emailDominioValido
-        ? "Ingresa un email valido con formato usuario@dominio.com."
+        ? "Ingresa un email valido con formato usuario@dominio.com"
         : "";
 
   const whatsappError =
@@ -172,7 +172,7 @@ export const Datos = ({ onContinue, back }) => {
                   ? "border-red-400 focus:ring-red-400"
                   : "border-gray-300 focus:ring-dark"
               }`}
-              placeholder="tu@email.com"
+              placeholder="Tu email"
             />
             {hasFieldError("email") && (
               <p className="mt-1 px-2 text-xs text-red-600 whitespace-normal break-words">
@@ -195,7 +195,7 @@ export const Datos = ({ onContinue, back }) => {
                   ? "border-red-400 focus:ring-red-400"
                   : "border-gray-300 focus:ring-dark"
               }`}
-              placeholder="320 354 2045"
+              placeholder="Tu celular"
               maxLength={12}
             />
             {hasFieldError("whatsapp") && (

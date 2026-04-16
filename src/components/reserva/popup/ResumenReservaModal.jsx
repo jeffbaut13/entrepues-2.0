@@ -45,6 +45,7 @@ export const ResumenReservaModal = () => {
     datosReserva?.reservaZonaData?.mesaAsignada ||
     datosReserva?.reservaData?.mesa ||
     null;
+  const totalMascotas = Number(datosReserva?.reservaData?.mascotas || 0);
 
   return (
     <AnimatePresence>
@@ -110,6 +111,11 @@ export const ResumenReservaModal = () => {
                     Mesa para {datosReserva?.reservaData?.adults || 0} adulto(s)
                     {Number(datosReserva?.reservaData?.children || 0) > 0
                       ? `, ${datosReserva.reservaData.children} nino(s)`
+                      : ""}
+                    {totalMascotas > 0
+                      ? `, ${totalMascotas} ${
+                          totalMascotas === 1 ? "peludito" : "peluditos"
+                        }`
                       : ""}
                   </p>
                 </div>

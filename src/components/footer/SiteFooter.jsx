@@ -5,17 +5,17 @@ import { Logo } from "../ui/Logo";
 
 export const SiteFooter = ({
   className = "",
-  claimTitle = "LA CASA DEL SABOR COLOMBIANO,",
+  claimTitle = "LA CASA DEL SABOR COLOMBIANO",
   claimSubtitle = "Desde 1987",
 }) => {
   const isMobile = useIsMobile();
 
   return (
     <footer
-      className={`h-[80vh] w-full bg-cover bg-center ${className} bg-secondary`}
+      className={`h-[60vh] w-full bg-cover bg-center ${className} bg-secondary pb-10`}
       
     >
-      <div className="size-full flex flex-col justify-evenly items-center px-6">
+      <div className="size-full flex flex-col justify-between items-center px-6">
         <Logo color="dark" size={isMobile ? "md" : "lg"} />
 
         <div className="w-fit space-y-2 text-center">
@@ -39,14 +39,14 @@ export const SiteFooter = ({
           <div className="flex flex-col items-center justify-center gap-2">
             <div className="w-fit flex flex-col items-start justify-center">
               <h6 className="font-parkson text-3xl">Nuestros Horarios</h6>
-              <p>Lunes 10:00 a.m - 04:00 p.m</p>
-              <p>Martes 09:00 a.m - 05:00 p.m</p>
+              <p>Lunes 10:00 a.m - 04:00 p.m.</p>
+              <p>Martes 09:00 a.m - 05:00 p.m.</p>
             </div>
           </div>
 
           <div className="flex flex-col items-start justify-end">
-            <p>Miercoles y Jueves 08:00 a.m - 05:00 p.m</p>
-            <p>Viernes a Domingo 08:00 a.m - 06:00 p.m</p>
+            <p>Miércoles y Jueves 08:00 a.m - 05:00 p.m.</p>
+            <p>Viernes a Domingo 08:00 a.m - 06:00 p.m.</p>
           </div>
         </div>
 

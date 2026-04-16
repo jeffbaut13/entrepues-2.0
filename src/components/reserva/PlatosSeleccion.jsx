@@ -982,13 +982,7 @@ const MenuSelected = ({
                         } hover:bg-dark/10 relative overflow-hidden`}
                         onClick={() => handleSeleccionarPlato(plato)}
                       >
-                        <picture className="lg:w-20 w-16 max-lg:aspect-square lg:h-full h-16 shrink-0 inline-block rounded-2xl overflow-hidden">
-                          <img
-                            className="size-full object-cover inline-block"
-                            src={plato.img}
-                            alt={plato.nombre}
-                          />
-                        </picture>
+                        <PlatoThumbnail src={plato.img} alt={plato.nombre} />
                         <p className="pl-1 font-medium flex-1 min-w-0 text-start lg:line-clamp-1 line-clamp-2 whitespace-normal">
                           {plato.nombre}
                         </p>
@@ -1053,5 +1047,33 @@ const MenuSelected = ({
       </div>
       <>{component}</>
     </div>
+  );
+};
+
+const PlatoThumbnail = ({ src, alt }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  return (
+    <picture className="relative lg:w-20 w-16 max-lg:aspect-square lg:h-full h-16 shrink-0 inline-block rounded-2xl overflow-hidden border border-[#e6e6e6] bg-[#f5f1ea]">
+      {!isLoaded && (
+        <span className="absolute inset-0 inline-block animate-pulse bg-gradient-to-br from-[#efe7da] via-[#f7f3eb] to-[#e8dece]" />
+      )}
+
+      {!hasError && src ? (
+        <img
+          className={`size-full object-cover inline-block transition-opacity duration-300 ${
+            isLoaded ? "opacity-100" : "opacity-0"
+          }`}
+          src={src}
+          alt={alt}
+          onLoad={() => setIsLoaded(true)}
+          onError={() => {
+            setHasError(true);
+            setIsLoaded(false);
+          }}
+        />
+      ) : null}
+    </picture>
   );
 };

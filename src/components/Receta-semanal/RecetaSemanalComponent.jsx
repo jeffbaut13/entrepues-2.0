@@ -3,6 +3,7 @@ import { useIsMobile } from "../../hooks/useIsMobile";
 import { RecetaLandingTemplate } from "./components/RecetaLandingTemplate";
 import { getRecetaConfig } from "./data/recetas";
 import { FloatingReservaButton } from "../common/FloatingReservaButton";
+import { CallToActions } from "../common/CallToAction/CallToActions";
 
 export const RecetaSemanalComponent = () => {
   const isMobile = useIsMobile();
@@ -12,7 +13,8 @@ export const RecetaSemanalComponent = () => {
   return (
     <>
       <RecetaLandingTemplate receta={receta} isMobile={isMobile} />
-      <FloatingReservaButton onOpen={onOpenReservePopup} isPopupOpen={isReservePopupOpen} />
+
+      <CallToActions onOpenReservePopup={onOpenReservePopup} />
     </>
   );
 };

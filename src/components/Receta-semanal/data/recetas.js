@@ -1,40 +1,85 @@
 export const RECETAS_CONFIG = {
   bandejaPaisa: {
     key: "bandeja-paisa",
-    badge: "Receta semanal",
-    title: "Bandeja Paisa",
+    badge: "La bandeja paisa",
+    title: "De doña Segunda",
+    subTitle: "desde 1960",
     review:
-      "Mijito vea, desde el 95 este Entre Pues abrio sus puertas, asi bien sencillito, pa que la gente viniera a comer como en la casa. Todo en fogon de carbon, con ese saborcito que no se consigue en cualquier parte. Aqui hemos ido juntando lo mejor de cada rincon de Colombia, pero sin perder lo nuestro, lo bien paisa, lo de antes.",
+      "<p>Dicen por ahí que la mejor bandeja paisa no nació en una cocina, sino en el fogón de leña de una casa antigua, en medio de la montaña.</p> <p>Ahí estaba Doña Segunda, con el delantal amarrado y la olla de fríjoles siempre al punto. Desde 1960 viene cocinando como le enseñaron: sin afán, con paciencia y con ese ojo que no falla pa’ saber cuándo algo ya quedó.<p>",
     cta: {
       href: "/carta",
       label: "Ver menu",
     },
     hero: {
-      desktopBg: "/imagenes/section_three.webp",
-      mobileBg: "/imagenes/section-four/la-cocina-más-rica-del-país-1.webp",
-      overlayOpacityClass: "bg-dark/55",
+      desktopBg: "/imagenes/receta-semanal/receta-bandeja-paisa.webp",
+      mobileBg: "/imagenes/receta-semanal/receta-bandeja-paisa-mobile.webp",
+      overlayOpacityClass: "bg-dark/20",
     },
     ingredientsTitle: "Ingredientes",
     ingredients: [
-      "Frijoles cargamanto cocidos en caldo",
-      "Arroz blanco suelto",
-      "Carne molida sazonada",
-      "Chicharron crocante",
-      "Chorizo antioqueno",
-      "Huevo frito de yema suave",
-      "Maduro caramelizado",
-      "Aguacate fresco y arepa blanca",
+      {
+        label: "Fríjoles cargamanto cocidos en caldo",
+        icon: "Soup",
+      },
+      {
+        label: "Arroz blanco suelto",
+        icon: "Wheat",
+      },
+      {
+        label: "Carne molida sazonada",
+        icon: "Beef",
+      },
+      {
+        label: "Chicharrón crocante",
+        icon: "Flame",
+      },
+      {
+        label: "Chorizo antioqueño",
+        icon: "ChefHat",
+      },
+      {
+        label: "Huevo frito de yema suave",
+        icon: "Egg",
+      },
+      {
+        label: "Maduro caramelizado",
+        icon: "Leaf",
+      },
+      {
+        label: "Aguacate fresco y arepa blanca",
+        icon: "Sandwich",
+      },
     ],
-    stepsTitle: "Preparacion",
+    stepsTitle: "Preparación",
     steps: [
-      "Sofrie cebolla y tomate para formar una base sabrosa y cocina los frijoles hasta que espesen.",
-      "Dora la carne molida con comino, ajo y un toque de color para un sabor profundo.",
-      "Frie el chicharron a fuego medio hasta que quede crujiente por fuera y jugoso por dentro.",
-      "Asa o saltea el chorizo, prepara el huevo frito y calienta arepa y arroz al final.",
-      "Emplata por capas: frijoles, arroz, proteinas y remata con maduro, aguacate y arepa.",
+      {
+        label:
+          "Sofríe cebolla y tomate para formar una base sabrosa y cocina los fríjoles hasta que espesen.",
+        icon: "CookingPot",
+      },
+      {
+        label:
+          "Dora la carne molida con comino, ajo y un toque de color para un sabor profundo.",
+        icon: "Beef",
+      },
+      {
+        label:
+          "Fríe el chicharrón a fuego medio hasta que quede crujiente por fuera y jugoso por dentro.",
+        icon: "Flame",
+      },
+      {
+        label:
+          "Asa o saltea el chorizo, prepara el huevo frito y calienta la arepa y el arroz al final.",
+        icon: "UtensilsCrossed",
+      },
+      {
+        label:
+          "Emplata por capas: fríjoles, arroz, proteínas y remata con maduro, aguacate y arepa.",
+        icon: "HandPlatter",
+      },
     ],
     showcase: {
-      image: "/imagenes/section-four/la-cocina-más-rica-del-país-1.webp",
+      image: "/imagenes/receta-semanal/section_three.webp",
       title: "La bandeja paisa de la casa",
       description:
         "Tradicion servida en abundancia, con alma antioquena y sabor colombiano.",
