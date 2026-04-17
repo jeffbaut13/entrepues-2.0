@@ -136,7 +136,7 @@ const MesasDisplay = ({
           <div className="flex items-center justify-center gap-4">
             {renderMesaGroup(
               mesaSeleccionada,
-              sizeOverride || `${isMobile ? "md" : "lg"}`,
+              sizeOverride || `${isMobile ? "xl" : "lg"}`,
               true,
               totalOcupacion,
             )}

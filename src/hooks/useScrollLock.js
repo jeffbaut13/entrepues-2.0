@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import useReservaStore from "../store/reservaStore";
 import useMenuStore from "../store/menuStore";
 import useCartStore from "../store/cartStore";
@@ -11,6 +11,9 @@ import useCartStore from "../store/cartStore";
  * En el componente más alto que envuelve los modales (MainLayout)
  */
 export const useScrollLock = (isReservePopupOpen) => {
+  const scrollYRef = useRef(0);
+  const wasLockedRef = useRef(false);
+
   // Suscribirse a los cambios de los stores
   const isBookingOpen = useReservaStore((state) => state.isBookingOpen);
   const isMenuOpen = useMenuStore((state) => state.isMenuOpen);
@@ -20,20 +23,50 @@ export const useScrollLock = (isReservePopupOpen) => {
   const isAnyModalOpen = isBookingOpen || isMenuOpen || isCartOpen || isReservePopupOpen;
 
   useEffect(() => {
-    if (isAnyModalOpen) {
-      // Bloquear scroll del documento
+    if (isAnyModalOpen && !wasLockedRef.current) {
+      // Guardar posición actual para restaurarla al cerrar popup/modal.
+      scrollYRef.current = window.scrollY || window.pageYOffset || 0;
+      wasLockedRef.current = true;
+
       document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
-    } else {
-      // Restaurar scroll del documento
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollYRef.current}px`;
+      document.body.style.left = "0";
+      document.body.style.right = "0";
+      document.body.style.width = "100%";
+      return;
+    }
+
+    if (!isAnyModalOpen && wasLockedRef.current) {
+      const savedScrollY = scrollYRef.current;
+
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.width = "";
+
+      window.scrollTo(0, savedScrollY);
+      wasLockedRef.current = false;
     }
 
     // Cleanup al desmontar o cuando se cierre el modal
     return () => {
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.width = "";
+
+      if (wasLockedRef.current) {
+        window.scrollTo(0, scrollYRef.current);
+        wasLockedRef.current = false;
+      }
     };
   }, [isAnyModalOpen]);
 };

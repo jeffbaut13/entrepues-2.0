@@ -85,6 +85,7 @@ export const Button = ({
     case "enlace":
       return (
         <motion.button
+          type="button"
           disabled={disabled}
           //href={href}
           target={target}
@@ -102,6 +103,7 @@ export const Button = ({
     case "button-primary":
       return (
         <motion.button
+          type="button"
           {...motionProps}
           {...props}
           className={`${getWidthClass(width)} ${getFontSizeClass(fontSize)} ${
@@ -117,6 +119,7 @@ export const Button = ({
     case "button-secondary":
       return (
         <motion.button
+          type="button"
           {...motionProps}
           {...props}
           className={`${getWidthClass(width)} ${getFontSizeClass(fontSize)} ${
@@ -132,6 +135,7 @@ export const Button = ({
     case "button-thirty":
       return (
         <motion.button
+          type="button"
           {...motionProps}
           {...props}
           className={`${getWidthClass(width)} ${getFontSizeClass(fontSize)} ${
@@ -147,6 +151,7 @@ export const Button = ({
     case "button-dark":
       return (
         <motion.button
+          type="button"
           {...motionProps}
           {...props}
           className={`${getWidthClass(width)} ${getFontSizeClass(fontSize)} ${

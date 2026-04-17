@@ -284,8 +284,8 @@ export default function SliderVertical({
 
   const cantidadSlide = (
     <SwiperSlide key="cantidad" className="size-full">
-      <div className="size-full h-full flex flex-col items-center justify-center py-4">
-        <div className="size-full flex-1 flex flex-col items-center justify-center">
+      <div className="size-full h-full flex flex-col items-center justify-center">
+        <div className="size-full flex-1 flex flex-col items-center md:justify-between justify-center max-lg:gap-14">
           <PasoCantidad
             adults={adults}
             children={children}
@@ -355,15 +355,18 @@ export default function SliderVertical({
           if (stepName === "fecha") {
             return (
               <SwiperSlide key="fecha" className="size-full">
-                <div className="w-full h-full flex flex-col items-center justify-center py-4">
-                  <div className="w-full flex-1 flex items-center lg:px-14">
-                    <div className="flex flex-1 flex-col items-start justify-center">
+                <div className="w-full h-full flex flex-col items-center justify-center lg:py-4 gap-16 md:gap-0">
+                  <div className="w-full lg:flex-1 max-lg:flex-col flex items-center lg:px-14 max-lg:gap-16">
+                    <div className="flex lg:flex-1 flex-col items-start justify-center">
                       <h2 className="font-parkson mb-4 !text-4xl text-start">
-                        <TitleSlider head="Elige la fecha" content="De tu reserva" />
+                        <TitleSlider
+                          head="Elige la fecha"
+                          content="De tu reserva"
+                        />
                       </h2>
                     </div>
 
-                    <div className="flex-1 border-l border-black/20 pl-14 flex items-center justify-center">
+                    <div className="flex-1 w-full max-lg:px-8 lg:border-l border-black/20 lg:pl-14 flex items-center justify-center">
                       <PasoFecha
                         selectedDate={selectedDate}
                         setSelectedDate={setSelectedDate}
@@ -388,15 +391,18 @@ export default function SliderVertical({
           if (stepName === "hora") {
             return (
               <SwiperSlide key="hora" className="slide-content">
-                <div className="w-full h-full flex flex-col items-center justify-center py-4">
-                  <div className="w-full flex-1 flex items-center lg:px-14">
-                    <div className="flex flex-1 flex-col items-start justify-center">
+                <div className="w-full h-full flex flex-col items-center justify-center lg:py-4 gap-16 md:gap-0">
+                  <div className="w-full lg:flex-1 max-lg:flex-col flex items-center lg:px-14 max-lg:gap-16">
+                    <div className="flex lg:flex-1 flex-col items-start justify-center">
                       <h2 className="font-parkson mb-4 !text-4xl text-start">
-                        <TitleSlider head="Elige la hora" content="De tu reserva" />
+                        <TitleSlider
+                          head="Elige la hora"
+                          content="De tu reserva"
+                        />
                       </h2>
                     </div>
 
-                    <div className="flex-1 border-l border-black/20 pl-14 flex items-center justify-center">
+                    <div className="flex-1 w-full max-lg:px-8 lg:border-l border-black/20 lg:pl-14 flex items-center justify-center">
                       <PasoHora
                         hour={hour}
                         minute={minute}
@@ -458,5 +464,3 @@ const TitleSlider = ({ head, content }) => {
     </>
   );
 };
-
-

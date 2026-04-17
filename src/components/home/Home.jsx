@@ -14,7 +14,7 @@ import { SiteFooter } from "../footer/SiteFooter";
 export const HomeComponent = () => {
   const [showScrollHint, setShowScrollHint] = useState(false);
   const isMobile = useIsMobile();
-  const { onOpenReservePopup } = useOutletContext();
+  const { onOpenReservePopup, onOpenHistoriaVideoPopup } = useOutletContext();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,7 +34,10 @@ export const HomeComponent = () => {
       <CallToActions onOpenReservePopup={onOpenReservePopup} />
       <ArcScrollReveal />
       <div className="hide-logo-section">
-        <SectionTwo isMobile={isMobile} />
+        <SectionTwo
+          isMobile={isMobile}
+          onOpenHistoriaVideoPopup={onOpenHistoriaVideoPopup}
+        />
         <SectionThree isMobile={isMobile} />
         <SiteFooter />
       </div>
@@ -48,18 +51,18 @@ export const HomeComponent = () => {
   );
 };
 
-const SectionTwo = ({ isMobile }) => {
+const SectionTwo = ({ isMobile, onOpenHistoriaVideoPopup }) => {
   return (
     <>
       <section
-        className="h-dvh w-full bg-cover bg-center md:py-0 py-24"
+        className="h-dvh w-full bg-cover md:bg-center bg-top md:py-24 flex md:items-center items-end justify-center pb-42 md:pb-0"
         style={{
           backgroundImage: `url('/imagenes/backgroundTwo${isMobile ? "M" : ""}.webp')`,
         }}
       >
-        <div className="md:w-1/2 w-full md:h-full h-1/2 flex justify-center items-center">
+        <div className="md:w-1/2 w-full md:h-full h-1/2 flex md:justify-center md:items-center items-end">
           <motion.div
-            className="text-center "
+            className="flex justify-center items-center flex-col gap-6"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.4 }}
@@ -85,14 +88,14 @@ const SectionTwo = ({ isMobile }) => {
                 content={"Historia"}
               />
             </motion.div>
-            <IconoSeparador theme="light" />
+            {!isMobile && <IconoSeparador theme="light" />}
             <motion.div
               variants={{
                 hidden: { opacity: 0, y: 18 },
                 visible: { opacity: 1, y: 0 },
               }}
               transition={{ duration: 0.7, ease: "easeOut" }}
-              className="max-w-xl space-y-16 mt-4"
+              className="max-w-xl md:space-y-16 md:mt-4"
             >
               <p
                 className="text-center text-secondary text-lg"
@@ -110,18 +113,19 @@ const SectionTwo = ({ isMobile }) => {
                 sí que le alegra a uno el <br className="hidden md:block" />{" "}
                 corazón. Así que mijito, ¡EntrePues!
               </p>
-              <a
-                href="/video"
-                target="_blank"
-                rel="noopener noreferrer"
-                className=" tracking-widest font-parkson text-2xl bg-dark/40 backdrop-blur-md hover:bg-black text-secondary border border-secondary/40 hover:border-black px-6 rounded-full py-1.5 pb-2 transition-all ease-in-out duration-300"
-              >
-                ver historia
-              </a>
             </motion.div>
+            <Button
+              type="button-primary"
+              title="Ver historia"
+              onClick={(event) => {
+                event.preventDefault();
+                onOpenHistoriaVideoPopup?.();
+              }}
+              aria-label="Ver historia"
+            />
           </motion.div>
         </div>
-        <div className="w-full md:w-1/2 h-1/2 md:h-full"></div>
+        {!isMobile && <div className="w-full md:w-1/2 h-1/2 md:h-full"></div>}
       </section>
     </>
   );
@@ -160,7 +164,7 @@ const SectionThree = ({ isMobile }) => {
             whileInView="visible"
             className="h-[80dvh] w-full bg-cover bg-top text-secondary"
             style={{
-              backgroundImage: `url('/imagenes/receta-semanal/section_three${isMobile ? "" : ""}.webp')`,
+              backgroundImage: `url('/imagenes/receta-semanal/section_three${isMobile ? "M" : ""}.webp')`,
             }}
             viewport={{ once: true, amount: 0.35 }}
             variants={{
@@ -174,7 +178,7 @@ const SectionThree = ({ isMobile }) => {
             <div className="relative z-20 pb-16 size-fit flex flex-col items-center justify-end text-center mx-auto h-full">
               <h2 className="font-parkson text-5xl">LA BANDEJA PAISA</h2>
               <h2 className="font-parkson text-8xl leading-18">
-                DE DOÑA SEGUNDA
+                DE DOÑA OFELIA
               </h2>
               <h2 className="text-xl my-6">Desde 1960</h2>
               <a
@@ -183,7 +187,7 @@ const SectionThree = ({ isMobile }) => {
                 rel="noopener noreferrer"
                 className="tracking-widest font-parkson text-2xl bg-dark/40 backdrop-blur-md hover:bg-black text-secondary border border-secondary/40 hover:border-black px-6 rounded-full py-1.5 pb-2 transition-all ease-in-out duration-300"
               >
-                ver historia
+                Descubre el secreto
               </a>
             </div>
           </motion.div>

@@ -426,7 +426,9 @@ export default function PlatosSeleccion({
       return {
         ...prev,
         [asistenteActual]: actual.map((item, index) =>
-          index === idx ? { ...item, cantidad: Number(item.cantidad || 0) + 1 } : item,
+          index === idx
+            ? { ...item, cantidad: Number(item.cantidad || 0) + 1 }
+            : item,
         ),
       };
     });
@@ -630,17 +632,16 @@ export default function PlatosSeleccion({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
-            className="flex-1 max-lg:w-full lg:h-fit flex lg:flex-col flex-row-reverse items-start lg:justify-between justify-start flex-wrap content-center"
+            className="flex-1 max-lg:w-full lg:h-fit flex lg:flex-col flex-row items-center md:items-start lg:justify-between justify-center flex-wrap content-center"
           >
             <div className="lg:w-fit w-56">
               <h4 className="text-start font-parkson font-bold">
-                <span className="lg:!text-5xl !text-4xl">Selecciona</span>
+                <span className="lg:!text-5xl !text-3xl">Selecciona</span>
                 <br />
-                <span className="lg:!text-8xl lg:!leading-14 !text-7xl !leading-11">
+                <span className="lg:!text-8xl lg:!leading-14 !text-6xl !leading-11">
                   tus platos
                 </span>
               </h4>
-              
             </div>
 
             <div className="lg:w-96 w-28 space-y-4 lg:mt-8">
@@ -764,13 +765,6 @@ export default function PlatosSeleccion({
                 </div>
               )}
             </div>
-            {isMobile && (
-              <div className="w-full">
-                <p className="!text-base text-center whitespace-break-spaces">
-                  {mensajePlatosUsuario}
-                </p>
-              </div>
-            )}
           </motion.div>
           {/* Menu dinamico */}
           <div className="flex-3 lg:flex-1 lg:h-full h-20 max-lg:w-full min-w-0 flex items-center">
@@ -876,7 +870,6 @@ export default function PlatosSeleccion({
           </div>
         </div>
       </div>
-
     </>
   );
 }
@@ -1010,8 +1003,12 @@ const MenuSelected = ({
                               >
                                 <IncremenAndDecrementComponent
                                   item={obtenerCantidadPlato(plato.id)}
-                                  increaseQuantity={() => incrementarCantidadPlato(plato)}
-                                  decreaseQuantity={() => decrementarCantidadPlato(plato.id)}
+                                  increaseQuantity={() =>
+                                    incrementarCantidadPlato(plato)
+                                  }
+                                  decreaseQuantity={() =>
+                                    decrementarCantidadPlato(plato.id)
+                                  }
                                   colorItems="text-dark"
                                 />
                               </motion.div>

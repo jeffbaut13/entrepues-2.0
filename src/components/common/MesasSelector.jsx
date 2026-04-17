@@ -17,6 +17,8 @@ export const MesasSelectorx4 = ({
         return "w-18";
       case "lg":
         return "w-22";
+      case "xl":
+        return "w-34";
       default:
         return "w-8";
     }
@@ -2386,6 +2388,8 @@ export const MesasSelectorx6 = ({
         return "w-24";
       case "lg":
         return "w-30";
+      case "xl":
+        return "w-44";
       default:
         return "w-8";
     }

@@ -14,10 +14,10 @@ export const CallToActions = ({ onOpenReservePopup }) => {
     <div
       className={`fixed bottom-0 size-full z-[51] flex flex-col items-center justify-end pb-6 ${isSectionVisible ? "hidden" : ""}`}
     >
-      <div className="md:max-w-2xl max-w-sm w-full flex flex-col md:gap-6 gap-4 text-2xl z-20">
+      <div className="md:max-w-2xl max-w-56 w-full flex flex-col md:gap-6 gap-4 text-2xl z-20">
         <div className="w-full flex md:flex-row flex-col justify-center items-center gap-4 overflow-hidden">
           <Button
-            width={isMobile ? "medio" : "full"}
+            width={"full"}
             type="enlace"
             fontSize="2xl"
             href={"/carta"}
@@ -28,7 +28,7 @@ export const CallToActions = ({ onOpenReservePopup }) => {
             }}
           />
           <Button
-            width={isMobile ? "medio" : "full"}
+            width={"full"}
             type="button-primary"
             title="Reservar"
             onClick={() => onOpenReservePopup(null)}
@@ -39,7 +39,7 @@ export const CallToActions = ({ onOpenReservePopup }) => {
             }}
           />
           <Button
-            width={isMobile ? "medio" : "full"}
+            width={"full"}
             type="enlace"
             href={"/descubrenos"}
             title="Recorre EntrePues"
@@ -51,13 +51,18 @@ export const CallToActions = ({ onOpenReservePopup }) => {
           />
         </div>
 
-        <RedesSociales isSectionVisible={isSectionVisible} dontLocation={false}/>
+        <RedesSociales
+          isSectionVisible={isSectionVisible}
+          dontLocation={false}
+        />
       </div>
     </div>
   );
 };
 export const RedesSociales = ({ isSectionVisible, dontLocation = true }) => {
-  const iconsWhitoutLocation = dontLocation ? redes.filter((red) => red.label !== "Ubicación") : redes;
+  const iconsWhitoutLocation = dontLocation
+    ? redes.filter((red) => red.label !== "Ubicación")
+    : redes;
 
   return (
     <motion.div

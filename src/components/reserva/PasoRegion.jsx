@@ -29,14 +29,14 @@ const PasoRegion = ({ onRegionChange }) => {
     <>
       <h2 className="font-parkson mb-4 !text-4xl">Donde quieres comer?</h2>
       <div className="size-full flex flex-col items-center justify-center gap-8">
-        <div className="w-full flex max-lg:flex-col lg:h-96 gap-6 px-14 transition-all duration-300">
-          <div className="flex-1 min-w-0 h-full border border-black/8 rounded-xl overflow-hidden">
-            <div className="w-full h-full p-6">
+        <div className="w-full flex max-lg:flex-col-reverse lg:h-96 gap-6 md:px-14 px-2 transition-all duration-300">
+          <div className="flex-1 min-w-0 h-full md:border border-black/8 rounded-xl overflow-hidden">
+            <div className="w-full h-full md:p-6">
               <Mapa
                 handleShowZone={pushZone}
                 regionActive={reservaZonaData?.selectedZoneName || ""}
                 size={"w-full h-full flex"}
-                sizeText={`${isMobile ? "lg" : "xl"}`}
+                sizeText={`${isMobile ? "sm" : "xl"}`}
               />
             </div>
           </div>

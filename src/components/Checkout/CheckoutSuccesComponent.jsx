@@ -148,7 +148,7 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.35 }}
-            className="flex flex-col justify-center items-center gap-2"
+            className="flex flex-col justify-center items-center gap-6"
           >
             <p>
               Compártela por WhatsApp <br />a tus acompañantes y nos vemos{" "}
@@ -169,7 +169,8 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
                         src="/iconos/whatsapp.svg"
                         alt="compartir reserva por WhatsApp"
                       />
-                    </i> Compartir
+                    </i>{" "}
+                    Compartir
                   </div>
                 </WhatsappShareButton>
               }

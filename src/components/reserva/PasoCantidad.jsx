@@ -77,12 +77,12 @@ const PasoCantidad = ({
           : "Cuantos vendran?"}
       </h2>
 
-      <div className="size-full flex flex-col items-center justify-center gap-8">
+      <div className="w-full flex flex-col items-center justify-center gap-8">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
-          className="max-w-5xl min-h-0 flex max-lg:flex-col items-center justify-center gap-6"
+          className="max-w-5xl min-h-0 flex max-lg:flex-col items-center justify-center md:gap-6 gap-16"
         >
           <div className="flex-1 min-w-[14rem]">
             <ContadorAsistentes
@@ -102,7 +102,7 @@ const PasoCantidad = ({
             />
           </div>
 
-          <div className="flex-1 min-w-[14rem]">
+          <div className="flex-1 md:min-w-56">
             <MesasDisplay
               selectedZoneName={selectedZoneName}
               mesaSeleccionada={mesaSeleccionada}

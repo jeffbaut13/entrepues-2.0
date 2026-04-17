@@ -2,10 +2,10 @@ export const RECETAS_CONFIG = {
   bandejaPaisa: {
     key: "bandeja-paisa",
     badge: "La bandeja paisa",
-    title: "De doña Segunda",
+    title: "De doña Ofelia",
     subTitle: "desde 1960",
     review:
-      "<p>Dicen por ahí que la mejor bandeja paisa no nació en una cocina, sino en el fogón de leña de una casa antigua, en medio de la montaña.</p> <p>Ahí estaba Doña Segunda, con el delantal amarrado y la olla de fríjoles siempre al punto. Desde 1960 viene cocinando como le enseñaron: sin afán, con paciencia y con ese ojo que no falla pa’ saber cuándo algo ya quedó.<p>",
+      "<p>Dicen por ahí que la mejor bandeja paisa no nació en una cocina, sino en el fogón de leña de una casa antigua, en medio de la montaña.</p>",
     cta: {
       href: "/carta",
       label: "Ver menu",
@@ -82,7 +82,7 @@ export const RECETAS_CONFIG = {
       image: "/imagenes/receta-semanal/section_three.webp",
       title: "La bandeja paisa de la casa",
       description:
-        "Tradicion servida en abundancia, con alma antioquena y sabor colombiano.",
+        "Tradición servida en abundancia, con alma antioqueña y sabor colombiano.",
     },
   },
 };
