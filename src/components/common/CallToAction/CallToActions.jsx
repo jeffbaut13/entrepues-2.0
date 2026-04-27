@@ -42,7 +42,7 @@ export const CallToActions = ({ onOpenReservePopup }) => {
             width={"full"}
             type="enlace"
             href={"/descubrenos"}
-            title="Recorre EntrePues"
+            title="Vista 360°"
             fontSize="2xl"
             motionProps={{
               initial: { y: 100 },

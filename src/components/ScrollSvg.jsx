@@ -14,6 +14,7 @@ export default function ArcScrollReveal() {
     `/img_scroll/img-3${isMobile ? "M" : ""}.webp`,
     `/img_scroll/img-4${isMobile ? "M" : ""}.webp`,
     `/img_scroll/img-5${isMobile ? "M" : ""}.webp`,
+    `/img_scroll/img-6${isMobile ? "M" : ""}.webp`,
   ];
 
   const wrapRef = useRef(null);
