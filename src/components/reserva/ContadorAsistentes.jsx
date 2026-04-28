@@ -29,12 +29,12 @@ const ContadorAsistentes = ({
             }
             const nextAdults = adultsNum + 1;
             setAdults(nextAdults);
-            syncAsistentes(nextAdults, childrenNum);
+            syncAsistentes(nextAdults, childrenNum, mascotasNum);
           }}
           decreaseQuantity={() => {
             const nextAdults = Math.max(adultsNum - 1, 0);
             setAdults(nextAdults);
-            syncAsistentes(nextAdults, childrenNum);
+            syncAsistentes(nextAdults, childrenNum, mascotasNum);
           }}
         />
       </div>
@@ -51,12 +51,12 @@ const ContadorAsistentes = ({
             }
             const nextChildren = childrenNum + 1;
             setChildren(nextChildren);
-            syncAsistentes(adultsNum, nextChildren);
+            syncAsistentes(adultsNum, nextChildren, mascotasNum);
           }}
           decreaseQuantity={() => {
             const nextChildren = Math.max(childrenNum - 1, 0);
             setChildren(nextChildren);
-            syncAsistentes(adultsNum, nextChildren);
+            syncAsistentes(adultsNum, nextChildren, mascotasNum);
           }}
         />
       </div>
@@ -75,10 +75,14 @@ const ContadorAsistentes = ({
                 showMaxAsistentesError();
                 return;
               }
-              setMascotas(mascotasNum + 1);
+              const nextMascotas = mascotasNum + 1;
+              setMascotas(nextMascotas);
+              syncAsistentes(adultsNum, childrenNum, nextMascotas);
             }}
             decreaseQuantity={() => {
-              setMascotas(Math.max(mascotasNum - 1, 0));
+              const nextMascotas = Math.max(mascotasNum - 1, 0);
+              setMascotas(nextMascotas);
+              syncAsistentes(adultsNum, childrenNum, nextMascotas);
             }}
           />
         </div>

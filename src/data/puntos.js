@@ -5,21 +5,21 @@ export const REGIONES = [
   { slug: "pacifica", start: 35.88, title: "Pacífica" },
   { slug: "amazonia", start: 40.56, title: "Amazonía" },
   { slug: "caribe", start: 45.9, title: "Caribe" },
-  { slug: "zona-pet", start: 56.4, title: "Zona Pet" },
+  { slug: "pet-family", start: 56.4, title: "Pet family" },
 ];
 
 export const RESERVA_ZONAS_ORDER = [
   "caribe",
   "pacifica",
   "amazonia",
-  "zona-pet",
+  "pet-family",
   "orinoquia",
   "andina",
 ];
 
 export const MAPA_REGION_LAYOUT = [
   {
-    slug: "zona-pet",
+    slug: "pet-family",
     box: { x: 0, y: 32.59, width: 65.53, height: 345.19 },
     labelPos: { x: 20.5, y: 205.18 },
     col: true,
@@ -85,8 +85,8 @@ export const normalizeRegionName = (value = "") =>
     .trim();
 
 const REGION_ALIASES = {
-  "zona pet": "zona-pet",
-  zonapet: "zona-pet",
+  "pet family": "pet-family",
+  petFamily: "pet-family",
   general: "general",
 };
 

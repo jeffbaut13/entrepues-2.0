@@ -360,8 +360,8 @@ export default function SliderVertical({
                     <div className="flex lg:flex-1 flex-col items-start justify-center">
                       <h2 className="font-parkson mb-4 !text-4xl text-start">
                         <TitleSlider
-                          head="Elige la fecha"
-                          content="De tu reserva"
+                          head="Elija la fecha"
+                          content="De su reserva"
                         />
                       </h2>
                     </div>
@@ -396,8 +396,8 @@ export default function SliderVertical({
                     <div className="flex lg:flex-1 flex-col items-start justify-center">
                       <h2 className="font-parkson mb-4 !text-4xl text-start">
                         <TitleSlider
-                          head="Elige la hora"
-                          content="De tu reserva"
+                          head="Elija la hora"
+                          content="De su reserva"
                         />
                       </h2>
                     </div>

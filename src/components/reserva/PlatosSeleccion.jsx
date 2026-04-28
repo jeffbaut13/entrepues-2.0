@@ -64,6 +64,7 @@ export default function PlatosSeleccion({
   onPagoSuccess,
 }) {
   const MENU_INFANTIL_KEY = "menu_infantil";
+  const MENU_MASCOTAS_KEY = "menu_mascotas";
   // ===========================
   // ESTADOS
   // ===========================
@@ -100,6 +101,9 @@ export default function PlatosSeleccion({
 
       const adultosCount = Number(asistentes.adultos || 0);
       const ninosCount = Number(asistentes.ninos || 0);
+      const mascotasCount = Number(
+        asistentes.mascotas || asistentes.mascota || asistentes.pets || 0,
+      );
 
       const asistentesAdultos = Array.from(
         { length: adultosCount },
@@ -110,7 +114,12 @@ export default function PlatosSeleccion({
         (_, i) => `Niño ${i + 1}`,
       );
 
-      return [...asistentesAdultos, ...asistentesNinos];
+      const asistentesMascotas = Array.from(
+        { length: mascotasCount },
+        (_, i) => `Mascota ${i + 1}`,
+      );
+
+      return [...asistentesAdultos, ...asistentesNinos, ...asistentesMascotas];
     }
 
     return [];
@@ -126,6 +135,8 @@ export default function PlatosSeleccion({
       platos: Array.isArray(sourcePlatos?.[index]) ? sourcePlatos[index] : [],
     }));
   };
+
+  console.log(asistentes);
 
   // ===========================
   // EFECTOS Y MEMOS
@@ -154,17 +165,27 @@ export default function PlatosSeleccion({
     }));
   }, [catalogo]);
 
-  useEffect(() => {
-    if (categorias.length === 0) return;
+  const claveAsistenteActual = normalizarClaveCatalogo(
+    String(asistentesLista[asistenteActual] || ""),
+  );
+  const esAsistenteActualMascota =
+    claveAsistenteActual.includes("mascota") ||
+    claveAsistenteActual.includes("pet");
+  const categoriasConMascotas = esAsistenteActualMascota
+    ? [{ key: MENU_MASCOTAS_KEY, displayName: "menu mascotas" }]
+    : categorias;
 
-    const existeCategoriaActual = categorias.some(
+  useEffect(() => {
+    if (categoriasConMascotas.length === 0) return;
+
+    const existeCategoriaActual = categoriasConMascotas.some(
       (categoria) => categoria.key === categoriaActual,
     );
 
     if (!existeCategoriaActual) {
-      setCategoriActual(categorias[0].key);
+      setCategoriActual(categoriasConMascotas[0].key);
     }
-  }, [categorias, categoriaActual]);
+  }, [categoriasConMascotas, categoriaActual]);
 
   //Listar los productos indexados para facilitar la rehidratación desde localStorage
   const productosIndexados = useMemo(() => {
@@ -333,7 +354,7 @@ export default function PlatosSeleccion({
 
   // Manejar cambio de categoría y slider
   const handleCategoriaChange = (categoriaKey) => {
-    const categoriaIndex = categorias.findIndex(
+    const categoriaIndex = categoriasConMascotas.findIndex(
       (categoria) => categoria.key === categoriaKey,
     );
     setCategoriActual(categoriaKey);
@@ -346,7 +367,7 @@ export default function PlatosSeleccion({
 
   // Manejar cambio de slide
   const handleSlideChange = (swiper) => {
-    const categoriaSeleccionada = categorias[swiper.activeIndex];
+    const categoriaSeleccionada = categoriasConMascotas[swiper.activeIndex];
     if (
       categoriaSeleccionada?.key &&
       categoriaSeleccionada.key !== categoriaActual
@@ -371,6 +392,22 @@ export default function PlatosSeleccion({
   const esAsistenteNino = (asistente) =>
     normalizarClaveCatalogo(String(asistente || "")).startsWith("nino");
 
+  const esAsistenteMascota = (asistente) => {
+    const clave = normalizarClaveCatalogo(String(asistente || ""));
+    return clave.includes("mascota") || clave.includes("pet");
+  };
+
+  const obtenerAvatarAsistente = (asistente) => {
+    const clave = normalizarClaveCatalogo(String(asistente || ""));
+
+    if (clave.includes("nino")) return "/iconos/avatars/children.svg";
+    if (clave.includes("mascota") || clave.includes("pet")) {
+      return "/iconos/avatars/pet.svg";
+    }
+
+    return "/iconos/avatars/adulto.svg";
+  };
+
   const moverACategoriaMenuInfantilSiAplica = (asistenteIndex) => {
     const asistente = asistentesLista[asistenteIndex];
     if (!esAsistenteNino(asistente)) return;
@@ -385,8 +422,15 @@ export default function PlatosSeleccion({
     swiperRef.current?.swiper?.slideTo(categoriaIndex);
   };
 
+  const moverACategoriaMascotasSiAplica = (asistenteIndex) => {
+    const asistente = asistentesLista[asistenteIndex];
+    if (!esAsistenteMascota(asistente)) return;
+    setCategoriActual(MENU_MASCOTAS_KEY);
+  };
+
   useEffect(() => {
     if (categorias.length === 0 || asistentesLista.length === 0) return;
+    moverACategoriaMascotasSiAplica(asistenteActual);
     moverACategoriaMenuInfantilSiAplica(asistenteActual);
   }, [asistenteActual, categorias, asistentesLista]);
 
@@ -466,21 +510,21 @@ export default function PlatosSeleccion({
   };
 
   const validarPlatosPorAsistente = () => {
-    const adultosSinPlatos = [];
+    const asistentesSinPlatos = [];
 
     for (let i = 0; i < asistentesLista.length; i++) {
       const asistente = asistentesLista[i];
-      if (esAsistenteNino(asistente)) continue;
+      if (esAsistenteMascota(asistente)) continue;
 
       if (!platosSeleccionados[i] || platosSeleccionados[i].length === 0) {
-        adultosSinPlatos.push(asistentesLista[i]);
+        asistentesSinPlatos.push(asistentesLista[i]);
       }
     }
 
-    if (adultosSinPlatos.length > 0) {
-      const asistentesTexto = adultosSinPlatos.join(", ");
+    if (asistentesSinPlatos.length > 0) {
+      const asistentesTexto = asistentesSinPlatos.join(", ");
       alert(
-        `⚠️ Los siguientes adultos no tienen platos seleccionados:\n\n${asistentesTexto}\n\nPor favor, agrega al menos un plato para cada adulto antes de continuar.`,
+        `⚠️ Los siguientes asistentes no tienen platos seleccionados:\n\n${asistentesTexto}\n\nPor favor, agrega al menos un plato para cada adulto y niño antes de continuar.`,
       );
       return false;
     }
@@ -590,18 +634,18 @@ export default function PlatosSeleccion({
 
   const ctaEsPago =
     asistentesLista.length > 0 && asistenteActual >= ultimoAsistenteIndex;
-  const todosAdultosConPlatos =
-    asistentesLista.length > 0 &&
-    asistentesLista.every((asistente, index) => {
-      if (esAsistenteNino(asistente)) return true;
-      return Array.isArray(platosSeleccionados[index])
-        ? platosSeleccionados[index].length > 0
-        : false;
-    });
+  const asistentesRequeridosSinPlato = asistentesLista.filter(
+    (asistente, index) =>
+      !esAsistenteMascota(asistente) &&
+      (!Array.isArray(platosSeleccionados[index]) ||
+        platosSeleccionados[index].length === 0),
+  );
+  const todosRequeridosConPlatos =
+    asistentesLista.length > 0 && asistentesRequeridosSinPlato.length === 0;
 
   const handleBottomCta = () => {
     if (ctaEsPago) {
-      if (!todosAdultosConPlatos) return;
+      if (!todosRequeridosConPlatos) return;
       handleConfirmar();
       return;
     }
@@ -636,10 +680,10 @@ export default function PlatosSeleccion({
           >
             <div className="lg:w-fit w-56">
               <h4 className="text-start font-parkson font-bold">
-                <span className="lg:!text-5xl !text-3xl">Selecciona</span>
+                <span className="lg:!text-5xl !text-3xl">Seleccione</span>
                 <br />
                 <span className="lg:!text-8xl lg:!leading-14 !text-6xl !leading-11">
-                  tus platos
+                  sus platos
                 </span>
               </h4>
             </div>
@@ -687,7 +731,7 @@ export default function PlatosSeleccion({
                               <i className="bg-white rounded-full overflow-hidden mt-6 shadow-lg self-start size-24 flex items-center justify-center pt-4">
                                 <img
                                   className="size-full object-contain inline-block"
-                                  src="/iconos/user.svg"
+                                  src={obtenerAvatarAsistente(asistente)}
                                   alt=""
                                 />
                               </i>
@@ -754,7 +798,7 @@ export default function PlatosSeleccion({
                                 transition={{ duration: 0.2 }}
                                 className="!text-xl italic font-bold opacity-50 h-12 flex items-center justify-center"
                               >
-                                <p>Elige al menos un plato</p>
+                                <p>Elija al menos un plato</p>
                               </motion.div>
                             )}
                           </motion.div>
@@ -781,7 +825,7 @@ export default function PlatosSeleccion({
               </motion.div>
             ) : (
               <MenuSelected
-                categorias={categorias}
+                categorias={categoriasConMascotas}
                 categoriaActual={categoriaActual}
                 isMobile={isMobile}
                 handleCategoriaChange={handleCategoriaChange}
@@ -799,7 +843,7 @@ export default function PlatosSeleccion({
                       <div className="w-full flex justify-around">
                         <div>
                           <span className="!text-xl font-light mr-2">
-                            {ctaEsPago && todosAdultosConPlatos
+                            {ctaEsPago && todosRequeridosConPlatos
                               ? "Total a pagar"
                               : "Subtotal:"}
                           </span>
@@ -826,7 +870,7 @@ export default function PlatosSeleccion({
                             }
                           />
                         )}
-                        {ctaEsPago && todosAdultosConPlatos && (
+                        {ctaEsPago && todosRequeridosConPlatos && (
                           <Button
                             onClick={handleOpenResumen}
                             //title="Resumen"
@@ -853,15 +897,21 @@ export default function PlatosSeleccion({
                           disabled={
                             guardando ||
                             pagoEnProceso ||
-                            (ctaEsPago && !todosAdultosConPlatos)
+                            (ctaEsPago && !todosRequeridosConPlatos)
                           }
                         />
                       </div>
                     </div>
                     <div className="w-full flex flex-col items-center justify-center gap-2">
-                      <p className="!text-base text-center whitespace-break-spaces">
-                        Para continuar debes pagar los platos de tu reserva
-                      </p>
+                      {ctaEsPago && !todosRequeridosConPlatos ? (
+                        <p className="!text-sm text-center text-red-500 font-semibold whitespace-break-spaces">
+                          {`Para continuar, ${asistentesRequeridosSinPlato.join(", ")} falta por seleccion de plato`}
+                        </p>
+                      ) : (
+                        <p className="!text-base text-center whitespace-break-spaces">
+                          Para continuar debes pagar los platos de tu reserva
+                        </p>
+                      )}
                     </div>
                   </>
                 }
@@ -896,6 +946,8 @@ const MenuSelected = ({
   decrementarCantidadPlato,
   component,
 }) => {
+  const MENU_MASCOTAS_KEY = "menu_mascotas";
+
   return (
     <div className="w-full max-w-full min-w-0 h-full bg-white grid grid-rows-[auto minmax(0,1fr)_auto] overflow-x-hidden overflow-y-hidden rounded-3xl gap-4 px-4 pt-4 pb-2">
       {/* <h3 className="text-xl px-4">Selecciona los platos por persona</h3> */}
@@ -958,6 +1010,7 @@ const MenuSelected = ({
           keyboard={false}
         >
           {categorias.map((categoria) => {
+            const esMenuMascotas = categoria.key === MENU_MASCOTAS_KEY;
             const productosCategoria = getProductosPorCategoria(categoria.key);
 
             return (
@@ -966,7 +1019,14 @@ const MenuSelected = ({
                 className="!h-full !overflow-hidden"
               >
                 <div className="w-full max-w-full h-full min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain grid grid-cols-1 gap-3 content-start auto-rows-max pl-2 pr-2">
-                  {productosCategoria.length > 0 ? (
+                  {esMenuMascotas ? (
+                    <div className="h-full min-h-[240px] flex items-center justify-center text-center px-6">
+                      <p className="text-dark/70 !text-xl font-semibold">
+                        Muy pronto tu mascota podrá <br /> disfrutar lo mejor de
+                        EntrePues.
+                      </p>
+                    </div>
+                  ) : productosCategoria.length > 0 ? (
                     productosCategoria.map((plato) => (
                       <motion.div
                         key={plato.id}

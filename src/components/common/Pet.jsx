@@ -1,7 +1,7 @@
 export const Pet = () => {
   return (
     <svg
-      className="fill-brown"
+      className="fill-[#774624]"
       id="uuid-7d5afb10-d154-4336-99b8-2bfa9b823fa2"
       data-name="Capa 1"
       xmlns="http://www.w3.org/2000/svg"

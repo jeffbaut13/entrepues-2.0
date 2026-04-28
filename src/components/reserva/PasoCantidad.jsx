@@ -35,12 +35,16 @@ const PasoCantidad = ({
   const mesaSeleccionada = reservaZonaData?.mesaSeleccionada;
   const permiteMascotas = Boolean(reservaZonaData?.permiteMascotas);
 
-  const syncAsistentes = (nextAdults, nextChildren) => {
-    const total = Number(nextAdults || 0) + Number(nextChildren || 0);
+  const syncAsistentes = (nextAdults, nextChildren, nextMascotas) => {
+    const total =
+      Number(nextAdults || 0) +
+      Number(nextChildren || 0) +
+      Number(nextMascotas || 0);
     if (total > 0) {
       actualizarDetalleAsistentes({
         adults: nextAdults,
         children: nextChildren,
+        mascotas: nextMascotas,
       });
       return;
     }
@@ -54,8 +58,8 @@ const PasoCantidad = ({
   };
 
   useEffect(() => {
-    syncAsistentes(adultsNum, childrenNum);
-  }, [adultsNum, childrenNum]);
+    syncAsistentes(adultsNum, childrenNum, mascotasNum);
+  }, [adultsNum, childrenNum, mascotasNum]);
 
   useEffect(() => {
     if (totalOcupacion < MAX_OCUPACION_TOTAL && errorAsistentes) {
@@ -73,8 +77,8 @@ const PasoCantidad = ({
     <>
       <h2 className="font-parkson mb-4 !text-4xl">
         {permiteMascotas
-          ? "Cuantas personas y peluditos nos visitaran?"
-          : "Cuantos vendran?"}
+          ? "¿CUÁNTAS PERSONAS Y PELUDITOS NOS VISITARÁN?"
+          : "¿CUÁNTOS VENDRÁN?"}
       </h2>
 
       <div className="w-full flex flex-col items-center justify-center gap-8">
@@ -120,5 +124,3 @@ const PasoCantidad = ({
 };
 
 export default PasoCantidad;
-
-

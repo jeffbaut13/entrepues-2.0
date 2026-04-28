@@ -59,7 +59,12 @@ export const CallToActions = ({ onOpenReservePopup }) => {
     </div>
   );
 };
-export const RedesSociales = ({ isSectionVisible, dontLocation = true }) => {
+export const RedesSociales = ({
+  isSectionVisible,
+  dontLocation = true,
+  size,
+  youtube,
+}) => {
   const iconsWhitoutLocation = dontLocation
     ? redes.filter((red) => red.label !== "Ubicación")
     : redes;
@@ -85,10 +90,11 @@ export const RedesSociales = ({ isSectionVisible, dontLocation = true }) => {
               key={inx}
               props={{ "aria-label": red.label }}
               Icon={IconComponent}
-              iconSize="small"
+              iconSize={size || "small"}
             />
           );
         })}
+        {youtube ? youtube : null}
       </div>
     </motion.div>
   );

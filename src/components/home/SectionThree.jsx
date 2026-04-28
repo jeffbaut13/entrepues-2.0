@@ -5,8 +5,8 @@ export const SectionThree = () => {
   const [sliderPos, setSliderPos] = useState(50);
 
   // Gradiente: desde qué % empieza a volverse transparente (posición) y hasta qué % llega (intensidad)
-  const gradientStart = 40;   // % desde abajo donde es negro sólido
-  const gradientEnd = 100;    // % desde abajo donde termina (transparente)
+  const gradientStart = 40; // % desde abajo donde es negro sólido
+  const gradientEnd = 100; // % desde abajo donde termina (transparente)
   const containerRef = useRef(null);
   const isDragging = useRef(false);
 
@@ -26,7 +26,7 @@ export const SectionThree = () => {
       if (!isDragging.current) return;
       updateSlider(e.clientX);
     },
-    [updateSlider]
+    [updateSlider],
   );
 
   const onMouseUp = useCallback(() => {
@@ -37,7 +37,7 @@ export const SectionThree = () => {
     (e) => {
       updateSlider(e.touches[0].clientX);
     },
-    [updateSlider]
+    [updateSlider],
   );
 
   useEffect(() => {
@@ -76,7 +76,7 @@ export const SectionThree = () => {
       >
         {/* Línea vertical */}
         <div
-          className="absolute top-0 bottom-0 w-[2px] bg-white pointer-events-none"
+          className="absolute top-0 bottom-0 w-[2px] bg-secondary pointer-events-none"
           style={{ left: `${sliderPos}%` }}
         />
 
@@ -85,8 +85,8 @@ export const SectionThree = () => {
           className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-40 h-40 rounded-full flex items-center justify-center pointer-events-none z-10"
           style={{ left: `${sliderPos}%` }}
         >
-          <ChevronLeft className="text-white h-40 w-40 mr-12" />
-          <ChevronRight className="text-white h-40 w-40 " />
+          <ChevronLeft className="text-secondary h-40 w-40 mr-12" />
+          <ChevronRight className="text-secondary h-40 w-40 " />
         </div>
       </div>
 
@@ -97,15 +97,15 @@ export const SectionThree = () => {
           background: `linear-gradient(to top, black ${gradientStart}%, transparent ${gradientEnd}%)`,
         }}
       >
-        <h1 className="text-amber-50 font-parkson text-7xl text-center">
+        <h1 className="text-secondary font-parkson text-7xl leading-12 text-center">
           <span className="flex items-center gap-4">
-            <span className="flex-1 h-[2px] bg-white"></span>
+            <span className="flex-1 h-0.5 bg-secondary/40"></span>
             abrimos en 1995
-            <span className="flex-1 h-[2px] bg-white"></span>
+            <span className="flex-1 h-0.5 bg-secondary/40"></span>
           </span>
-          y seguimos escribiendo la historia.
+          <span className="text-5xl">y seguimos escribiendo la historia.</span>
         </h1>
       </div>
     </section>
   );
-}
+};

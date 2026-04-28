@@ -118,7 +118,7 @@ export const Datos = ({ onContinue, back }) => {
           {randomTitle}
         </span>
       </h2>
-      <p className="mb-4">Regálanos tus datos para conocerte:</p>
+      <p className="mb-4">Déjenos sus datos pa´ conocerlo</p>
 
       <div className="lg:px-6 px-4">
         <div className="w-full space-y-3">
@@ -172,7 +172,7 @@ export const Datos = ({ onContinue, back }) => {
                   ? "border-red-400 focus:ring-red-400"
                   : "border-gray-300 focus:ring-dark"
               }`}
-              placeholder="Tu email"
+              placeholder="Email"
             />
             {hasFieldError("email") && (
               <p className="mt-1 px-2 text-xs text-red-600 whitespace-normal break-words">
@@ -195,7 +195,7 @@ export const Datos = ({ onContinue, back }) => {
                   ? "border-red-400 focus:ring-red-400"
                   : "border-gray-300 focus:ring-dark"
               }`}
-              placeholder="Tu celular"
+              placeholder="Celular"
               maxLength={12}
             />
             {hasFieldError("whatsapp") && (
@@ -249,7 +249,7 @@ export const Datos = ({ onContinue, back }) => {
           />
         </div>
         <p className="lg:!text-sm !text-base text-center">
-          Al confirmar aceptas los términos y condiciones.
+          Al confirmar acepta los términos y condiciones
         </p>
       </div>
     </motion.div>

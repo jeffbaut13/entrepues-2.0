@@ -28,7 +28,7 @@ const REGIONES = [
   { start: 35, title: "Pacífica" },
   { start: 40, title: "Amazonía" },
   { start: 46, title: "Caribe" },
-  { start: 51, title: "Zona Pet" },
+  { start: 51, title: "Pet family" },
 ];
 
 const getReachableRegionStart = (start) =>

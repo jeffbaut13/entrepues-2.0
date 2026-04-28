@@ -33,7 +33,7 @@ const RegionImageSlider = ({ selectedZoneName }) => {
   );
 
   const regionAliases = {
-    "ZONA PET": "CARIBE",
+    "PET FAMILY": "CARIBE",
   };
 
   const resolvedZone = regionAliases[normalizedZone] || normalizedZone;

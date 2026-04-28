@@ -1,12 +1,15 @@
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Home, Mail, MapPin, Phone } from "lucide-react";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { RedesSociales } from "../common/CallToAction/CallToActions";
 import { Logo } from "../ui/Logo";
+import { Link } from "react-router-dom";
+import { ROUTES } from "../../constants/routes";
+import { Button } from "../ui/Button";
 
 export const SiteFooter = ({
   className = "",
-  claimTitle = "LA CASA DEL SABOR COLOMBIANO",
-  claimSubtitle = "Desde 1987",
+  claimTitle = "DESDE 1987",
+  claimSubtitle = "LA CASA DEL SABOR TRADICIONAL COLOMBIANO",
 }) => {
   const isMobile = useIsMobile();
 
@@ -18,15 +21,23 @@ export const SiteFooter = ({
         <Logo color="dark" size={isMobile ? "md" : "lg"} />
 
         <div className="w-fit space-y-2 text-center">
-          <h2 className="md:text-xl text-lg">{claimTitle}</h2>
+          <h2 className="md:text-xl text-lg flex items-center justify-center gap-3">
+            <span className="inline-block rounded-full bg-dark h-2 w-2"></span>
+            {claimTitle}
+            <span className="inline-block rounded-full bg-dark h-2 w-2"></span>
+          </h2>
           <h2 className="md:text-xl text-lg mb-6">{claimSubtitle}</h2>
         </div>
 
         <div className="grid md:grid-cols-3 grid-cols-1 max-lg:grid-rows-3 text-dark  md:gap-24">
           <div className="flex flex-col md:items-start items-center justify-center gap-2 max-lg:row-start-3">
-            <div className="flex items-center justify-center gap-1">
+            <Link
+              to={"https://maps.app.goo.gl/KyKiZfYHecmQhXKA6"}
+              target="_blank"
+              className="flex items-center justify-center gap-1"
+            >
               <MapPin size={16} /> <p>Km. 9 Autopista Norte Via Tunja</p>
-            </div>
+            </Link>
             <div className="flex items-center justify-center gap-1">
               <Phone size={16} /> <p>300 - 214 - 19 - 78</p>
             </div>
@@ -45,22 +56,46 @@ export const SiteFooter = ({
                 Martes <br className="md:hidden" />
                 09:00 a.m - 05:00 p.m.
               </p>
+              <p className="text-center">
+                Miércoles y Jueves <br className="md:hidden" /> 08:00 a.m -
+                05:00 p.m.
+              </p>
+              <p className="text-center">
+                Viernes a Domingo <br className="md:hidden" /> 08:00 a.m - 06:00
+                p.m.
+              </p>
             </div>
           </div>
 
-          <div className="flex flex-col md:items-start items-center lg:justify-end">
-            <p className="text-center">
-              Miércoles y Jueves <br className="md:hidden" /> 08:00 a.m - 05:00
-              p.m.
-            </p>
-            <p className="text-center">
-              Viernes a Domingo <br className="md:hidden" /> 08:00 a.m - 06:00
-              p.m.
-            </p>
+          <div>
+            <RedesSociales
+              size={"tall"}
+              isSectionVisible={true}
+              youtube={
+                <Link
+                  to={"https://www.youtube.com/watch?v=Ylvcg1hE5e8"}
+                  target="_blank"
+                  className="flex items-center justify-center gap-1"
+                >
+                  <picture className="w-10 h-10 inline-flex">
+                    <img
+                      className="size-full object-contain inline-block"
+                      src="iconos/youtube.svg"
+                      alt="YouTube"
+                    />
+                  </picture>
+                </Link>
+              }
+            />
           </div>
         </div>
-
-        <RedesSociales isSectionVisible={true} />
+        <Button
+          variant="just-icon-dark"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          customClass="w-14! h-14! px-0!"
+          Icon={Home}
+          aria-label="Ir al inicio"
+        />
       </div>
     </footer>
   );

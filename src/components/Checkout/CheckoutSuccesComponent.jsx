@@ -18,10 +18,10 @@ const formatMesaPhrase = (adultos = 0, ninos = 0, mascotas = 0) => {
   const totalMascotas = Number(mascotas || 0);
 
   if (totalPersonas <= 0 && totalMascotas <= 0) {
-    return "pa' ustedes";
+    return "ustedes";
   }
 
-  const personasTexto = totalPersonas === 1 ? "pa' 1" : `pa' ${totalPersonas}`;
+  const personasTexto = totalPersonas === 1 ? "1" : `${totalPersonas}`;
 
   if (totalMascotas <= 0) {
     return personasTexto;
@@ -67,10 +67,11 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
 
   const numeroReserva = detallesReserva?.numeroReserva || "----";
   const nombreReserva = capitalizeSentence(contactoReserva?.nombre || "");
-  const shareUrl =
+  /* const shareUrl =
     typeof window !== "undefined" && window.location?.origin
       ? window.location.origin
-      : "https://restauranteentrepues.com";
+      : "https://restauranteentrepues.com"; */
+  const shareUrl ="https://restauranteentrepues.com";
   const fechaReserva = capitalizeSentence(detallesReserva?.fecha || "");
   const horaReserva = detallesReserva?.hora || "";
   const regionReserva = formatRegionLabel(detallesReserva?.region || "general");
@@ -80,16 +81,18 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
     resumenAsistentes?.mascotas,
   );
   const mensajeWhatsApp = [
-    `¡Ea pues, ${nombreReserva || "parcero"}!`,
-    "Tu reserva en EntrePues ya está lista pa´ servir.",
+    `¡Eh Ave María, que gusto verlo!`,
+    "Lo invitaron a una reserva en EntrePues y ya",
+    "está todo listo.",
     " ",
-    "Mijo, tenga a la mano estos los detalles:",
+    "Le dejo todos los detalles:",
     `📅 ${fechaReserva}`,
     `⏰ ${horaReserva}`,
     `📍 ${regionReserva}`,
-    `🐾 Aquí está la mesa lista ${mesaReservaTexto}`,
-    `📌 #${numeroReserva}`,
-    "Qué bueno tenerlos por acá, ¡los esperamos!",
+    `🍽️ Mesa para ${mesaReservaTexto}`,
+    `🔖 #${numeroReserva}`,
+    " ",
+    "Qué emoción tenerlos por acá. ¡Los esperamos!",
     " ",
     " ",
   ]
@@ -112,9 +115,9 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
-            <h2 className="font-parkson !text-4xl">¡Listo {nombreReserva}!</h2>
-            <h2 className="font-parkson !text-4xl">
-              Tu reserva está confirmada
+            <h2 className="font-parkson !text-6xl">¡Listo {nombreReserva}!</h2>
+            <h2 className="font-parkson !text-3xl">
+              Su reserva está confirmada
             </h2>
           </motion.div>
 
@@ -124,8 +127,8 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
             transition={{ delay: 0.35 }}
             className="space-y-2"
           >
-            <p className="text-2xl">
-              N° de reserva: <strong>{numeroReserva}</strong>
+            <p className="text-2xl border border-dark/40 rounded-full px-4 py-2 inline-block">
+              N°: <strong>{numeroReserva}</strong>
             </p>
           </motion.div>
 
@@ -136,11 +139,7 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
             className="space-y-2"
           >
             <p>
-              Tus platos estarán listos <br />5 minutos después de tu llegada.
-            </p>
-            <p>
-              Los detalles de tu reserva <br />
-              te llegarán al correo.
+              Sus platos estarán listos <br />5 minutos después de su llegada.
             </p>
           </motion.div>
 
@@ -151,8 +150,8 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
             className="flex flex-col justify-center items-center gap-6"
           >
             <p>
-              Compártela por WhatsApp <br />a tus acompañantes y nos vemos{" "}
-              <br /> pronto en la mesa.
+              Comparta los detalles de la reserva <br />y nos vemos en
+              EntrePues.
             </p>
             <Button
               type="button-secondary"

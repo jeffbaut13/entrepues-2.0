@@ -192,6 +192,8 @@ export const ReservaPopupFlow = ({
     clearReservationState();
     onClose?.();
   };
+ 
+  
 
   return (
     <AnimatePresence>

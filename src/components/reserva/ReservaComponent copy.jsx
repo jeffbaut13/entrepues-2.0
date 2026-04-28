@@ -25,8 +25,8 @@ const resolveRegionName = (value = "") => {
     pacifico: "pacífica",
     orinoquia: "orinoquía",
     amazonia: "amazonía",
-    "zona pet": "zona-pet",
-    zonapet: "zona-pet",
+    "pet family": "pet-family",
+    petFamily: "pet-family",
   };
 
   return aliases[normalized] || normalized;

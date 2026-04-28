@@ -55,12 +55,17 @@ export const RESERVA_ZONAS_CONFIG = RESERVA_ZONAS_ORDER.map((slug, index) => {
   return {
     id: `zona-${index + 1}`,
     nombre: region?.slug || slug,
-    permiteMascotas: slug === "zona-pet",
+    permiteMascotas: slug === "pet-family",
     mesasBase: [4, 6],
   };
 });
 
-const EMPTY_DETALLE_ASISTENTES = { adultos: 0, ninos: 0, asistentes: [] };
+const EMPTY_DETALLE_ASISTENTES = {
+  adultos: 0,
+  ninos: 0,
+  mascotas: 0,
+  asistentes: [],
+};
 const getTotalOcupacion = (reservaData = {}) =>
   Number(reservaData?.adults || 0) +
   Number(reservaData?.children || 0) +
@@ -69,6 +74,7 @@ const getTotalOcupacion = (reservaData = {}) =>
 const buildDetalleAsistentes = (reservaData = {}) => {
   const adultosCount = Number(reservaData?.adults || 0);
   const ninosCount = Number(reservaData?.children || 0);
+  const mascotasCount = Number(reservaData?.mascotas || 0);
 
   const asistentesAdultos = Array.from(
     { length: adultosCount },
@@ -78,11 +84,16 @@ const buildDetalleAsistentes = (reservaData = {}) => {
     { length: ninosCount },
     (_, i) => `Niño ${i + 1}`,
   );
+  const asistentesMascotas = Array.from(
+    { length: mascotasCount },
+    (_, i) => `Mascota ${i + 1}`,
+  );
 
   return {
     adultos: adultosCount,
     ninos: ninosCount,
-    asistentes: [...asistentesAdultos, ...asistentesNinos],
+    mascotas: mascotasCount,
+    asistentes: [...asistentesAdultos, ...asistentesNinos, ...asistentesMascotas],
   };
 };
 

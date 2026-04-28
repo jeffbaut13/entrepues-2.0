@@ -30,7 +30,7 @@ export const MesasSelectorx4 = ({
       return "fill-[#ffffff00]";
     }
     if (childSeats.includes(sillaNumber)) {
-      return "fill-[#a7d6f2] stroke-secondary";
+      return "fill-[#e38273] stroke-secondary";
     }
     return sillaNumber < index ? colorRelleno : "fill-[#ffffff00]";
   };
@@ -41,7 +41,7 @@ export const MesasSelectorx4 = ({
       return "transparent";
     }
     if (childSeats.includes(sillaNumber)) {
-      return "#a7d6f2";
+      return "#e38273";
     }
     return sillaNumber < index ? strokeSecondary : strokeDark;
   };
@@ -2400,7 +2400,7 @@ export const MesasSelectorx6 = ({
       return "fill-[#ffffff00]";
     }
     if (childSeats.includes(sillaNumber)) {
-      return "fill-[#a7d6f2] stroke-secondary";
+      return "fill-[#e38273] stroke-secondary";
     }
     return sillaNumber < index ? colorRelleno : "fill-[#ffffff00]";
   };
@@ -2411,7 +2411,7 @@ export const MesasSelectorx6 = ({
       return "transparent";
     }
     if (childSeats.includes(sillaNumber)) {
-      return "#a7d6f2";
+      return "#e38273";
     }
     return sillaNumber < index ? strokeSecondary : strokeDark;
   };
