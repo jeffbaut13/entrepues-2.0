@@ -1,16 +1,9 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
 
 import useReservaStore from "../../store/reservaStore";
-import ContadorAsistentes from "../reserva/ContadorAsistentes";
-import MesasDisplay from "../reserva/MesasDisplay";
 import { useIsMobile } from "../../hooks/useIsMobile";
-import { Button } from "../ui/Button";
 import { formatRegionLabel } from "../../data/puntos";
-
-const MAX_OCUPACION_TOTAL = 12;
-const MAX_MASCOTAS = 4;
 
 const buildPositionStyle = ({ top, right, bottom, left }) =>
   Object.fromEntries(
@@ -29,49 +22,20 @@ export const PuntosDeReserva = ({
   left,
   zIndex = 110,
   className = "",
-  iconSrc = "/iconos/flag.svg",
   iconAlt = "Abrir punto de reserva",
   isVisible = true,
   onContinueToPopup,
 }) => {
   const isMobile = useIsMobile();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [errorAsistentes, setErrorAsistentes] = useState("");
-  const hoverContainerRef = useRef(null);
+  const [isHovering, setIsHovering] = useState(false);
+  const [isReopenLocked, setIsReopenLocked] = useState(false);
+  const containerRef = useRef(null);
+  const hoverLeaveTimeoutRef = useRef(null);
+  const reopenUnlockTimeoutRef = useRef(null);
 
-  const {
-    reservaData,
-    reservaZonaData,
-    actualizarDetalleAsistentes,
-    limpiarDetalleAsistentes,
-    seleccionarZona,
-    updateReservaData,
-    setActiveMesas,
-    setPasoReserva,
-    setMesaAsignada,
-  } = useReservaStore();
-
-  const adultsNum = Math.max(0, Number(reservaData?.adults) || 0);
-  const childrenNum = Math.max(0, Number(reservaData?.children) || 0);
-  const mascotasNum = Math.max(0, Number(reservaData?.mascotas) || 0);
-  const totalPersonas = adultsNum + childrenNum;
-  const totalOcupacion = adultsNum + childrenNum + mascotasNum;
-
-  const mesaSeleccionada = reservaZonaData?.mesaSeleccionada;
-  const permiteMascotas = Boolean(reservaZonaData?.permiteMascotas);
-  const mesaCompactSize = "md";
-  const mesasPlanLength = mesaSeleccionada?.mesasPlan?.length || 0;
-  const mesaPreviewWidth = isMobile
-    ? mesasPlanLength >= 2
-      ? 220
-      : 160
-    : mesasPlanLength >= 2
-      ? 260
-      : 208;
-  const canContinue =
-    Boolean(reservaZonaData?.selectedZoneId) &&
-    Boolean(mesaSeleccionada) &&
-    adultsNum > 0;
+  const { seleccionarZona, setActiveMesas, setMesaAsignada } =
+    useReservaStore();
 
   const positionStyle = useMemo(
     () => buildPositionStyle({ top, right, bottom, left }),
@@ -85,67 +49,14 @@ export const PuntosDeReserva = ({
     return Number.isFinite(rawValue) ? rawValue : null;
   }, [left]);
 
-  const isRightAnchoredDesktop =
-    !isMobile && leftPercent !== null && leftPercent > 70;
-  const panelTransformOrigin = isMobile
-    ? "center center"
-    : isRightAnchoredDesktop
-      ? "right bottom"
-      : "left bottom";
-  const effectiveZIndex = isExpanded ? zIndex + 200 : zIndex;
+  const isRightAnchored = leftPercent !== null && leftPercent > 70;
+  const shouldExpand = isMobile ? isExpanded : isHovering;
+  const effectiveZIndex = shouldExpand ? zIndex + 200 : zIndex;
   const regionLabel = formatRegionLabel(region);
-
-  const syncAsistentes = (nextAdults, nextChildren) => {
-    const total = Number(nextAdults || 0) + Number(nextChildren || 0);
-
-    if (total > 0) {
-      actualizarDetalleAsistentes({
-        adults: nextAdults,
-        children: nextChildren,
-      });
-      return;
-    }
-
-    limpiarDetalleAsistentes();
-  };
-
-  const showMaxAsistentesError = () => {
-    setErrorAsistentes(
-      `Has alcanzado el maximo de ${MAX_OCUPACION_TOTAL} asistentes.`,
-    );
-  };
-
-  useEffect(() => {
-    syncAsistentes(adultsNum, childrenNum);
-  }, [adultsNum, childrenNum]);
-
-  useEffect(() => {
-    if (totalOcupacion < MAX_OCUPACION_TOTAL && errorAsistentes) {
-      setErrorAsistentes("");
-    }
-  }, [errorAsistentes, totalOcupacion]);
-
-  useEffect(() => {
-    if (!permiteMascotas && mascotasNum > 0) {
-      updateReservaData({ mascotas: 0 });
-    }
-  }, [permiteMascotas, mascotasNum, updateReservaData]);
-
-  useEffect(() => {
-    if (!isExpanded) return;
-    if (!region) return;
-
-    seleccionarZona(region);
-    setActiveMesas(true);
-    setMesaAsignada(mesa);
-  }, [
-    isExpanded,
-    mesa,
-    region,
-    seleccionarZona,
-    setActiveMesas,
-    setMesaAsignada,
-  ]);
+  const textLabel = `RESERVAR ESTA MESA`;
+  const collapsedSize = 14; // w-3.5 / h-3.5
+  const expandedWidth = 320;
+  const expandedHeight = 40;
 
   useEffect(() => {
     if (!isVisible) {
@@ -154,10 +65,10 @@ export const PuntosDeReserva = ({
   }, [isVisible]);
 
   useEffect(() => {
-    if (isMobile || !isExpanded) return;
+    if (!isMobile || !isExpanded) return;
 
-    const handleDocumentMouseMove = (event) => {
-      const container = hoverContainerRef.current;
+    const handleOutsideClick = (event) => {
+      const container = containerRef.current;
       if (!container) return;
 
       if (!container.contains(event.target)) {
@@ -165,57 +76,89 @@ export const PuntosDeReserva = ({
       }
     };
 
-    document.addEventListener("mousemove", handleDocumentMouseMove);
+    document.addEventListener("pointerdown", handleOutsideClick);
 
     return () => {
-      document.removeEventListener("mousemove", handleDocumentMouseMove);
+      document.removeEventListener("pointerdown", handleOutsideClick);
     };
   }, [isExpanded, isMobile]);
 
-  const updateReservaField = (field, value) => {
-    updateReservaData({ [field]: value });
-  };
-
-  const setAdults = (value) => updateReservaField("adults", value);
-  const setChildren = (value) => updateReservaField("children", value);
-  const setMascotas = (value) => updateReservaField("mascotas", value);
-
-  const handleExpand = () => {
-    setIsExpanded(true);
-  };
-
-  const handleCollapse = () => {
-    if (isMobile) return;
-    setIsExpanded(false);
-  };
+  useEffect(() => {
+    return () => {
+      if (hoverLeaveTimeoutRef.current) {
+        clearTimeout(hoverLeaveTimeoutRef.current);
+      }
+      if (reopenUnlockTimeoutRef.current) {
+        clearTimeout(reopenUnlockTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleTriggerClick = () => {
-    if (!isMobile) {
-      handleExpand();
+    if (isMobile && !isExpanded) {
+      setIsExpanded(true);
       return;
     }
 
-    setIsExpanded((prev) => !prev);
+    if (!isMobile) {
+      setIsHovering(true);
+      return;
+    }
+
+    handleContinue();
   };
 
   const handleMouseEnter = () => {
     if (isMobile) return;
-    setIsExpanded(true);
+    if (isReopenLocked) return;
+    if (hoverLeaveTimeoutRef.current) {
+      clearTimeout(hoverLeaveTimeoutRef.current);
+      hoverLeaveTimeoutRef.current = null;
+    }
+    setIsHovering(true);
   };
 
   const handleMouseLeave = () => {
     if (isMobile) return;
-    setIsExpanded(false);
+    if (hoverLeaveTimeoutRef.current) {
+      clearTimeout(hoverLeaveTimeoutRef.current);
+    }
+    hoverLeaveTimeoutRef.current = setTimeout(() => {
+      setIsHovering(false);
+      setIsReopenLocked(true);
+      if (reopenUnlockTimeoutRef.current) {
+        clearTimeout(reopenUnlockTimeoutRef.current);
+      }
+      reopenUnlockTimeoutRef.current = setTimeout(() => {
+        setIsReopenLocked(false);
+      }, 220);
+    }, 120);
   };
 
   const handleContinue = () => {
-    if (!canContinue) return;
+    if (region) {
+      seleccionarZona(region);
+    }
 
-    setPasoReserva("visitantes", { completado: true, habilitado: true });
-    setPasoReserva("fecha", { habilitado: true });
     setActiveMesas(true);
     setMesaAsignada(mesa);
-    onContinueToPopup?.(region, { mesa });
+    setIsExpanded(false);
+    setIsHovering(false);
+    if (hoverLeaveTimeoutRef.current) {
+      clearTimeout(hoverLeaveTimeoutRef.current);
+      hoverLeaveTimeoutRef.current = null;
+    }
+    if (reopenUnlockTimeoutRef.current) {
+      clearTimeout(reopenUnlockTimeoutRef.current);
+      reopenUnlockTimeoutRef.current = null;
+    }
+    setIsReopenLocked(false);
+
+    onContinueToPopup?.(region, {
+      mesa,
+      startStep: "cantidad",
+      source: "video-point",
+    });
   };
 
   if (!isVisible) return null;
@@ -230,123 +173,103 @@ export const PuntosDeReserva = ({
       transition={{ duration: 0.22, ease: "easeOut" }}
     >
       <div
-        ref={hoverContainerRef}
-        className="pointer-events-auto relative size-10"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+        ref={containerRef}
+        className="pointer-events-auto relative w-3.5 h-3.5 overflow-visible"
       >
-        <AnimatePresence initial={false} mode="wait">
-          {!isExpanded ? (
-            <motion.button
-              key="trigger"
-              type="button"
-              onClick={handleTriggerClick}
-              initial={{ scale: 0.78, y: 6 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.84, y: 4 }}
-              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              style={{ transformOrigin: "left bottom" }}
-              className="size-10 p-2 flex items-center justify-center rounded-[2rem] border border-white/70 bg-white/92 shadow-[0_24px_80px_rgba(0,0,0,0.22)] backdrop-blur-md"
-              aria-label={iconAlt}
-            >
-              <img className="size-full object-contain" src={iconSrc} alt="" />
-            </motion.button>
-          ) : (
-            <motion.div
-              key="panel"
-              initial={{ scale: 0.9, y: 10 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.96, y: 8 }}
-              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-              style={{ transformOrigin: panelTransformOrigin }}
-              className={`rounded-[2rem] border border-white/70 bg-white/92 shadow-[0_24px_80px_rgba(0,0,0,0.22)] backdrop-blur-md p-4 overflow-hidden ${
-                isMobile
-                  ? "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-fit max-w-[92vw]"
-                  : `absolute bottom-0 w-fit ${isRightAnchoredDesktop ? "right-0" : "left-0"}`
-              }`}
-              onClick={(event) => event.stopPropagation()}
-            >
-              <div
-                className={`${isMobile ? "max-w-[calc(92vw-2rem)]" : "max-w-none"}`}
-              >
-                <div className="flex items-center justify-center gap-3">
-                  <div className="min-w-0">
-                    {mesa && (
-                      <p className="font-parkson text-3xl mt-1">
-                        {name} #{mesa} {region ? `en zona ${regionLabel}` : ""}
-                      </p>
-                    )}
-                  </div>
+        <motion.div
+          className={`absolute top-1/2 -translate-y-1/2 ${isRightAnchored ? "right-0" : "left-0"}`}
+          animate={{ x: 0 }}
+          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <div className="relative">
+            {!shouldExpand && (
+              <>
+                <motion.span
+                  className="pointer-events-none absolute top-1/2 left-1/2 z-0 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-secondary/45"
+                  animate={{
+                    scale: [1, 4.8],
+                    opacity: [0, 0.45, 0],
+                  }}
+                  transition={{
+                    duration: 1.7,
+                    ease: "easeOut",
+                    repeat: Infinity,
+                    times: [0, 0.2, 1],
+                  }}
+                />
+                <motion.span
+                  className="pointer-events-none absolute top-1/2 left-1/2 z-0 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-secondary/30"
+                  animate={{
+                    scale: [1, 4.8],
+                    opacity: [0, 0.36, 0],
+                  }}
+                  transition={{
+                    duration: 1.7,
+                    ease: "easeOut",
+                    repeat: Infinity,
+                    delay: 0.85,
+                    times: [0, 0.2, 1],
+                  }}
+                />
+              </>
+            )}
 
-                  {isMobile && (
-                    <button
-                      type="button"
-                      onClick={() => setIsExpanded(false)}
-                      className="shrink-0 rounded-full p-2 text-dark/70"
-                      aria-label="Cerrar punto de reserva"
-                    >
-                      <X size={18} />
-                    </button>
-                  )}
-                </div>
-
-                <motion.div
-                  layout
-                  className="mt-4 inline-flex items-center gap-4"
+            <AnimatePresence initial={false} mode="wait">
+              {shouldExpand ? (
+                <motion.button
+                  key="expanded"
+                  type="button"
+                  onClick={handleContinue}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
+                  initial={{
+                    width: collapsedSize,
+                    height: collapsedSize,
+                    opacity: 0.9,
+                  }}
+                  animate={{
+                    width: expandedWidth,
+                    height: expandedHeight,
+                    opacity: 1,
+                  }}
+                  exit={{
+                    width: collapsedSize,
+                    height: collapsedSize,
+                    opacity: 0.92,
+                  }}
+                  transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                  className={`relative z-10 overflow-hidden rounded-full border border-secondary/80 bg-secondary/95 text-dark shadow-lg backdrop-blur-sm ${isRightAnchored ? "origin-right" : "origin-left"}`}
+                  aria-label={`${iconAlt} ${name}${mesa ? ` mesa ${mesa}` : ""}${region ? ` en zona ${regionLabel}` : ""}`}
                 >
-                  <div className="min-w-[14rem]">
-                    <ContadorAsistentes
-                      errorAsistentes={errorAsistentes}
-                      permiteMascotas={permiteMascotas}
-                      adultsNum={adultsNum}
-                      childrenNum={childrenNum}
-                      mascotasNum={mascotasNum}
-                      setAdults={setAdults}
-                      setChildren={setChildren}
-                      setMascotas={setMascotas}
-                      syncAsistentes={syncAsistentes}
-                      showMaxAsistentesError={showMaxAsistentesError}
-                      MAX_OCUPACION_TOTAL={MAX_OCUPACION_TOTAL}
-                      MAX_MASCOTAS={MAX_MASCOTAS}
-                      totalOcupacion={totalOcupacion}
-                    />
-                  </div>
-
-                  <motion.div
-                    layout
-                    className="shrink-0 flex items-center justify-center"
-                    style={{
-                      width: mesaPreviewWidth,
-                      minWidth: mesaPreviewWidth,
-                    }}
+                  <motion.span
+                    className="absolute inset-0 flex items-center justify-center font-parkson text-xl uppercase tracking-[0.2em] whitespace-nowrap text-center leading-none"
+                    initial={{ opacity: 0, x: isRightAnchored ? 10 : -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: isRightAnchored ? 10 : -10 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
                   >
-                    <MesasDisplay
-                      selectedZoneName={
-                        reservaZonaData?.selectedZoneName || "general"
-                      }
-                      mesaSeleccionada={mesaSeleccionada}
-                      isMobile={isMobile}
-                      sizeOverride={mesaCompactSize}
-                      totalOcupacion={totalOcupacion}
-                      totalPersonas={totalPersonas}
-                      childrenNum={childrenNum}
-                      mascotasNum={mascotasNum}
-                    />
-                  </motion.div>
-                </motion.div>
-                <div className="w-full flex items-center justify-center mt-6">
-                  <Button
-                    type="button-dark"
-                    disabled={!canContinue}
-                    width="ajustado"
-                    onClick={handleContinue}
-                    title={"Continuar"}
-                  />
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                    {textLabel}
+                  </motion.span>
+                </motion.button>
+              ) : (
+                <motion.button
+                  key="trigger"
+                  type="button"
+                  onClick={handleTriggerClick}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
+                  initial={{ opacity: 0.95, scale: 0.92 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0.95, scale: 0.94 }}
+                  transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ width: collapsedSize, height: collapsedSize }}
+                  className="relative z-10 rounded-full border border-secondary/80 bg-secondary/95 shadow-lg backdrop-blur-sm"
+                  aria-label={iconAlt}
+                />
+              )}
+            </AnimatePresence>
+          </div>
+        </motion.div>
       </div>
     </motion.div>
   );

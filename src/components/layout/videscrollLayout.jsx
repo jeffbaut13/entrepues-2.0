@@ -23,6 +23,7 @@ const getPointRenderKey = (point, index) =>
 const VideoScrollLayout = () => {
   const [isReservePopupOpen, setIsReservePopupOpen] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState("");
+  const [forcedStartStep, setForcedStartStep] = useState(null);
   const [showHeader, setShowHeader] = useState(false);
   const [currentVideoTime, setCurrentVideoTime] = useState(0);
   const regionChangeHandlerRef = useRef(null);
@@ -44,6 +45,7 @@ const VideoScrollLayout = () => {
 
   const openReservePopup = (regionName = "", options = {}) => {
     setSelectedRegion(regionName || "");
+    setForcedStartStep(options?.startStep || null);
     if (regionName) {
       seleccionarZona(regionName);
     }
@@ -53,6 +55,7 @@ const VideoScrollLayout = () => {
 
   const closeReservePopup = () => {
     setIsReservePopupOpen(false);
+    setForcedStartStep(null);
   };
 
   const registerVideoRegionChangeHandler = (handler) => {
@@ -113,6 +116,7 @@ const VideoScrollLayout = () => {
         stepinvert={true}
         isOpen={isReservePopupOpen}
         selectedRegion={selectedRegion}
+        forcedStartStep={forcedStartStep}
         onRegionChange={handlePopupRegionChange}
         onClose={closeReservePopup}
       />

@@ -16,12 +16,15 @@ export const ReservaPopupFlow = ({
   stepinvert = false,
   isOpen,
   selectedRegion = "",
+  forcedStartStep = null,
   onRegionChange,
   onClose,
 }) => {
   const wasOpenRef = useRef(false);
   const shouldForceReservaFromRegion =
     String(selectedRegion || "").trim().length > 0;
+  const shouldForceCantidadFromPoint =
+    shouldForceReservaFromRegion && forcedStartStep === "cantidad";
   const { resetCheckout, setShowResumen } = useCheckoutStore();
 
   const {
@@ -123,8 +126,11 @@ export const ReservaPopupFlow = ({
     if (shouldForceReservaFromRegion) {
       setFlowStep("reserva");
 
-      // Desde video scroll: si ya se capturo region/cantidad en el mini popup,
-      // el flujo debe continuar en datos.
+      if (shouldForceCantidadFromPoint) {
+        setCurrentStep(cantidadStepIndex);
+        return;
+      }
+
       if (stepinvert) {
         if (visitantesCompletado) {
           setCurrentStep(datosStepIndex);
@@ -144,11 +150,14 @@ export const ReservaPopupFlow = ({
     isOpen,
     stepinvert,
     shouldForceReservaFromRegion,
+    shouldForceCantidadFromPoint,
+    forcedStartStep,
     resumeOrStartFlowStep,
     setCurrentStep,
     setFlowStep,
     pasosReserva?.visitantes?.completado,
     regionStepIndex,
+    cantidadStepIndex,
     datosStepIndex,
   ]);
 
