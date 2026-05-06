@@ -1,4 +1,4 @@
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, Home } from "lucide-react";
 
@@ -12,12 +12,7 @@ import { useHeaderChangeStore } from "../../store/headerChangeStore";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { useEffect } from "react";
 
-export const Header = ({
-  loading,
-  logo,
-  fullwidth = false,
-  onOpenReservePopup,
-}) => {
+export const Header = ({ loading, logo, fullwidth = false }) => {
   const { isHome, isDark, isLight, isBg, isLightScroll } = useRouteMode();
   const isMobile = useIsMobile();
 
@@ -53,7 +48,6 @@ export const Header = ({
         <HeaderHome
           isSectionTwoVisible={isSectionTwoVisible}
           isMobile={isMobile}
-          onOpenReservePopup={onOpenReservePopup}
         />
       );
     }
@@ -67,31 +61,33 @@ export const Header = ({
   };
 
   return (
-    <AnimatePresence mode="wait">
-      {loading && !isSectionTwoVisible && (
-        <motion.header
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: getAnimationDelay() }}
-          className={`w-full ${
-            isBg ? "bg-secondary" : ""
-          } h-auto fixed z-1001 top-0 left-0 text-secondary flex flex-col items-center justify-between`}
-        >
-          {(isHome || isLight || isLightScroll) && (
-            <div className="bg-gradient-to-t to-black/65 w-full h-62 absolute top-0 left-0 z-0 pointer-events-none" />
-          )}
-          <div
-            className={`mx-auto ${fullwidth ? "px-6" : "max-w-7xl md:px-0"} w-full md:h-32 max-lg:mt-6 grid grid-cols-3 items-center gap-4 place-items-center relative z-10 `}
+    <>
+      <AnimatePresence mode="wait">
+        {loading && !isSectionTwoVisible && (
+          <motion.header
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: getAnimationDelay() }}
+            className={`w-full ${
+              isBg ? "bg-secondary" : ""
+            } h-auto fixed z-1001 top-0 left-0 text-secondary flex flex-col items-center justify-between`}
           >
-            {headerRender(isSectionTwoVisible, isMobile)}
-          </div>
-        </motion.header>
-      )}
-    </AnimatePresence>
+            {(isHome || isLight || isLightScroll) && (
+              <div className="bg-gradient-to-t to-black/65 w-full h-62 absolute top-0 left-0 z-0 pointer-events-none" />
+            )}
+            <div
+              className={`mx-auto ${fullwidth ? "px-6" : "max-w-7xl md:px-0"} w-full  md:h-32 max-lg:mt-6 grid grid-cols-3 items-center gap-4 place-items-center relative z-10 `}
+            >
+              {headerRender(isSectionTwoVisible, isMobile)}
+            </div>
+          </motion.header>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
-const HeaderHome = ({ isSectionTwoVisible, isMobile, onOpenReservePopup }) => {
+const HeaderHome = ({ isSectionTwoVisible, isMobile }) => {
   return (
     <>
       <div />
@@ -104,23 +100,7 @@ const HeaderHome = ({ isSectionTwoVisible, isMobile, onOpenReservePopup }) => {
       >
         <Logo color={"white"} size={`${isMobile ? "md" : "lg"}`} />
       </motion.div>
-      <Button
-        type="button-primary"
-        title={
-          <>
-            <i className="w-6 h-6 animate-pulse inline-flex">
-              <img
-                src="/iconos/reservar.svg"
-                alt="ir a Reservar"
-                className="size-full inline-block object-contain"
-              />
-            </i>
-            <span className="text-secondary">Reservar</span>
-          </>
-        }
-        customClass={"!text-dark justify-self-end"}
-        onClick={() => onOpenReservePopup(null)}
-      />
+      <div />
     </>
   );
 };
@@ -166,7 +146,10 @@ const HeaderTheme = ({ darkTheme, logo, isMobile }) => {
           transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
           className="justify-self-end px-4"
         >
-          <Logo color={darkTheme ? "dark" : "white"} size={"sm"} />
+          <Logo
+            color={darkTheme ? "dark" : "white"}
+            size={`${isMobile ? "sm" : "sm"}`}
+          />
         </motion.div>
       </AnimatePresence>
     </>

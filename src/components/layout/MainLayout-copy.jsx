@@ -10,7 +10,7 @@ import { useLoaderStore } from "../../store/loaderStore";
 import useReservaStore, {
   MESA_AUN_SIN_SELECCION,
 } from "../../store/reservaStore";
-
+ 
 import { ReservaPopupFlow } from "../reserva/popup/ReservaPopupFlow";
 import { useEffect, useRef, useState } from "react";
 
@@ -75,7 +75,7 @@ export default function MainLayout() {
 
   return (
     <LoaderProvider loadingComplete={loadingComplete}>
-      <Header loading={loadingComplete} fullwidth={true} onOpenReservePopup={openReservePopup}/>
+      <Header loading={loadingComplete} />
       <main className="w-full relative bg-black text-brown">
         {/* Loader */}
         {showLoader && <Loader onLoadingComplete={handleLoaderComplete} />}
