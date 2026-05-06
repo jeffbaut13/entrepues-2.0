@@ -11,31 +11,36 @@ const sections = [
   {
     id: "s1",
     title: "Caja 1",
-    bg: "bg-blue-500",
+    img: "/imagenes/background-home.jpg",
+    scaleEffect: true,
     component: <SectionOne />,
   },
   {
     id: "s2",
     title: "Caja 2",
-    bg: "bg-red-500",
+    img: "",
+    scaleEffect: false,
     component: <SectionTwo />,
   },
   {
     id: "s3",
     title: "Caja 3",
-    bg: "bg-yellow-500",
+    img: "",
+    scaleEffect: false,
     component: <SectionThree />,
   },
   {
     id: "s4",
     title: "Caja 4",
-    bg: "bg-green-500",
+    img: "",
+    scaleEffect: false,
     component: <SectionFour />,
   },
   {
     id: "footer",
     title: "Footer",
-    bg: "bg-neutral-900",
+    img: "",
+    scaleEffect: false,
     component: <Footer />,
   },
 ];
@@ -152,12 +157,12 @@ export const HomeComponentNew = () => {
         const isActive = index === activeIndex;
 
         return (
-          <article
+          <section
             key={section.id}
             ref={(element) => {
               layerRefs.current[index] = element;
             }}
-            className={`absolute inset-0 flex items-center justify-center ${section.bg}`}
+            className={`w-full absolute inset-0 flex items-center justify-center bg-dark`}
             style={{ zIndex: index + 1 }}
           >
             <AnimatePresence mode="wait">
@@ -168,13 +173,32 @@ export const HomeComponentNew = () => {
                   animate="animate"
                   exit="exit"
                   variants={contentVariants}
-                  className="px-6 text-center text-white"
+                  className="size-full text-center"
                 >
-                  {section.component}
+                  <div className="size-full flex justify-center items-center">
+                    <figure className="size-full absolute top-0 left-0 z-1">
+                      <motion.img
+                        initial={{ scale: 1 }}
+                        animate={{ scale: section.scaleEffect ? 5 : 1 }}
+                        transition={{
+                          duration: 200,
+                          ease: "easeInOut",
+                          repeat: Infinity,
+                          repeatType: "reverse",
+                        }}
+                        className="size-full object-cover"
+                        src={section.img}
+                        alt="Home page"
+                      />
+                    </figure>
+                    <div className="size-full relative z-10 flex justify-center items-center">
+                      {section.component}
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
-          </article>
+          </section>
         );
       })}
     </section>
