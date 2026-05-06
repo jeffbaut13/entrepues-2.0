@@ -179,7 +179,7 @@ export const HomeComponentNew = () => {
                     <figure className="size-full absolute top-0 left-0 z-1">
                       <motion.img
                         initial={{ scale: 1 }}
-                        animate={{ scale: section.scaleEffect ? 5 : 1 }}
+                        animate={{ scale: section.scaleEffect ? 3 : 1 }}
                         transition={{
                           duration: 200,
                           ease: "easeInOut",

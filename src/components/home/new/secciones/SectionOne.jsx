@@ -4,6 +4,7 @@ import { Button } from "../../../ui/Button";
 
 export const SectionOne = () => {
   return (
+    <div className="size-full relative flex flex-col justify-end items-center py-14"> 
     <div className="md:max-w-2xl max-w-56 w-full flex flex-col md:gap-6 gap-4 text-2xl z-20">
       <div className="w-full flex md:flex-row flex-col justify-center items-center gap-4 overflow-hidden">
         <Button
@@ -44,6 +45,7 @@ export const SectionOne = () => {
         //isSectionVisible={isSectionVisible}
         dontLocation={false}
       />
+    </div>
     </div>
   );
 };
