@@ -102,10 +102,11 @@ const HeaderHome = ({ isSectionTwoVisible, isMobile, onOpenReservePopup }) => {
         transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
         className="py-8"
       >
-        <Logo color={"white"} size={`${isMobile ? "md" : "lg"}`} />
+        <Logo color={"white"} size={`md`} />
       </motion.div>
       <Button
         type="button-primary"
+        fontSize={`2xl`}
         title={
           <>
             <i className="w-6 h-6 animate-pulse inline-flex">

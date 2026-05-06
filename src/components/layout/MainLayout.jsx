@@ -138,7 +138,8 @@ export default function MainLayout() {
                 playsInline
                 preload="metadata"
                 className="size-full min-h-134 object-cover inline-block"
-                src={videoUrl}
+                //src={videoUrl}
+                src="/video/historia/historia.mp4"
                 onLoadedData={() => setIsVideoLoading(false)}
                 onCanPlay={() => setIsVideoLoading(false)}
                 onError={() => setIsVideoLoading(false)}

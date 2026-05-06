@@ -54,6 +54,8 @@ export const Button = ({
         return "text-xl";
       case "2xl":
         return "text-2xl";
+      case "3xl":
+        return "text-3xl";
       case "base":
       default:
         return "text-base";

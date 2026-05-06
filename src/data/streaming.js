@@ -15,7 +15,7 @@ export const streamingData = [
     title: `Doña "Mita"`,
     shortDescription: "Mejor Bandeja Paisa desde 1957",
     description:
-      "lorem impusm dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "Más que recetas, este es un viaje por las tradiciones y formas de cocinar que siguen vivas en cada rincón del país, junto a quienes han cuidado el verdadero sabor toda su vida.",
     videoUrl: "/video/historia/proximamente.mp4",
   },
   {
@@ -24,7 +24,7 @@ export const streamingData = [
     title: "Doña Flor",
     shortDescription: "Mejor Ajiaco Santafereño desde 1960",
     description:
-      "lorem impusm dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "Más que recetas, este es un viaje por las tradiciones y formas de cocinar que siguen vivas en cada rincón del país, junto a quienes han cuidado el verdadero sabor toda su vida.",
     videoUrl: "/video/historia/proximamente.mp4",
   },
   {
@@ -33,7 +33,7 @@ export const streamingData = [
     title: "Doña Gloria",
     shortDescription: "Mejor Tamal tolimense desde 1957",
     description:
-      "lorem impusm dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    videoUrl: "/video/historia/historia.mp4",
+      "Más que recetas, este es un viaje por las tradiciones y formas de cocinar que siguen vivas en cada rincón del país, junto a quienes han cuidado el verdadero sabor toda su vida.",
+    videoUrl: "/video/historia/proximamente.mp4",
   },
 ];
