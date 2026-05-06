@@ -98,7 +98,7 @@ const InteractiveHover = () => {
   return (
     <div className="hide-logo-section size-full flex items-center justify-center text-lg">
       <div className="size-full absolute top-0 left-0 z-1">
-        <div className="overlay bg-black/80!" />
+        <div className="overlay bg-black/60!" />
         <video
           key={id}
           ref={videoRef}
@@ -109,7 +109,11 @@ const InteractiveHover = () => {
           className="size-full object-cover inline-block"
           onLoadedData={handleVideoReady}
         >
-          <source src={videoUrl} type="video/mp4" />
+          <source
+            src="/video/historia/historia.mp4"
+            //src={videoUrl}
+            type="video/mp4"
+          />
           Your browser does not support the video tag.
         </video>
       </div>
@@ -187,6 +191,7 @@ const InteractiveHover = () => {
                   if (isMobile) changeStreaming(item.id);
                 }}
                 onClick={() => {
+                  onOpenHistoriaVideoPopup();
                   if (isMobile) changeStreaming(item.id);
                 }}
                 key={item.id}
@@ -198,9 +203,9 @@ const InteractiveHover = () => {
                   alt={item.title}
                   className="object-cover size-full absolute top-0 left-0 z-0"
                 />
-                <div className="absolute bottom-0 left-0 p-6 z-10 text-secondary">
-                  <h2 className="font-parkson text-7xl">{item.title}</h2>
-                  <p>{item.shortDescription}</p>
+                <div className="absolute bottom-0 left-0 p-2 z-10 text-secondary text-start">
+                  <h2 className="font-parkson text-4xl">{item.title}</h2>
+                  <p className="text-sm">{item.shortDescription}</p>
                 </div>
               </motion.button>
             ))}
