@@ -1,38 +1,39 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import gsap from "gsap";
 import { AnimatePresence, motion } from "framer-motion";
 import { SectionOne } from "./secciones/SectionOne";
 import { SectionTwo } from "./secciones/SectionTwo";
 import { SectionThree } from "./secciones/SectionThree";
 import { SectionFour } from "./secciones/SectionFour";
-import { Footer } from "./secciones/Footer";
+import { SiteFooter } from "../../footer/SiteFooter";
 
 const sections = [
   {
     id: "s1",
     title: "Caja 1",
-    img: "/imagenes/background-home.jpg",
+    img: "/imagenes/background_home.webp",
     scaleEffect: true,
     component: <SectionOne />,
   },
   {
     id: "s2",
     title: "Caja 2",
-    img: "",
+    img: "/imagenes/background_menu.webp",
     scaleEffect: false,
     component: <SectionTwo />,
   },
   {
     id: "s3",
     title: "Caja 3",
-    img: "",
+    img: "/imagenes/background_recorrido.webp",
     scaleEffect: false,
     component: <SectionThree />,
   },
   {
-    id: "s4",
+    id: "streaming",
     title: "Caja 4",
-    img: "",
+    img: "/imagenes/background_Stream.webp",
     scaleEffect: false,
     component: <SectionFour />,
   },
@@ -41,7 +42,7 @@ const sections = [
     title: "Footer",
     img: "",
     scaleEffect: false,
-    component: <Footer />,
+    component: <SiteFooter />,
   },
 ];
 
@@ -56,10 +57,12 @@ const contentVariants = {
 };
 
 export const HomeComponentNew = () => {
+  const location = useLocation();
   const layerRefs = useRef([]);
   const touchStartY = useRef(0);
   const isLockedRef = useRef(false);
   const unlockTimerRef = useRef(null);
+  const activeIndexRef = useRef(0);
   const [activeIndex, setActiveIndex] = useState(0);
 
   const maxIndex = useMemo(() => sections.length - 1, []);
@@ -85,17 +88,27 @@ export const HomeComponentNew = () => {
     }, 1000);
   };
 
-  const goToSection = (nextIndex) => {
-    if (isLockedRef.current || nextIndex === activeIndex) return;
+  const goToSection = (nextIndex, options = {}) => {
+    const { force = false } = options;
+    const currentIndex = activeIndexRef.current;
+
+    if ((!force && isLockedRef.current) || nextIndex === currentIndex) return;
     if (nextIndex < 0 || nextIndex > maxIndex) return;
 
-    const currentLayer = layerRefs.current[activeIndex];
+    const currentLayer = layerRefs.current[currentIndex];
     const nextLayer = layerRefs.current[nextIndex];
-    const movingForward = nextIndex > activeIndex;
+    const movingForward = nextIndex > currentIndex;
 
     if (!currentLayer || !nextLayer) return;
 
-    lockForTwoSeconds();
+    gsap.killTweensOf(layerRefs.current.filter(Boolean));
+
+    if (force) {
+      isLockedRef.current = false;
+      if (unlockTimerRef.current) clearTimeout(unlockTimerRef.current);
+    } else {
+      lockForTwoSeconds();
+    }
 
     if (movingForward) {
       gsap.set(nextLayer, { yPercent: 100, zIndex: nextIndex + 10 });
@@ -105,24 +118,68 @@ export const HomeComponentNew = () => {
         ease: "power3.out",
       });
     } else {
+      gsap.set(nextLayer, { yPercent: 0, zIndex: nextIndex + 10 });
       gsap.to(currentLayer, {
         yPercent: 100,
         duration: 0.85,
         ease: "power3.inOut",
       });
-      gsap.set(nextLayer, { zIndex: nextIndex + 10 });
     }
 
+    activeIndexRef.current = nextIndex;
     setActiveIndex(nextIndex);
   };
+
+  useEffect(() => {
+    const rawHash = location.hash || "";
+    if (!rawHash) return;
+
+    const normalizedHash = rawHash.replace(/^#\/?/, "");
+    if (!normalizedHash) return;
+
+    const targetIndex = sections.findIndex(
+      (section) => section.id === normalizedHash,
+    );
+    if (targetIndex === -1 || targetIndex === activeIndexRef.current) return;
+
+    layerRefs.current.forEach((layer, index) => {
+      if (!layer) return;
+      gsap.set(layer, { yPercent: index === targetIndex ? 0 : 100 });
+    });
+    goToSection(targetIndex, { force: true });
+  }, [location.hash]);
+
+  useEffect(() => {
+    const onNavigateSection = (event) => {
+      const sectionId = event?.detail?.sectionId;
+      if (!sectionId) return;
+
+      const targetIndex = sections.findIndex(
+        (section) => section.id === sectionId,
+      );
+      if (targetIndex === -1 || targetIndex === activeIndexRef.current) return;
+
+      layerRefs.current.forEach((layer, index) => {
+        if (!layer) return;
+        gsap.set(layer, { yPercent: index === targetIndex ? 0 : 100 });
+      });
+      goToSection(targetIndex, { force: true });
+    };
+
+    window.addEventListener("home:navigate-section", onNavigateSection);
+
+    return () => {
+      window.removeEventListener("home:navigate-section", onNavigateSection);
+    };
+  }, []);
 
   useEffect(() => {
     const onWheel = (event) => {
       event.preventDefault();
       if (Math.abs(event.deltaY) < 8) return;
 
-      if (event.deltaY > 0) goToSection(activeIndex + 1);
-      if (event.deltaY < 0) goToSection(activeIndex - 1);
+      if (event.deltaY > 0) goToSection(activeIndexRef.current + 1);
+      if (event.deltaY < 0) goToSection(activeIndexRef.current - 1);
     };
 
     const onTouchStart = (event) => {
@@ -135,8 +192,8 @@ export const HomeComponentNew = () => {
       const delta = touchStartY.current - currentY;
       if (Math.abs(delta) < 22) return;
 
-      if (delta > 0) goToSection(activeIndex + 1);
-      if (delta < 0) goToSection(activeIndex - 1);
+      if (delta > 0) goToSection(activeIndexRef.current + 1);
+      if (delta < 0) goToSection(activeIndexRef.current - 1);
       touchStartY.current = currentY;
     };
 
@@ -149,7 +206,7 @@ export const HomeComponentNew = () => {
       window.removeEventListener("touchstart", onTouchStart);
       window.removeEventListener("touchmove", onTouchMove);
     };
-  }, [activeIndex]);
+  }, []);
 
   return (
     <section className="relative h-dvh w-full overflow-hidden">
@@ -158,11 +215,12 @@ export const HomeComponentNew = () => {
 
         return (
           <section
+            id={section.id}
             key={section.id}
             ref={(element) => {
               layerRefs.current[index] = element;
             }}
-            className={`w-full absolute inset-0 flex items-center justify-center bg-dark`}
+            className={`w-full absolute inset-0 flex items-center justify-center bg-black`}
             style={{ zIndex: index + 1 }}
           >
             <AnimatePresence mode="wait">
@@ -176,21 +234,25 @@ export const HomeComponentNew = () => {
                   className="size-full text-center"
                 >
                   <div className="size-full flex justify-center items-center">
-                    <figure className="size-full absolute top-0 left-0 z-1">
-                      <motion.img
-                        initial={{ scale: 1 }}
-                        animate={{ scale: section.scaleEffect ? 3 : 1 }}
-                        transition={{
-                          duration: 200,
-                          ease: "easeInOut",
-                          repeat: Infinity,
-                          repeatType: "reverse",
-                        }}
-                        className="size-full object-cover"
-                        src={section.img}
-                        alt="Home page"
-                      />
-                    </figure>
+                    {section.img == "" ? (
+                      <div />
+                    ) : (
+                      <figure className="size-full absolute top-0 left-0 z-1">
+                        <motion.img
+                          initial={{ scale: 1 }}
+                          animate={{ scale: section.scaleEffect ? 3 : 1 }}
+                          transition={{
+                            duration: 200,
+                            ease: "easeInOut",
+                            repeat: Infinity,
+                            repeatType: "reverse",
+                          }}
+                          className="size-full object-cover"
+                          src={section.img}
+                          alt="Home page"
+                        />
+                      </figure>
+                    )}
                     <div className="size-full relative z-10 flex justify-center items-center">
                       {section.component}
                     </div>

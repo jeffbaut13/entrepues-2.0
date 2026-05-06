@@ -12,10 +12,18 @@ export const SiteFooter = ({
   claimSubtitle = "LA CASA DEL SABOR TRADICIONAL COLOMBIANO",
 }) => {
   const isMobile = useIsMobile();
+  const handleGoToTop = () => {
+    window.dispatchEvent(
+      new CustomEvent("home:navigate-section", {
+        detail: { sectionId: "s1" },
+      }),
+    );
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <footer
-      className={`md:h-[80vh] h-dvh w-full bg-cover bg-center ${className} bg-secondary py-16`}
+      className={`hide-logo-section h-dvh w-full bg-cover bg-center ${className} bg-secondary py-16`}
     >
       <div className="size-full flex flex-col justify-between items-center px-6">
         <Logo color="dark" size={isMobile ? "md" : "lg"} />
@@ -91,7 +99,7 @@ export const SiteFooter = ({
         </div>
         <Button
           variant="just-icon-dark"
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          onClick={handleGoToTop}
           customClass="w-14! h-14! px-0!"
           Icon={Home}
           aria-label="Ir al inicio"

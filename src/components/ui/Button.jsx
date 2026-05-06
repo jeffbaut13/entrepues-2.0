@@ -67,17 +67,33 @@ export const Button = ({
   const listas = {
     "button-primary": primary,
     enlace: primary,
-    "button-secondary": `${baseStyle} font-parkson bg-none text-dark  hover:opacity-60`,
+    "button-secondary": `${baseStyle} font-parkson bg-none text-dark hover:opacity-60`,
     "button-thirty": `${baseStyle} font-light text-dark`,
     "button-dark": `${baseStyle} font-parkson text-secondary bg-dark hover:bg-dark/80 px-6`,
-    "just-icon": `cursor-pointer flex h-fit ${transition}   rounded-full p-2 hover:opacity-60 hover:bg-dark/20`,
+    "button-white": `${baseStyle} font-parkson border border-white bg-secondary/70 text-dark hover:opacity-60 px-6`,
+    "just-icon": `cursor-pointer flex h-fit ${transition} rounded-full p-2 hover:opacity-60 hover:bg-dark/20`,
     "just-icon-dark": `cursor-pointer flex h-fit ${transition} rounded-full p-2 bg-dark/30 hover:opacity-60 hover:bg-dark/20`,
     "just-icon-white": `cursor-pointer flex h-fit ${transition} rounded-full p-2 bg-white/30 text-white hover:opacity-60 hover:bg-dark/20`,
   };
 
   const navigate = useNavigate();
 
+  const getSectionFromHref = (value) => {
+    if (!value) return "";
+    const hashIndex = value.indexOf("#");
+    if (hashIndex === -1) return "";
+    return value.slice(hashIndex + 1).replace(/^\//, "");
+  };
+
   const handleNavigate = (href) => {
+    const sectionId = getSectionFromHref(href);
+    if (sectionId) {
+      window.dispatchEvent(
+        new CustomEvent("home:navigate-section", {
+          detail: { sectionId },
+        }),
+      );
+    }
     href ? navigate(href) : null;
     onClick ? onClick() : null;
   };
@@ -149,6 +165,22 @@ export const Button = ({
         </motion.button>
       );
     case "button-dark":
+      return (
+        <motion.button
+          type="button"
+          {...motionProps}
+          {...props}
+          className={`${getWidthClass(width)} ${getFontSizeClass(fontSize)} ${
+            listas[type]
+          } ${customClass}`}
+          onClick={onClick}
+          disabled={disabled}
+        >
+          {Icon && <Icon size={getIconSize(iconSize)} />}
+          {title}
+        </motion.button>
+      );
+    case "button-white":
       return (
         <motion.button
           type="button"

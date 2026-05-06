@@ -13,6 +13,7 @@ import useReservaStore, {
 
 import { ReservaPopupFlow } from "../reserva/popup/ReservaPopupFlow";
 import { useEffect, useRef, useState } from "react";
+import { useStreamingStore } from "../../store/streamingStore";
 
 /**
  * Layout principal de la aplicación
@@ -26,6 +27,10 @@ export default function MainLayout() {
   const [selectedRegion, setSelectedRegion] = useState("");
   const historiaVideoRef = useRef(null);
   const setMesaAsignada = useReservaStore((state) => state.setMesaAsignada);
+
+  const {
+    streamingData: { videoUrl },
+  } = useStreamingStore();
 
   const openReservePopup = (regionName = "") => {
     setSelectedRegion(regionName || "");
@@ -75,7 +80,11 @@ export default function MainLayout() {
 
   return (
     <LoaderProvider loadingComplete={loadingComplete}>
-      <Header loading={loadingComplete} fullwidth={true} onOpenReservePopup={openReservePopup}/>
+      <Header
+        loading={loadingComplete}
+        fullwidth={true}
+        onOpenReservePopup={openReservePopup}
+      />
       <main className="w-full relative bg-black text-brown">
         {/* Loader */}
         {showLoader && <Loader onLoadingComplete={handleLoaderComplete} />}
@@ -103,7 +112,7 @@ export default function MainLayout() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[20000] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-[20000] bg-black flex items-center justify-center p-4"
             onClick={closeHistoriaVideoPopup}
           >
             <motion.div
@@ -111,7 +120,7 @@ export default function MainLayout() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.2 }}
-              className="relative w-full max-w-5xl bg-black rounded-xl overflow-hidden"
+              className="relative w-full  max-w-5xl bg-black rounded-xl overflow-hidden"
               onClick={(event) => event.stopPropagation()}
             >
               <button
@@ -122,25 +131,14 @@ export default function MainLayout() {
               >
                 <X size={20} />
               </button>
-
-              {isVideoLoading && (
-                <div className="absolute inset-0 z-[5] bg-black flex items-center justify-center">
-                  <div
-                    className="w-14 h-14 rounded-full border-4 border-secondary/30 border-t-secondary animate-spin"
-                    aria-label="Cargando video"
-                    role="status"
-                  />
-                </div>
-              )}
-
               <video
                 ref={historiaVideoRef}
                 controls
                 autoPlay
                 playsInline
                 preload="metadata"
-                className="w-full h-auto max-h-[85dvh] bg-black"
-                src="/video/historia/historia.mp4"
+                className="size-full min-h-134 object-cover inline-block"
+                src={videoUrl}
                 onLoadedData={() => setIsVideoLoading(false)}
                 onCanPlay={() => setIsVideoLoading(false)}
                 onError={() => setIsVideoLoading(false)}

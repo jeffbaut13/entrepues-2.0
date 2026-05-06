@@ -53,9 +53,9 @@ export const PuntosDeReserva = ({
   const shouldExpand = isMobile ? isExpanded : isHovering;
   const effectiveZIndex = shouldExpand ? zIndex + 200 : zIndex;
   const regionLabel = formatRegionLabel(region);
-  const textLabel = `RESERVAR ESTA MESA`;
+  const textLabel = `Reserva aquí`;
   const collapsedSize = 14; // w-3.5 / h-3.5
-  const expandedWidth = 320;
+  const expandedWidth = 220;
   const expandedHeight = 40;
 
   useEffect(() => {
@@ -242,7 +242,7 @@ export const PuntosDeReserva = ({
                   aria-label={`${iconAlt} ${name}${mesa ? ` mesa ${mesa}` : ""}${region ? ` en zona ${regionLabel}` : ""}`}
                 >
                   <motion.span
-                    className="absolute inset-0 flex items-center justify-center font-parkson text-xl uppercase tracking-[0.2em] whitespace-nowrap text-center leading-none"
+                    className="absolute inset-0 flex items-center justify-center font-parkson text-3xl uppercase tracking-[0.2em] whitespace-nowrap text-center leading-none"
                     initial={{ opacity: 0, x: isRightAnchored ? 10 : -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: isRightAnchored ? 10 : -10 }}
