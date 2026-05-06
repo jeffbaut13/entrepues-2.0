@@ -123,8 +123,8 @@ const InteractiveHover = () => {
         animate={{ opacity: overlayVisible ? 1 : 0 }}
         transition={{ duration: 0.35, ease: "easeInOut" }}
       />
-      <div className="size-full max-w-7xl relative z-10 flex flex-col justify-center items-center">
-        <div className="flex-1 w-full flex justify-center items-end gap-4">
+      <div className="size-full px-24 relative z-10 flex flex-col justify-center items-center">
+        <div className="flex-2/3 w-full flex justify-center items-end gap-4">
           <div className="flex-1 flex flex-col justify-end items-start">
             <figure className="w-56 h-auto inline-block mb-3">
               <img
@@ -149,7 +149,7 @@ const InteractiveHover = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.45, ease: "easeOut" }}
-                    className="text-secondary my-3"
+                    className="text-secondary my-3 max-w-2xl"
                   >
                     {description}
                   </motion.p>
@@ -180,7 +180,7 @@ const InteractiveHover = () => {
           <div className="flex-1" />
         </div>
 
-        <div className="flex flex-1 w-full justify-center items-center">
+        <div className="flex flex-2/5 w-full justify-center items-center">
           <div className="w-full flex justify-between items-center gap-12">
             {allData.map((item) => (
               <motion.button
