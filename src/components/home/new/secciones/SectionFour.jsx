@@ -123,9 +123,9 @@ const InteractiveHover = () => {
         animate={{ opacity: overlayVisible ? 1 : 0 }}
         transition={{ duration: 0.35, ease: "easeInOut" }}
       />
-      <div className="size-full max-w-7xl relative z-10 flex flex-col justify-center items-center gap-4">
+      <div className="size-full max-w-7xl relative z-10 flex flex-col justify-center items-center">
         <div className="flex-1 w-full flex justify-center items-end gap-4">
-          <div className="flex-1 flex flex-col justify-center items-start">
+          <div className="flex-1 flex flex-col justify-end items-start">
             <figure className="w-56 h-auto inline-block mb-3">
               <img
                 className="size-full object-contain inline-block"
