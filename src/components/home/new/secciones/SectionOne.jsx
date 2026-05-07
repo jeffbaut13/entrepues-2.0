@@ -10,7 +10,7 @@ export const SectionOne = () => {
           <Button
             width={"full"}
             type="enlace"
-            fontSize="xl"
+            fontSize="2xl"
             href={"/carta"}
             title="Menú"
             motionProps={{
@@ -21,7 +21,7 @@ export const SectionOne = () => {
           <Button
             width={"full"}
             type="enlace"
-            fontSize="xl"
+            fontSize="2xl"
             href={"/#streaming"}
             title="Entrepues a la cocina"
             motionProps={{
@@ -34,7 +34,7 @@ export const SectionOne = () => {
             type="enlace"
             href={"/descubrenos"}
             title="Recorre EntrePues"
-            fontSize="xl"
+            fontSize="2xl"
             motionProps={{
               initial: { y: 100 },
               animate: { y: 0 },

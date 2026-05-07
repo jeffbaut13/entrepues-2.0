@@ -3,7 +3,7 @@ import { Button } from "../../../ui/Button";
 export const SectionThree = () => {
   return (
     <div className="size-full flex justify-center items-center text-secondary">
-      <div className="flex-1">vacio</div>
+      <div className="flex-1" />
       <div className="flex-1 flex flex-col justify-center items-center">
         <div className="flex flex-col justify-center items-center">
           <span
@@ -25,8 +25,8 @@ export const SectionThree = () => {
         </div>
         <figure className="w-28 inline-block mt-12">
           <img
-            className="size-full object-contain inline-block"
-            src="/iconos/360.svg"
+            className="w-full h-full object-contain inline-block"
+            src="/iconos/360.webp"
             alt="Icono de 360"
           />
         </figure>

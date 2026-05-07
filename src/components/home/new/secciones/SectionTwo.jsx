@@ -30,7 +30,7 @@ export const SectionTwo = () => {
         />
       </div>
 
-      <div className="flex-1">vacio</div>
+      <div className="flex-1" />
     </div>
   );
 };
