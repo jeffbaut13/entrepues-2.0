@@ -6,14 +6,14 @@ export const IconoSeparador = ({ theme = "brown" }) => {
       case "light":
         return "invert";
       case "dark":
-        return "invert-1";
+        return "invert-0";
       default:
         return "invert-0";
     }
   };
   return (
     <motion.picture
-      className="lg:h-20 h-12 w-auto inline-block mt-6"
+      className="lg:h-20 h-16 w-auto inline-block mt-6"
       variants={{
         hidden: { opacity: 0, scale: 0.85 },
         visible: { opacity: 1, scale: 1 },

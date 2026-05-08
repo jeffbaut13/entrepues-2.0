@@ -40,8 +40,7 @@ export const Header = ({
   }, [isLight, isLightScroll]);
 
   const isSectionTwoVisible = useObserverVisibility(".hide-logo-section");
-   
-  
+
   const headerRender = (isSectionTwoVisible, isMobile) => {
     if (isHome) {
       return (
@@ -67,7 +66,6 @@ export const Header = ({
         <motion.header
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-           
           className={`w-full ${
             isBg ? "bg-secondary" : ""
           } h-auto fixed z-1001 top-0 left-0 text-secondary flex flex-col items-center justify-between`}
@@ -76,7 +74,7 @@ export const Header = ({
             <div className="bg-gradient-to-t to-black/65 w-full h-62 absolute top-0 left-0 z-0 pointer-events-none" />
           )}
           <div
-            className={`mx-auto ${fullwidth ? "px-6" : "max-w-7xl md:px-0"} w-full md:h-32 max-lg:mt-6 grid grid-cols-3 items-center gap-4 place-items-center relative z-10 `}
+            className={`md:py-8 py-2 mx-auto ${fullwidth ? "px-6" : "max-w-7xl md:px-0"} w-full md:h-32 max-lg:mt-2 grid md:grid-cols-3 grid-cols-2 items-center gap-4 place-items-center relative z-10 `}
           >
             {headerRender(isSectionTwoVisible, isMobile)}
           </div>
@@ -89,7 +87,7 @@ export const Header = ({
 const HeaderHome = ({ isSectionTwoVisible, isMobile, onOpenReservePopup }) => {
   return (
     <>
-      <div />
+      {!isMobile && <div />}
 
       {isSectionTwoVisible ? (
         <div />
@@ -98,14 +96,14 @@ const HeaderHome = ({ isSectionTwoVisible, isMobile, onOpenReservePopup }) => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="py-8"
+          className="max-md:justify-self-start"
         >
-          <Logo color={"white"} size={`md`} />
+          <Logo color={"white"} size={isMobile ? "xs" : "md"} />
         </motion.div>
       )}
       <Button
         type="button-primary"
-        fontSize={`3xl`}
+        fontSize={isMobile ? "sm" : "3xl"}
         title={
           <>
             <i className="w-6 h-6 animate-pulse inline-flex">

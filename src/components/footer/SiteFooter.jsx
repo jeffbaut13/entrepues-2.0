@@ -23,22 +23,22 @@ export const SiteFooter = ({
 
   return (
     <footer
-      className={`hide-logo-section h-dvh w-full bg-cover bg-center ${className} bg-secondary py-16`}
+      className={`hide-logo-section h-dvh w-full bg-cover bg-center ${className} bg-secondary md:py-16`}
     >
-      <div className="size-full flex flex-col justify-between items-center px-6">
-        <Logo color="dark" size={isMobile ? "md" : "lg"} />
+      <div className="size-full flex flex-col md:justify-between justify-center gap-6 items-center px-6">
+        <Logo color="dark" size={isMobile ? "sm" : "lg"} />
 
         <div className="w-fit space-y-2 text-center">
-          <h2 className="md:text-xl text-lg flex items-center justify-center gap-3">
+          <h2 className="md:text-xl text-md flex items-center justify-center gap-3">
             <span className="inline-block rounded-full bg-dark h-2 w-2"></span>
             {claimTitle}
             <span className="inline-block rounded-full bg-dark h-2 w-2"></span>
           </h2>
-          <h2 className="md:text-xl text-lg mb-6">{claimSubtitle}</h2>
+          <h2 className="md:text-xl text-md mb-6">{claimSubtitle}</h2>
         </div>
 
-        <div className="grid md:grid-cols-3 grid-cols-1 max-lg:grid-rows-3 text-dark  md:gap-24">
-          <div className="flex flex-col md:items-start items-center justify-center gap-2 max-lg:row-start-3">
+        <div className="grid md:grid-cols-3 grid-cols-1 max-lg:grid-rows-[fit-content] text-dark gap-6 md:gap-24">
+          <div className="flex flex-col md:items-start items-center justify-center gap-2 max-lg:row-start-1">
             <Link
               to={"https://maps.app.goo.gl/KyKiZfYHecmQhXKA6"}
               target="_blank"
@@ -75,9 +75,9 @@ export const SiteFooter = ({
             </div>
           </div>
 
-          <div>
+           
             <RedesSociales
-              size={"tall"}
+              size={isMobile ? "sm" : "md"}
               isSectionVisible={true}
               youtube={
                 <Link
@@ -85,7 +85,7 @@ export const SiteFooter = ({
                   target="_blank"
                   className="flex items-center justify-center gap-1"
                 >
-                  <picture className="w-10 h-10 inline-flex">
+                  <picture className="md:size-10 size-8 inline-flex">
                     <img
                       className="size-full object-contain inline-block"
                       src="iconos/youtube.svg"
@@ -95,7 +95,7 @@ export const SiteFooter = ({
                 </Link>
               }
             />
-          </div>
+          
         </div>
         <Button
           variant="just-icon-dark"

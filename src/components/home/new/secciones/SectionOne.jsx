@@ -2,9 +2,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useLoaderContext } from "../../../../context/LoaderContext";
 import { RedesSociales } from "../../../common/CallToAction/CallToActions";
 import { Button } from "../../../ui/Button";
+import { useIsMobile } from "../../../../hooks/useIsMobile";
 
 export const SectionOne = () => {
   const { loadingComplete } = useLoaderContext();
+  const isMobile = useIsMobile();
   return (
     <AnimatePresence mode="wait">
       {loadingComplete && (
@@ -19,7 +21,7 @@ export const SectionOne = () => {
               <Button
                 width={"full"}
                 type="enlace"
-                fontSize="2xl"
+                fontSize={isMobile ? "xl" : "2xl"}
                 href={"/carta"}
                 title="Menú"
                 motionProps={{
@@ -30,7 +32,7 @@ export const SectionOne = () => {
               <Button
                 width={"full"}
                 type="enlace"
-                fontSize="2xl"
+                fontSize={isMobile ? "xl" : "2xl"}
                 href={"/#streaming"}
                 title="Entrepues a la cocina"
                 motionProps={{
@@ -43,7 +45,7 @@ export const SectionOne = () => {
                 type="enlace"
                 href={"/descubrenos"}
                 title="Recorre EntrePues"
-                fontSize="2xl"
+                fontSize={isMobile ? "xl" : "2xl"}
                 motionProps={{
                   initial: { y: 100 },
                   animate: { y: 0 },

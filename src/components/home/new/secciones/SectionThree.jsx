@@ -3,7 +3,7 @@ import { Button } from "../../../ui/Button";
 export const SectionThree = () => {
   return (
     <div className="hide-logo-section size-full flex justify-center items-center text-secondary">
-      <div className="flex-1" />
+      <div className="flex-1 hidden lg:inline-flex" />
       <div className="flex-1 flex flex-col justify-center items-center">
         <div className="flex flex-col justify-center items-center">
           <span
@@ -15,11 +15,14 @@ export const SectionThree = () => {
           </span>
           <h2
             id="title-heading"
-            className={`font-parkson text-[11rem] leading-[10rem]`}
+            className={`font-parkson md:text-[11rem] text-9xl  md:leading-[10rem]`}
           >
             Colombia
           </h2>
-          <h2 id="title-heading" className={`font-parkson text-6xl`}>
+          <h2
+            id="title-heading"
+            className={`font-parkson md:text-6xl text-5xl`}
+          >
             A través de sus sabores
           </h2>
         </div>

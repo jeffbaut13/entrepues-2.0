@@ -7,33 +7,38 @@ import { SectionTwo } from "./secciones/SectionTwo";
 import { SectionThree } from "./secciones/SectionThree";
 import { SectionFour } from "./secciones/SectionFour";
 import { SiteFooter } from "../../footer/SiteFooter";
+import { useIsMobile } from "../../../hooks/useIsMobile";
 
 const sections = [
   {
     id: "s1",
     title: "Caja 1",
-    img: "/imagenes/background_home.webp",
+    img: "/imagenes/home/seccion_uno/background_home.webp",
+    imgMobile: "/imagenes/home/seccion_uno/background_homeM.webp",
     scaleEffect: true,
     component: <SectionOne />,
   },
   {
     id: "menu",
     title: "Caja 2",
-    img: "/imagenes/background_menu.webp",
+    img: "/imagenes/home/menu/background_menu.webp",
+    imgMobile: "/imagenes/home/menu/background_menuM.webp",
     scaleEffect: false,
     component: <SectionTwo />,
   },
   {
     id: "recorrido",
     title: "Caja 3",
-    img: "/imagenes/background_recorrido.webp",
+    img: "/imagenes/home/recorrido/background_recorrido.webp",
+    imgMobile: "/imagenes/home/recorrido/background_recorridoM.webp",
     scaleEffect: false,
     component: <SectionThree />,
   },
   {
     id: "streaming",
     title: "Caja 4",
-    img: "/imagenes/background_Stream.webp",
+    img: "/imagenes/home/streaming/background_Stream.webp",
+    imgMobile: "/imagenes/home/streaming/background_StreamM.webp",
     scaleEffect: false,
     component: <SectionFour />,
   },
@@ -41,6 +46,7 @@ const sections = [
     id: "footer",
     title: "Footer",
     img: "",
+    imgMobile: "",
     scaleEffect: false,
     component: <SiteFooter />,
   },
@@ -65,6 +71,7 @@ export const HomeComponentNew = () => {
   const unlockTimerRef = useRef(null);
   const activeIndexRef = useRef(0);
   const [activeIndex, setActiveIndex] = useState(0);
+  const isMobile = useIsMobile();
 
   const maxIndex = useMemo(() => sections.length - 1, []);
 
@@ -269,7 +276,7 @@ export const HomeComponentNew = () => {
                             repeatType: "reverse",
                           }}
                           className="size-full object-cover"
-                          src={section.img}
+                          src={isMobile ? section.imgMobile : section.img}
                           alt="Home page"
                         />
                       </figure>

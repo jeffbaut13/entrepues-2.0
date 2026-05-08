@@ -30,7 +30,7 @@ export const SectionTwo = () => {
         />
       </div>
 
-      <div className="flex-1" />
+      <div className="flex-1 hidden lg:inline-flex" />
     </div>
   );
 };

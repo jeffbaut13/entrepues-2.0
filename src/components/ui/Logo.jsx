@@ -14,7 +14,7 @@ export const Logo = ({ color = "white", size = "xl", customClass = "" }) => {
   const sizeTheme = () => {
     switch (size) {
       case "xs":
-        return "w-16";
+        return "w-20";
       case "sm":
         return "w-28";
       case "lg":
