@@ -68,7 +68,7 @@ export const Header = ({
 
   return (
     <AnimatePresence mode="wait">
-      {loading && !isSectionTwoVisible && (
+      {loading && (
         <motion.header
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -96,17 +96,21 @@ const HeaderHome = ({ isSectionTwoVisible, isMobile, onOpenReservePopup }) => {
     <>
       <div />
 
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
-        className="py-8"
-      >
-        <Logo color={"white"} size={`md`} />
-      </motion.div>
+      {isSectionTwoVisible ? (
+        <div />
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+          className="py-8"
+        >
+          <Logo color={"white"} size={`md`} />
+        </motion.div>
+      )}
       <Button
         type="button-primary"
-        fontSize={`2xl`}
+        fontSize={`3xl`}
         title={
           <>
             <i className="w-6 h-6 animate-pulse inline-flex">

@@ -17,14 +17,14 @@ const sections = [
     component: <SectionOne />,
   },
   {
-    id: "s2",
+    id: "menu",
     title: "Caja 2",
     img: "/imagenes/background_menu.webp",
     scaleEffect: false,
     component: <SectionTwo />,
   },
   {
-    id: "s3",
+    id: "recorrido",
     title: "Caja 3",
     img: "/imagenes/background_recorrido.webp",
     scaleEffect: false,
@@ -89,7 +89,7 @@ export const HomeComponentNew = () => {
   };
 
   const goToSection = (nextIndex, options = {}) => {
-    const { force = false } = options;
+    const { force = false, syncHash = true } = options;
     const currentIndex = activeIndexRef.current;
 
     if ((!force && isLockedRef.current) || nextIndex === currentIndex) return;
@@ -128,6 +128,13 @@ export const HomeComponentNew = () => {
 
     activeIndexRef.current = nextIndex;
     setActiveIndex(nextIndex);
+
+    if (syncHash) {
+      const nextSectionId = sections[nextIndex]?.id;
+      if (nextSectionId) {
+        window.history.replaceState(null, "", `/#${nextSectionId}`);
+      }
+    }
   };
 
   useEffect(() => {
@@ -146,7 +153,7 @@ export const HomeComponentNew = () => {
       if (!layer) return;
       gsap.set(layer, { yPercent: index === targetIndex ? 0 : 100 });
     });
-    goToSection(targetIndex, { force: true });
+    goToSection(targetIndex, { force: true, syncHash: false });
   }, [location.hash]);
 
   useEffect(() => {
@@ -163,7 +170,7 @@ export const HomeComponentNew = () => {
         if (!layer) return;
         gsap.set(layer, { yPercent: index === targetIndex ? 0 : 100 });
       });
-      goToSection(targetIndex, { force: true });
+      goToSection(targetIndex, { force: true, syncHash: false });
     };
 
     window.addEventListener("home:navigate-section", onNavigateSection);
