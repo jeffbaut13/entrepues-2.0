@@ -92,6 +92,7 @@ export default function MainLayout() {
         {/* Contenido de las páginas - Siempre renderizado, visible detrás del loader */}
         <Outlet
           context={{
+            loadingComplete:loadingComplete,
             onOpenReservePopup: openReservePopup,
             onOpenHistoriaVideoPopup: openHistoriaVideoPopup,
             isReservePopupOpen,

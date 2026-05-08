@@ -40,13 +40,8 @@ export const Header = ({
   }, [isLight, isLightScroll]);
 
   const isSectionTwoVisible = useObserverVisibility(".hide-logo-section");
-  const { loadingComplete } = useLoaderContext();
-
-  // Calcular delay basado en si el loader ha completado
-  const getAnimationDelay = () => {
-    return loadingComplete ? 1 : 2;
-  };
-
+   
+  
   const headerRender = (isSectionTwoVisible, isMobile) => {
     if (isHome) {
       return (
@@ -72,7 +67,7 @@ export const Header = ({
         <motion.header
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: getAnimationDelay() }}
+           
           className={`w-full ${
             isBg ? "bg-secondary" : ""
           } h-auto fixed z-1001 top-0 left-0 text-secondary flex flex-col items-center justify-between`}
@@ -102,7 +97,7 @@ const HeaderHome = ({ isSectionTwoVisible, isMobile, onOpenReservePopup }) => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
           className="py-8"
         >
           <Logo color={"white"} size={`md`} />

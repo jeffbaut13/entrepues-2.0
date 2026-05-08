@@ -59,6 +59,7 @@ const contentVariants = {
 export const HomeComponentNew = () => {
   const location = useLocation();
   const layerRefs = useRef([]);
+  const hasInitializedRef = useRef(false);
   const touchStartY = useRef(0);
   const isLockedRef = useRef(false);
   const unlockTimerRef = useRef(null);
@@ -67,11 +68,28 @@ export const HomeComponentNew = () => {
 
   const maxIndex = useMemo(() => sections.length - 1, []);
 
+  const getIndexFromHash = (rawHash) => {
+    const normalizedHash = (rawHash || "").replace(/^#\/?/, "");
+    if (!normalizedHash) return -1;
+    return sections.findIndex((section) => section.id === normalizedHash);
+  };
+
   useEffect(() => {
+    const initialIndexFromHash = getIndexFromHash(location.hash);
+    const initialIndex =
+      initialIndexFromHash >= 0 && initialIndexFromHash <= maxIndex
+        ? initialIndexFromHash
+        : 0;
+
+    activeIndexRef.current = initialIndex;
+    setActiveIndex(initialIndex);
+
     layerRefs.current.forEach((layer, index) => {
       if (!layer) return;
-      gsap.set(layer, { yPercent: index === 0 ? 0 : 100 });
+      gsap.set(layer, { yPercent: index === initialIndex ? 0 : 100 });
     });
+
+    hasInitializedRef.current = true;
 
     return () => {
       if (unlockTimerRef.current) {
@@ -138,15 +156,11 @@ export const HomeComponentNew = () => {
   };
 
   useEffect(() => {
+    if (!hasInitializedRef.current) return;
+
     const rawHash = location.hash || "";
     if (!rawHash) return;
-
-    const normalizedHash = rawHash.replace(/^#\/?/, "");
-    if (!normalizedHash) return;
-
-    const targetIndex = sections.findIndex(
-      (section) => section.id === normalizedHash,
-    );
+    const targetIndex = getIndexFromHash(rawHash);
     if (targetIndex === -1 || targetIndex === activeIndexRef.current) return;
 
     layerRefs.current.forEach((layer, index) => {
