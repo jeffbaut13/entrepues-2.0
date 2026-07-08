@@ -1,26 +1,28 @@
 import { Button } from "../../../ui/Button";
-import { IconoSeparador } from "../../../ui/IconoSeparador";
 
 export const SectionTwo = () => {
   return (
     <div className="size-full flex justify-center items-center text-secondary">
-      <div className="flex-1 flex flex-col justify-center items-center">
+      <div className="absolute bg-black/50 size-full top-0 left-0 z-1" />
+      <div className="flex-1 flex flex-col justify-center items-center required z-10">
         <div className="flex flex-col justify-center items-center gap-4">
           <span
-            className={`font-amithen text-5xl mb-4`}
+            className={`font-parkson text-4xl mb-4`}
             role="text"
             aria-label="Subtítulo"
           >
-            Aquí
+            Plato de la semana
           </span>
           <h2 id="title-heading" className={`font-parkson text-8xl leading-6`}>
-            La tradición
+            Bandeja paisa
           </h2>
-          <h2 id="title-heading" className={`font-parkson text-[3.2rem]`}>
-            se sirve en cada plato
+          <h2 id="title-heading" className={`mt-14 max-w-2xl`}>
+            Aquí hemos ido juntando lo mejor de cada rincón de Colombia, pero
+            sin perder lo nuestro, <br className="hidden lg:block" /> lo bien
+            paisa, lo de antes.
           </h2>
         </div>
-        <IconoSeparador theme="light" />
+
         <Button
           customClass="mt-6"
           type="enlace"
@@ -29,8 +31,6 @@ export const SectionTwo = () => {
           fontSize="2xl"
         />
       </div>
-
-      <div className="flex-1 hidden lg:inline-flex" />
     </div>
   );
 };

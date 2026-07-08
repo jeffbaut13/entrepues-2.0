@@ -102,22 +102,16 @@ const HeaderHome = ({ isSectionTwoVisible, isMobile, onOpenReservePopup }) => {
         </motion.div>
       )}
       <Button
-        type="button-primary"
-        fontSize={isMobile ? "sm" : "3xl"}
-        title={
-          <>
-            <i className="w-6 h-6 animate-pulse inline-flex">
-              <img
-                src="/iconos/reservar.svg"
-                alt="ir a Reservar"
-                className="size-full inline-block object-contain"
-              />
-            </i>
-            <span className="text-secondary">Reservar</span>
-          </>
-        }
-        customClass={"!text-dark justify-self-end"}
-        onClick={() => onOpenReservePopup(null)}
+        width={"min"}
+        type="enlace"
+        fontSize={isMobile ? "xl" : "3xl"}
+        href={"/carta"}
+        title="Menú"
+        customClass={"justify-self-end"}
+        motionProps={{
+          initial: { y: 100 },
+          animate: { y: 0 },
+        }}
       />
     </>
   );

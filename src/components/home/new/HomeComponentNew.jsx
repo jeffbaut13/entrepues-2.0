@@ -21,18 +21,10 @@ const sections = [
   {
     id: "menu",
     title: "Caja 2",
-    img: "/imagenes/home/menu/background_menu.webp",
-    imgMobile: "/imagenes/home/menu/background_menuM.webp",
+    img: "/imagenes/receta-semanal/section_three.webp",
+    imgMobile: "/imagenes/receta-semanal/section_threeM.webp",
     scaleEffect: false,
     component: <SectionTwo />,
-  },
-  {
-    id: "recorrido",
-    title: "Caja 3",
-    img: "/imagenes/home/recorrido/background_recorrido.webp",
-    imgMobile: "/imagenes/home/recorrido/background_recorridoM.webp",
-    scaleEffect: false,
-    component: <SectionThree />,
   },
   {
     id: "streaming",

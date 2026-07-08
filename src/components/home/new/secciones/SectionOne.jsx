@@ -3,9 +3,11 @@ import { useLoaderContext } from "../../../../context/LoaderContext";
 import { RedesSociales } from "../../../common/CallToAction/CallToActions";
 import { Button } from "../../../ui/Button";
 import { useIsMobile } from "../../../../hooks/useIsMobile";
+import { useOutletContext } from "react-router-dom";
 
 export const SectionOne = () => {
   const { loadingComplete } = useLoaderContext();
+  const { onOpenReservePopup } = useOutletContext();
   const isMobile = useIsMobile();
   return (
     <AnimatePresence mode="wait">
@@ -22,23 +24,36 @@ export const SectionOne = () => {
                 width={"full"}
                 type="enlace"
                 fontSize={isMobile ? "xl" : "2xl"}
-                href={"/carta"}
-                title="Menú"
-                motionProps={{
-                  initial: { y: 100 },
-                  animate: { y: 0 },
-                }}
-              />
-              <Button
-                width={"full"}
-                type="enlace"
-                fontSize={isMobile ? "xl" : "2xl"}
                 href={"/#streaming"}
                 title="Entrepues a la cocina"
                 motionProps={{
                   initial: { y: 100 },
                   animate: { y: 0 },
                 }}
+              />
+
+              <Button
+                type="button-primary"
+                width={"full"}
+                fontSize={isMobile ? "sm" : "3xl"}
+                motionProps={{
+                  initial: { y: 100 },
+                  animate: { y: 0 },
+                }}
+                title={
+                  <>
+                    <i className="w-6 h-6 animate-pulse inline-flex">
+                      <img
+                        src="/iconos/reservar.svg"
+                        alt="ir a Reservar"
+                        className="size-full inline-block object-contain"
+                      />
+                    </i>
+                    <span className="text-secondary">Reservar</span>
+                  </>
+                }
+                customClass={"!text-dark justify-self-end"}
+                onClick={() => onOpenReservePopup(null)}
               />
               <Button
                 width={"full"}
