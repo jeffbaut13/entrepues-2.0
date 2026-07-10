@@ -83,19 +83,10 @@ export const ReservaComponent = ({
   }, [regionFromUrl]);
 
   return (
-    <>
-      <motion.div
-        className="w-full h-full flex lg:flex-row flex-col max-lg:justify-center lg:items-stretch items-center bg-white/20 text-dark lg:rounded-2xl lg:gap-6 gap-3 lg:py-4 md:px-6 px-0 overflow-hidden relative"
-        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.7, ease: "easeOut" }}
-      >
-        <SliderVertical
-          stepinvert={stepinvert}
-          onRegionChange={onRegionChange}
-          onReservaSinMenuCheckout={onReservaSinMenuCheckout}
-        />
-      </motion.div>
-    </>
+    <SliderVertical
+      stepinvert={stepinvert}
+      onRegionChange={onRegionChange}
+      onReservaSinMenuCheckout={onReservaSinMenuCheckout}
+    />
   );
 };

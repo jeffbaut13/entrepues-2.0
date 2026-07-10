@@ -18,12 +18,21 @@
   --color-secondary: var(--secondary);
   --color-brown: var(--brown);
   --color-dark: var(--dark);
+  --color-amber-opacity: rgba(255, 253, 240, 0.1);
   --font-parkson: "Parkson", sans-serif;
   --font-helvetica: "Helvetica-Regular", sans-serif;
   --font-amithen: "Amithen", sans-serif;
 }
+
+.shadow-glow {
+  @apply shadow-[inset_0px_1px_1px_0px_rgba(255,255,255,0.25)];
+}
+.backdrop-blur-4xl {
+  @apply backdrop-blur-[3rem];
+}
+
 :root {
-  --secondary: #fff6ea;
+  --secondary: #fffdf0;
   --brown: #333333;
   --dark: #333333;
 }
@@ -107,7 +116,7 @@ button {
   overflow: hidden;
   --hover-color: white; /* valor por defecto */
 }
- 
+
 h4 {
   @apply text-xl;
 }

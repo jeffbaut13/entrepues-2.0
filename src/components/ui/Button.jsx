@@ -75,7 +75,7 @@ export const Button = ({
     "button-white": `${baseStyle} font-parkson border border-white bg-secondary/70 text-dark hover:opacity-60 px-6`,
     "just-icon": `cursor-pointer flex h-fit ${transition} rounded-full p-2 hover:opacity-60 hover:bg-dark/20`,
     "just-icon-dark": `cursor-pointer flex h-fit ${transition} rounded-full p-2 bg-dark/30 hover:opacity-60 hover:bg-dark/20`,
-    "just-icon-white": `cursor-pointer flex h-fit ${transition} rounded-full p-2 bg-white/30 text-white hover:opacity-60 hover:bg-dark/20`,
+    "just-icon-white": `cursor-pointer flex h-fit ${transition} rounded-full p-2 bg-amber-opacity shadow-glow backdrop-blur-4xl text-white hover:opacity-60`,
   };
 
   const navigate = useNavigate();

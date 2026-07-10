@@ -14,6 +14,14 @@ export const useScrollLock = (isReservePopupOpen) => {
   const scrollYRef = useRef(0);
   const wasLockedRef = useRef(false);
 
+  const setModalLockState = (isLocked) => {
+    if (typeof document === "undefined") return;
+
+    const value = isLocked ? "true" : "false";
+    document.body.dataset.modalOpen = value;
+    document.documentElement.dataset.modalOpen = value;
+  };
+
   // Suscribirse a los cambios de los stores
   const isBookingOpen = useReservaStore((state) => state.isBookingOpen);
   const isMenuOpen = useMenuStore((state) => state.isMenuOpen);
@@ -35,6 +43,7 @@ export const useScrollLock = (isReservePopupOpen) => {
       document.body.style.left = "0";
       document.body.style.right = "0";
       document.body.style.width = "100%";
+      setModalLockState(true);
       return;
     }
 
@@ -48,6 +57,7 @@ export const useScrollLock = (isReservePopupOpen) => {
       document.body.style.left = "";
       document.body.style.right = "";
       document.body.style.width = "";
+      setModalLockState(false);
 
       window.scrollTo(0, savedScrollY);
       wasLockedRef.current = false;
@@ -62,6 +72,7 @@ export const useScrollLock = (isReservePopupOpen) => {
       document.body.style.left = "";
       document.body.style.right = "";
       document.body.style.width = "";
+      setModalLockState(false);
 
       if (wasLockedRef.current) {
         window.scrollTo(0, scrollYRef.current);

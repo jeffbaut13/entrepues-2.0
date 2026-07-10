@@ -1,6 +1,7 @@
 ﻿import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { REGIONES, RESERVA_ZONAS_ORDER, regionToSlug } from "../data/puntos";
+import { useCheckoutStore } from "./checkoutStore";
 
 const STORAGE_KEY = "reserva:state:v1";
 const MAX_OCUPACION_TOTAL = 12;
@@ -241,6 +242,18 @@ const buildFreshReservaData = () => ({
   selectedDate: new Date().toISOString(),
 });
 
+const getStepNameByIndex = (
+  stepIndex,
+  orderedSteps = ["datos", "region", "cantidad", "fecha", "hora"],
+) => {
+  const safeSteps = Array.isArray(orderedSteps) && orderedSteps.length > 0
+    ? orderedSteps
+    : ["datos", "region", "cantidad", "fecha", "hora"];
+  const safeIndex = Number.isInteger(stepIndex) ? stepIndex : 0;
+  const clampedIndex = Math.max(0, Math.min(safeIndex, safeSteps.length - 1));
+  return safeSteps[clampedIndex] || null;
+};
+
 export const useReservaStore = create(
   persist(
     (set, get) => ({
@@ -250,6 +263,8 @@ export const useReservaStore = create(
       activeMesas: false,
       completedSteps: [false, false, false, false, false],
       pasosReserva: INITIAL_PASOS_RESERVA,
+      hasUserSelectedDate: false,
+      hasUserSelectedTime: false,
 
       isDatosReservaCompletados: false,
       reservaData: DEFAULT_RESERVA_DATA,
@@ -425,6 +440,62 @@ export const useReservaStore = create(
         localStorage.setItem("reserva:currentStep", JSON.stringify(step));
       },
 
+      setHasUserSelectedDate: (value) => set({ hasUserSelectedDate: Boolean(value) }),
+      setHasUserSelectedTime: (value) => set({ hasUserSelectedTime: Boolean(value) }),
+
+      validateStepAtIndex: (stepIndex, orderedSteps) => {
+        const state = get();
+        const stepName = getStepNameByIndex(stepIndex, orderedSteps);
+        const selectedZoneId = state.reservaZonaData?.selectedZoneId || null;
+        const selectedMesa = state.reservaZonaData?.mesaSeleccionada || null;
+        const adults = Number(state.reservaData?.adults || 0);
+        const hasDate =
+          Boolean(state.hasUserSelectedDate || state.pasosReserva?.fecha?.completado);
+        const hasTime =
+          Boolean(state.hasUserSelectedTime || state.pasosReserva?.hora?.completado);
+
+        switch (stepName) {
+          case "region":
+            return {
+              isValid: Boolean(selectedZoneId),
+              message: "Selecciona una zona para continuar.",
+            };
+          case "cantidad":
+            return {
+              isValid:
+                Boolean(selectedZoneId) && Boolean(selectedMesa) && adults > 0,
+              message: "Selecciona una mesa y al menos 1 adulto para continuar.",
+            };
+          case "datos": {
+            const checkoutState = useCheckoutStore.getState();
+            const nombre = String(checkoutState.datosContacto?.nombre || "").trim();
+            const email = String(checkoutState.datosContacto?.email || "").trim();
+            const whatsapp = String(checkoutState.datosContacto?.whatsapp || "").trim();
+            const nombreOk = nombre.length >= 3;
+            const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.toLowerCase());
+            const whatsappOk = /^\d{10}$/.test(whatsapp);
+
+            return {
+              isValid:
+                nombreOk && emailOk && whatsappOk && !checkoutState.pagoEnProceso,
+              message: "Completa tus datos de contacto para continuar.",
+            };
+          }
+          case "fecha":
+            return {
+              isValid: hasDate,
+              message: "Selecciona una fecha para continuar.",
+            };
+          case "hora":
+            return {
+              isValid: hasTime,
+              message: "Selecciona una hora para continuar.",
+            };
+          default:
+            return { isValid: true, message: "" };
+        }
+      },
+
       setActiveMesas: (value) => set({ activeMesas: Boolean(value) }),
 
       setCompletedSteps: (steps) =>
@@ -477,6 +548,8 @@ export const useReservaStore = create(
             activeMesas: false,
             completedSteps: [false, false, false, false, false],
             pasosReserva: INITIAL_PASOS_RESERVA,
+            hasUserSelectedDate: false,
+            hasUserSelectedTime: false,
 
             isDatosReservaCompletados: false,
             reservaData: nextReservaData,

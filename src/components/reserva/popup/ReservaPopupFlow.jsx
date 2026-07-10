@@ -1,7 +1,8 @@
 ﻿import { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
+import { useScrollLock } from "../../../hooks/useScrollLock";
 import useReservaStore from "../../../store/reservaStore";
 import useCheckoutStore from "../../../store/checkoutStore";
 import PlatosSeleccion from "../PlatosSeleccion";
@@ -38,9 +39,12 @@ export const ReservaPopupFlow = ({
     setCurrentStep,
     setPasoReserva,
     resetReserva,
+    validateStepAtIndex,
   } = useReservaStore();
 
   const isMobile = useIsMobile();
+
+  useScrollLock(isOpen);
 
   // Orden condicional de pasos
   const orderedSteps = stepinvert
@@ -56,18 +60,8 @@ export const ReservaPopupFlow = ({
 
   const getReservaPopupWidth = () => {
     if (isMobile) return "100%";
-    if (flowStep === "succes") return "30rem";
-    if (flowStep === "platos") return "80rem";
 
-    const widthsByStep = {
-      [regionStepIndex]: "80rem",
-      [cantidadStepIndex]: "40rem",
-      [datosStepIndex]: "32rem",
-      [fechaStepIndex]: "58rem",
-      [horaStepIndex]: "58rem",
-    };
-
-    return widthsByStep[currentStep] || "64rem";
+    return "80rem";
   };
 
   const getReservaPopupHeight = () => {
@@ -183,6 +177,35 @@ export const ReservaPopupFlow = ({
     setFlowStep("reserva");
   };
 
+  const currentValidation = validateStepAtIndex(currentStep, orderedSteps);
+  const currentStepName = orderedSteps[currentStep] || orderedSteps[0];
+  const isContinueDisabled = !currentValidation.isValid;
+
+  const handleBackAction = () => {
+    if (currentStep <= 0) {
+      handlePopupClose();
+      return;
+    }
+
+    setCurrentStep(currentStep - 1);
+  };
+
+  const handleContinueAction = () => {
+    if (!currentValidation.isValid) {
+      alert(currentValidation.message);
+      return;
+    }
+
+    if (currentStepName === "hora") {
+      setFlowStep("platos");
+      return;
+    }
+
+    if (currentStep < orderedSteps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
   const handlePagoSuccess = () => {
     setShowResumen(false);
     setFlowStep("succes");
@@ -192,8 +215,6 @@ export const ReservaPopupFlow = ({
     clearReservationState();
     onClose?.();
   };
- 
-  
 
   return (
     <AnimatePresence>
@@ -202,7 +223,7 @@ export const ReservaPopupFlow = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[20000] bg-white/5 backdrop-blur-xl flex items-center justify-center"
+          className="fixed inset-0 z-[20000] p-20 bg-black/60 inline-flex flex-col justify-center items-center gap-2"
           onClick={handlePopupClose}
         >
           <motion.div
@@ -210,75 +231,71 @@ export const ReservaPopupFlow = ({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.2 }}
-            className="lg:w-fit w-full max-lg:bg-secondary lg:rounded-2xl relative overflow-hidden"
+            className="relative overflow-hidden w-full flex-1 max-w-320 p-6 bg-amber-opacity rounded-t-[3rem] rounded-b-lg rounded-br-lg shadow-glow backdrop-blur-4xl flex flex-col justify-end items-center gap-8"
             onClick={(e) => e.stopPropagation()}
           >
-            {flowStep !== "succes" && (
-              <Button
-                type="just-icon"
-                onClick={handlePopupClose}
-                Icon={X}
-                iconSize="small"
-                customClass="absolute right-2 top-2 z-20"
-                props={{ "aria-label": "Cerrar popup de reserva" }}
-              />
-            )}
+            <motion.div className="w-full flex justify-end items-center">
+              {flowStep !== "succes" && (
+                <Button
+                  type="just-icon-white"
+                  onClick={handlePopupClose}
+                  Icon={X}
+                  props={{ "aria-label": "Cerrar popup de reserva" }}
+                />
+              )}
+            </motion.div>
 
             <motion.div
-              className="flex-1 h-full mx-auto flex items-center justify-center lg:bg-secondary bg-secondary/10 lg:rounded-2xl"
+              className="h-fit overflow-hidden w-full border-[1px] border-secondary/60 flex-1 mx-auto flex items-center justify-center p-4 rounded-2xl"
               initial={{
                 opacity: 0,
                 y: 40,
-                width: "64rem",
-                height: "40.2060625rem",
               }}
               animate={{
                 opacity: 1,
                 y: 0,
-                width: getReservaPopupWidth(),
-                height: getReservaPopupHeight(),
               }}
               transition={{ duration: 0.2, delay: 0.1, ease: "easeOut" }}
             >
-              <AnimatePresence mode="wait">
-                {flowStep === "reserva" && (
-                  <div key="reserva-base" className="size-full relative z-0">
+              <div className="w-full p-10 min-h-157 h-1 overflow-hidden text-secondary">
+                <AnimatePresence mode="wait">
+                  {flowStep === "reserva" && (
                     <ReservaComponent
+                      key="reserva-base"
                       stepinvert={stepinvert}
                       region={selectedRegion}
                       onRegionChange={onRegionChange}
                       onReservaSinMenuCheckout={() => setFlowStep("platos")}
                     />
-                  </div>
-                )}
-
-                {flowStep === "platos" && (
-                  <motion.div
-                    key="platos"
-                    initial={{ opacity: 0, width: "0" }}
-                    animate={{ opacity: 1, width: "100%" }}
-                    exit={{ opacity: 0, width: "0" }}
-                    transition={{ duration: 0.1, ease: "easeOut" }}
-                    className="flex-1 h-full flex flex-col items-center justify-center lg:py-10 py-0 lg:px-6 px-4 absolute right-0 top-0 z-10 bg-secondary whitespace-nowrap"
-                  >
-                    <PlatosSeleccion
-                      asistentes={detalleAsistentes}
-                      onBackToReserva={handleBackToReservaFromPlatos}
-                      onPagoSuccess={handlePagoSuccess}
-                    />
-                  </motion.div>
-                )}
-
-                {flowStep === "succes" && (
-                  <CheckoutSuccesComponent
-                    onFinalizar={handleFinalizarSuccess}
-                  />
-                )}
-              </AnimatePresence>
-
-              {flowStep === "platos" && <ResumenReservaModal />}
+                  )}
+                </AnimatePresence>
+              </div>
             </motion.div>
           </motion.div>
+
+          <div className="w-full max-w-320 px-6 py-4 bg-stone-300/10 rounded-tl-lg rounded-tr-lg rounded-bl-[48px] rounded-br-[48px] shadow-glow backdrop-blur-4xl inline-flex flex-col justify-end items-center gap-8">
+            <div className="w-full flex justify-center items-center gap-4">
+              <Button
+                onClick={handleBackAction}
+                title={currentStep <= 0 ? "Cerrar" : "Volver"}
+                Icon={ChevronLeft}
+                type="button-secondary"
+                fontSize="xl"
+                width="flex"
+                customClass="min-h-12"
+              />
+              <Button
+                onClick={handleContinueAction}
+                title="Continuar"
+                Icon={ChevronRight}
+                type="button-dark"
+                fontSize="xl"
+                width="flex"
+                customClass="min-h-12"
+                disabled={isContinueDisabled}
+              />
+            </div>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

@@ -264,7 +264,12 @@ export const CanvasScrollSequence = forwardRef(function CanvasScrollSequence(
     const root = rootRef.current;
     if (!root) return;
 
+    const isReservationModalOpen = () =>
+      document.body?.dataset?.modalOpen === "true" ||
+      document.documentElement?.dataset?.modalOpen === "true";
+
     const handleWheel = (event) => {
+      if (isReservationModalOpen()) return;
       if (!isNearViewportRef.current) return;
 
       const accepted = handleWheelIntent(event.deltaY);

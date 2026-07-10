@@ -194,7 +194,13 @@ export const HomeComponentNew = () => {
   }, []);
 
   useEffect(() => {
+    const isReservationModalOpen = () =>
+      document.body?.dataset?.modalOpen === "true" ||
+      document.documentElement?.dataset?.modalOpen === "true";
+
     const onWheel = (event) => {
+      if (isReservationModalOpen()) return;
+
       event.preventDefault();
       if (Math.abs(event.deltaY) < 8) return;
 
