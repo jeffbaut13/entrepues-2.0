@@ -8,7 +8,8 @@ import { useIsMobile } from "../../hooks/useIsMobile";
 const PasoRegion = ({ onRegionChange }) => {
   const isMobile = useIsMobile();
 
-  const { reservaZonaData, seleccionarZona, setActiveMesas } = useReservaStore();
+  const { reservaZonaData, seleccionarZona, setActiveMesas } =
+    useReservaStore();
 
   const selectedZoneName = reservaZonaData?.selectedZoneName || "general";
   const selectedZoneId = reservaZonaData?.selectedZoneId || null;
@@ -26,28 +27,24 @@ const PasoRegion = ({ onRegionChange }) => {
   }, [selectedZoneId, setActiveMesas]);
 
   return (
-    <>
-      <h2 className="font-parkson mb-4 !text-4xl">ELIJA LA REGIÓN DONDE QUIERE COMER:</h2>
-      <div className="size-full flex flex-col items-center justify-center gap-8">
-        <div className="w-full flex max-lg:flex-col-reverse lg:h-96 gap-6 md:px-14 px-2 transition-all duration-300">
-          <div className="flex-1 min-w-0 h-full md:border border-black/8 rounded-xl overflow-hidden">
-            <div className="w-full h-full md:p-6">
-              <Mapa
-                handleShowZone={pushZone}
-                regionActive={reservaZonaData?.selectedZoneName || ""}
-                size={"w-full h-full flex"}
-                sizeText={`${isMobile ? "sm" : "xl"}`}
-              />
-            </div>
+    <div className="size-full flex flex-col items-center justify-center gap-8">
+      <div className="w-full h-full flex max-lg:flex-col items-center gap-6 transition-all duration-300 py-[1px]">
+        <div className="flex-1 w-full overflow-hidden flex flex-col items-start justify-center md:gap-6 gap-2">
+          <h2 className="text-5xl font-parkson">Elija una región</h2>
+          <p>¿Dónde quiere comer?</p>
+          <div className="w-full h-full">
+            <Mapa
+              handleShowZone={pushZone}
+              regionActive={reservaZonaData?.selectedZoneName || ""}
+              sizeText={"base"}
+            />
           </div>
-
-          <RegionImageSlider selectedZoneName={selectedZoneName} />
         </div>
+
+        <RegionImageSlider selectedZoneName={selectedZoneName} />
       </div>
-    </>
+    </div>
   );
 };
 
 export default PasoRegion;
-
-

@@ -72,23 +72,27 @@ const PasoCantidad = ({
       setMascotas(0);
     }
   }, [permiteMascotas, mascotasNum, setMascotas]);
-
+  const title = "¿Cuántos Son?";
   return (
     <>
-      <h2 className="font-parkson mb-4 !text-4xl">
-        {permiteMascotas
+      <h2 className="font-parkson mb-4 !text-4xl lg:hidden">
+        {/* {permiteMascotas
           ? "¿CUÁNTAS PERSONAS Y PELUDITOS NOS VISITARÁN?"
-          : "¿CUÁNTOS VENDRÁN?"}
+          : "¿CUÁNTOS VENDRÁN?"} */}
+        {title}
       </h2>
 
-      <div className="w-full flex flex-col items-center justify-center gap-8">
+      <div className="w-full flex flex-col justify-center lg:gap-8">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
-          className="max-w-5xl min-h-0 flex max-lg:flex-col items-center justify-center md:gap-6 gap-16"
+          className="w-full min-h-0 flex max-lg:flex-col-reverse items-center justify-center"
         >
-          <div className="flex-1 min-w-[14rem]">
+          <div className="md:w-80 w-full">
+            <h2 className="text-start font-parkson !text-4xl max-lg:hidden lg:mb-12">
+              {title}
+            </h2>
             <ContadorAsistentes
               errorAsistentes={errorAsistentes}
               permiteMascotas={permiteMascotas}
@@ -106,7 +110,7 @@ const PasoCantidad = ({
             />
           </div>
 
-          <div className="flex-1 md:min-w-56">
+          <div className="flex-1">
             <MesasDisplay
               selectedZoneName={selectedZoneName}
               mesaSeleccionada={mesaSeleccionada}

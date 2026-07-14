@@ -94,7 +94,11 @@ const buildDetalleAsistentes = (reservaData = {}) => {
     adultos: adultosCount,
     ninos: ninosCount,
     mascotas: mascotasCount,
-    asistentes: [...asistentesAdultos, ...asistentesNinos, ...asistentesMascotas],
+    asistentes: [
+      ...asistentesAdultos,
+      ...asistentesNinos,
+      ...asistentesMascotas,
+    ],
   };
 };
 
@@ -246,9 +250,10 @@ const getStepNameByIndex = (
   stepIndex,
   orderedSteps = ["datos", "region", "cantidad", "fecha", "hora"],
 ) => {
-  const safeSteps = Array.isArray(orderedSteps) && orderedSteps.length > 0
-    ? orderedSteps
-    : ["datos", "region", "cantidad", "fecha", "hora"];
+  const safeSteps =
+    Array.isArray(orderedSteps) && orderedSteps.length > 0
+      ? orderedSteps
+      : ["datos", "region", "cantidad", "fecha", "hora"];
   const safeIndex = Number.isInteger(stepIndex) ? stepIndex : 0;
   const clampedIndex = Math.max(0, Math.min(safeIndex, safeSteps.length - 1));
   return safeSteps[clampedIndex] || null;
@@ -440,8 +445,10 @@ export const useReservaStore = create(
         localStorage.setItem("reserva:currentStep", JSON.stringify(step));
       },
 
-      setHasUserSelectedDate: (value) => set({ hasUserSelectedDate: Boolean(value) }),
-      setHasUserSelectedTime: (value) => set({ hasUserSelectedTime: Boolean(value) }),
+      setHasUserSelectedDate: (value) =>
+        set({ hasUserSelectedDate: Boolean(value) }),
+      setHasUserSelectedTime: (value) =>
+        set({ hasUserSelectedTime: Boolean(value) }),
 
       validateStepAtIndex: (stepIndex, orderedSteps) => {
         const state = get();
@@ -449,10 +456,12 @@ export const useReservaStore = create(
         const selectedZoneId = state.reservaZonaData?.selectedZoneId || null;
         const selectedMesa = state.reservaZonaData?.mesaSeleccionada || null;
         const adults = Number(state.reservaData?.adults || 0);
-        const hasDate =
-          Boolean(state.hasUserSelectedDate || state.pasosReserva?.fecha?.completado);
-        const hasTime =
-          Boolean(state.hasUserSelectedTime || state.pasosReserva?.hora?.completado);
+        const hasDate = Boolean(
+          state.hasUserSelectedDate || state.pasosReserva?.fecha?.completado,
+        );
+        const hasTime = Boolean(
+          state.hasUserSelectedTime || state.pasosReserva?.hora?.completado,
+        );
 
         switch (stepName) {
           case "region":
@@ -464,20 +473,36 @@ export const useReservaStore = create(
             return {
               isValid:
                 Boolean(selectedZoneId) && Boolean(selectedMesa) && adults > 0,
-              message: "Selecciona una mesa y al menos 1 adulto para continuar.",
+              message:
+                "Selecciona una mesa y al menos 1 adulto para continuar.",
             };
           case "datos": {
             const checkoutState = useCheckoutStore.getState();
-            const nombre = String(checkoutState.datosContacto?.nombre || "").trim();
-            const email = String(checkoutState.datosContacto?.email || "").trim();
-            const whatsapp = String(checkoutState.datosContacto?.whatsapp || "").trim();
+            const nombre = String(
+              checkoutState.datosContacto?.nombre || "",
+            ).trim();
+            const email = String(
+              checkoutState.datosContacto?.email || "",
+            ).trim();
+            const whatsapp = String(
+              checkoutState.datosContacto?.whatsapp || "",
+            ).trim();
+            const autorizacion = Boolean(
+              checkoutState.datosContacto?.autorizacion,
+            );
             const nombreOk = nombre.length >= 3;
-            const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.toLowerCase());
+            const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+              email.toLowerCase(),
+            );
             const whatsappOk = /^\d{10}$/.test(whatsapp);
 
             return {
               isValid:
-                nombreOk && emailOk && whatsappOk && !checkoutState.pagoEnProceso,
+                nombreOk &&
+                emailOk &&
+                whatsappOk &&
+                autorizacion &&
+                !checkoutState.pagoEnProceso,
               message: "Completa tus datos de contacto para continuar.",
             };
           }
@@ -580,8 +605,3 @@ export const useReservaStore = create(
 );
 
 export default useReservaStore;
-
-
-
-
-

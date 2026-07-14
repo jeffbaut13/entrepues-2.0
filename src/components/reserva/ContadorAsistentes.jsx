@@ -15,9 +15,13 @@ const ContadorAsistentes = ({
   MAX_MASCOTAS,
   totalOcupacion,
 }) => {
+  const style = {
+    ContadorAsistentes:
+      "flex flex-col justify-between items-center gap-3 max-lg:text-2xl",
+  };
   return (
     <div className="w-full flex justify-center flex-col gap-2">
-      <div className="flex justify-between items-center gap-3 max-lg:text-2xl">
+      <div className={style.ContadorAsistentes}>
         <p>Adultos</p>
         <IncremenAndDecrementComponent
           errorAsistentes={errorAsistentes}
@@ -39,7 +43,7 @@ const ContadorAsistentes = ({
         />
       </div>
 
-      <div className="flex justify-between items-center lg:gap-3 max-lg:text-2xl">
+      <div className={style.ContadorAsistentes}>
         <p>Niños</p>
         <IncremenAndDecrementComponent
           errorAsistentes={errorAsistentes}
@@ -62,7 +66,7 @@ const ContadorAsistentes = ({
       </div>
 
       {permiteMascotas && (
-        <div className="flex justify-between items-center gap-3 max-lg:text-2xl">
+        <div className={style.ContadorAsistentes}>
           <p>Mascotas</p>
           <IncremenAndDecrementComponent
             errorAsistentes={errorAsistentes}

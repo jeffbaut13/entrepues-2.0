@@ -19,6 +19,8 @@ export const MesasSelectorx4 = ({
         return "w-22";
       case "xl":
         return "w-34";
+      case "2xl":
+        return "w-44";
       default:
         return "w-8";
     }
@@ -32,7 +34,9 @@ export const MesasSelectorx4 = ({
     if (childSeats.includes(sillaNumber)) {
       return "fill-[#e38273] stroke-secondary";
     }
-    return sillaNumber < index ? colorRelleno : "fill-[#ffffff00]";
+    return sillaNumber < index
+      ? colorRelleno
+      : "fill-[#ffffff00] stroke-secondary";
   };
 
   // Función para determinar el color del stroke de cada silla
@@ -2336,7 +2340,7 @@ export const MesasSelectorx4 = ({
               ry="1.49"
               style={{
                 fill: "none",
-                stroke: "#1d1d1b",
+                stroke: "var(--secondary)",
                 strokeLinecap: "round",
                 strokeLinejoin: "round",
                 strokeWidth: ".68px",
@@ -2390,6 +2394,8 @@ export const MesasSelectorx6 = ({
         return "w-30";
       case "xl":
         return "w-44";
+      case "2xl":
+        return "w-58";
       default:
         return "w-8";
     }
@@ -2402,7 +2408,9 @@ export const MesasSelectorx6 = ({
     if (childSeats.includes(sillaNumber)) {
       return "fill-[#e38273] stroke-secondary";
     }
-    return sillaNumber < index ? colorRelleno : "fill-[#ffffff00]";
+    return sillaNumber < index
+      ? colorRelleno
+      : "fill-secondary stroke-secondary";
   };
 
   // Función para determinar el color del stroke de cada silla

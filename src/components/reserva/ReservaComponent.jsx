@@ -1,13 +1,8 @@
-import { useEffect, useRef } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { Calendar, Timer, User } from "lucide-react";
+import { useEffect } from "react";
 
 import SliderVertical from "./slider/SliderVertical";
-import HeaderPaso from "./HeaderPaso";
-import { convertTo12Hour, getAmPm } from "./horaUtils";
 
 import useReservaStore from "../../store/reservaStore";
-import { useIsMobile } from "../../hooks/useIsMobile";
 
 const normalizeRegionParam = (value = "") =>
   value
@@ -36,14 +31,14 @@ export const ReservaComponent = ({
   stepinvert,
   region,
   onRegionChange,
-  onReservaSinMenuCheckout,
+  onPagoSuccess,
+  registerConfirmar,
 }) => {
   // Estados derivados del store
 
-  const isMobile = useIsMobile();
   /* zustand */
 
-  const { currentStep, setCurrentStep, seleccionarZona } = useReservaStore();
+  const { setCurrentStep, seleccionarZona } = useReservaStore();
 
   const regionFromUrl = region || null;
 
@@ -86,7 +81,8 @@ export const ReservaComponent = ({
     <SliderVertical
       stepinvert={stepinvert}
       onRegionChange={onRegionChange}
-      onReservaSinMenuCheckout={onReservaSinMenuCheckout}
+      onPagoSuccess={onPagoSuccess}
+      registerConfirmar={registerConfirmar}
     />
   );
 };

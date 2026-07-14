@@ -20,8 +20,8 @@ export default function PasoHora({ hour, minute, setHour, setMinute }) {
   const minuteStr = String(minute || "00").padStart(2, "0");
 
   return (
-    <>
-      <div className="select-none flex-1 px-12 py-2 flex-col items-center [&>div]:grid [&>div]:grid-cols-6 [&>div]:gap-1 [&>div]:w-full [&>div]:justify-items-center [&>div]:items-center">
+  
+      <div className="select-none flex-1 flex-col items-center [&>div]:grid [&>div]:grid-cols-6 [&>div]:gap-1 [&>div]:w-full [&>div]:justify-items-center [&>div]:items-center">
         <div>
           {canIncrementHour(hourStr) && (
             <Button
@@ -74,7 +74,7 @@ export default function PasoHora({ hour, minute, setHour, setMinute }) {
           </div>
         </div>
 
-        <div className="border-[1px] border-dark/30 rounded-full">
+        <div className="bg-secondary text-dark rounded-full">
           <div className=" font-bold flex items-center justify-center col-start-2 overflow-hidden h-12">
             <AnimatePresence mode="wait">
               <motion.span
@@ -173,6 +173,6 @@ export default function PasoHora({ hour, minute, setHour, setMinute }) {
           />
         </div>
       </div>
-    </>
+   
   );
 }

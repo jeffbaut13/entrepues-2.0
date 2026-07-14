@@ -95,6 +95,7 @@ export const useCheckoutStore = create(
         email: "",
         whatsapp: "",
         notas: "",
+        autorizacion: false,
       },
 
       // ===== DATOS DE PAGO =====

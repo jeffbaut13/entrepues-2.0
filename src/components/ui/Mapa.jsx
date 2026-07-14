@@ -5,16 +5,7 @@ import {
   normalizeRegionName,
 } from "../../data/puntos";
 
-export const Mapa = ({
-  handleShowZone,
-  theme,
-  regionActive,
-  sizeText,
-  size,
-}) => {
-  const MAP_WIDTH = 603.55;
-  const MAP_HEIGHT = 378.36;
-
+export const Mapa = ({ handleShowZone, theme, regionActive, sizeText }) => {
   const fontSize = () => {
     switch (sizeText) {
       case "xs":
@@ -39,30 +30,27 @@ export const Mapa = ({
   const isRegionActive = (name) =>
     normalizeRegionName(regionActive) === normalizeRegionName(name);
 
-  const ICON_BASE_CLASS = "w-4 transition-all duration-300 ease-in-out";
+  const ICON_BASE_CLASS =
+    "size-7 border border-secondary/40 p-0.5 rounded-lg transition-all duration-300 ease-in-out";
 
   const getRegionBoxClass = (name) => {
     const baseClass = "transition-all duration-300 ease-in-out";
 
     if (isRegionActive(name)) {
-      return `bg-secondary/20 border-dark opacity-100 ${baseClass}`;
+      return `bg-amber-full/40 ${baseClass}`;
     }
 
-    return theme === "light"
-      ? `bg-secondary/5 border-secondary/40 opacity-40 group-hover:opacity-100 ${baseClass}`
-      : `bg-dark/5 border-dark/40 opacity-40 group-hover:opacity-100 ${baseClass}`;
+    return `bg-amber-full/10 hover:bg-amber-full/40 ${baseClass}`;
   };
 
   const getRegionLabelClass = (name) => {
-    const baseClass = "transition-all duration-300 ease-in-out";
+    const baseClass = "text-secondary transition-all duration-300 ease-in-out";
 
     if (isRegionActive(name)) {
-      return `text-dark opacity-100 ${baseClass}`;
+      return `opacity-100 ${baseClass}`;
     }
 
-    return theme === "light"
-      ? `text-secondary opacity-40 group-hover:opacity-100 ${baseClass}`
-      : `text-dark opacity-40 group-hover:opacity-100 ${baseClass}`;
+    return `${baseClass}`;
   };
 
   const getRegionIconClass = (name) => {
@@ -70,27 +58,21 @@ export const Mapa = ({
       return `${ICON_BASE_CLASS} opacity-100`;
     }
 
-    return `${ICON_BASE_CLASS} opacity-40 group-hover:opacity-100`;
+    return `${ICON_BASE_CLASS} `;
   };
-
-  const toPctX = (value) => `${(value / MAP_WIDTH) * 100}%`;
-  const toPctY = (value) => `${(value / MAP_HEIGHT) * 100}%`;
 
   const regions = MAPA_REGION_LAYOUT.map((region) => ({
     name: region.slug,
-    label: formatRegionLabel(region.slug).toUpperCase(),
+    label: formatRegionLabel(region.slug),
     box: region.box,
     labelPos: region.labelPos,
     col: region.col,
-    icon: (iconClassName) =>
-      region.icon?.type === "zone-pet" ? (
-        <ZonePet size={iconClassName} />
-      ) : (
-        <IconoZona
-          url={region.icon?.url || "iconos/zonas/caribe.svg"}
-          className={iconClassName}
-        />
-      ),
+    icon: (iconClassName) => (
+      <IconoZona
+        url={region.icon?.url || "iconos/zonas/caribe.svg"}
+        className={iconClassName}
+      />
+    ),
   }));
 
   const handleMapaClick = (name) => {
@@ -100,49 +82,32 @@ export const Mapa = ({
   };
 
   return (
-    <picture className={`${size ? size : "size-full inline-block"}`}>
-      <div
-        className="relative size-full flex items-center justify-center"
-        style={{ aspectRatio: `${MAP_WIDTH} / ${MAP_HEIGHT}` }}
-      >
-        {regions.map((region) => {
-          const regionStyle = {
-            left: toPctX(region.box.x),
-            top: toPctY(region.box.y),
-            width: toPctX(region.box.width),
-            height: toPctY(region.box.height),
-          };
-
-          return (
-            <button
-              type="button"
-              key={region.name}
-              data-name={region.name}
-              className={`group size-full flex items-center justify-center group absolute cursor-pointer bg-transparent border-none p-0 m-0`}
-              style={regionStyle}
-              onClick={() => handleMapaClick(region.name)}
-              aria-label={`Seleccionar zona ${region.label}`}
-            >
+    <div className="grid grid-cols-3 grid-rows-2 md:gap-4 gap-2">
+      {regions.map((region) => {
+        return (
+          <button
+            type="button"
+            key={region.name}
+            data-name={region.name}
+            className={`group font-bold size-full flex items-center justify-start group cursor-pointer border-none md:py-6 py-3 md:px-4 px-2 md:rounded-3xl rounded-2xl ${getRegionBoxClass(region.name)}`}
+            onClick={() => handleMapaClick(region.name)}
+            aria-label={`Seleccionar zona ${region.label}`}
+          >
+            <div className={`flex flex-col gap-1 items-start justify-start`}>
+              {region.icon(getRegionIconClass(region.name))}
               <span
-                className={`absolute inset-0 border ${getRegionBoxClass(region.name)}`}
-                aria-hidden="true"
-              />
-
-              <div
-                className={`flex ${region.col ? "flex-col" : "flex-row gap-1"} items-center justify-center`}
+                className={`pointer-events-none ${getRegionLabelClass(region.name)}`}
               >
-                {region.icon(getRegionIconClass(region.name))}
-                <span
-                  className={`pointer-events-none font-parkson ${fontSize()} ${getRegionLabelClass(region.name)}`}
-                >
-                  {region.label}
-                </span>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </picture>
+                {region.name !== "pet-family" && (
+                  <span className="md:inline-block hidden">Región</span>
+                )}{" "}
+                {region.label}
+              </span>
+            </div>
+          </button>
+        );
+      })}
+    </div>
   );
 };
 

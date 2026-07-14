@@ -67,6 +67,11 @@ export const Datos = () => {
     if (field === "nombre") return nombreError;
     if (field === "email") return emailError;
     if (field === "whatsapp") return whatsappError;
+    if (field === "autorizacion") {
+      return !datosContacto.autorizacion
+        ? "Debes autorizar el tratamiento de tus datos personales."
+        : "";
+    }
     return "";
   };
 
@@ -74,7 +79,7 @@ export const Datos = () => {
     touched[field] && Boolean(getInputError(field));
 
   const style = {
-    input: `w-full px-6 py-4 text-lg border rounded-2xl bg-secondary text-dark focus:outline-none focus:ring-2 focus:border-transparent ${
+    input: `w-full px-4 py-3 text-lg border rounded-2xl bg-secondary text-dark focus:outline-none focus:ring-2 focus:border-transparent ${
       hasFieldError("nombre")
         ? "border-red-400 focus:ring-red-400"
         : "border-gray-300 focus:ring-dark"
@@ -111,22 +116,22 @@ export const Datos = () => {
 
   return (
     <motion.div
-      className="w-full flex flex-col overflow-hidden"
+      className="w-full flex flex-col overflow-hidden items-center justify-center md:max-w-lg"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}
     >
       <h2
         type="button"
-        className="w-full  flex flex-col justify-center items-center transition-all duration-200"
+        className="w-full flex flex-col justify-center items-center transition-all duration-200"
       >
         <span className="font-bold font-parkson !text-5xl leading-12 inline-block">
           {randomTitle}
         </span>
       </h2>
-      <p>Déjenos sus datos pa´ conocerlo</p>
+      <p className="my-3">Déjenos sus datos pa´ conocerlo</p>
 
-      <div className="w-full">
+      <div className="w-full space-y-3">
         <input
           type="text"
           value={datosContacto.nombre}
@@ -179,9 +184,26 @@ export const Datos = () => {
       </div>
 
       <div className="w-full flex justify-center items-center mt-6">
-        <p className="lg:!text-sm !text-base text-center">
-          Al confirmar acepta los términos y condiciones
-        </p>
+        <div className="flex items-start gap-2">
+          <input
+            type="checkbox"
+            checked={datosContacto.autorizacion}
+            onChange={(e) =>
+              handleContactoChange("autorizacion", e.target.checked)
+            }
+            className="form-checkbox h-5 w-5 transition duration-200 ease-in-out"
+          />
+          <p className="!text-sm text-start">
+            Autorizo el tratamiento de mis datos personales para la finalidad
+            descrita en la Política de tratamiento de datos personales de
+            EntrePues.
+          </p>
+        </div>
+        {hasFieldError("autorizacion") && (
+          <p className="mt-1 px-2 text-xs text-red-600 whitespace-normal break-words">
+            Debes autorizar el tratamiento de tus datos personales.
+          </p>
+        )}
       </div>
     </motion.div>
   );

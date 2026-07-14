@@ -100,7 +100,7 @@ const RegionImageSlider = ({ selectedZoneName }) => {
 
   return (
     <>
-      <div className="flex-1 min-w-0 h-full min-h-0 overflow-hidden relative bg-dark/10 rounded-xl">
+      <div className="flex-1 w-full min-w-0 h-full md:max-h-140 min-h-0 overflow-hidden relative bg-dark/10 rounded-xl">
         <Swiper
           modules={[Autoplay, Pagination]}
           loop={true}
@@ -152,7 +152,9 @@ const RegionImageSlider = ({ selectedZoneName }) => {
             <div className="w-full max-w-4xl mx-auto h-full max-h-[95vh] overflow-hidden rounded-2xl  ">
               <div className="sticky top-0 z-20 px-5 py-4">
                 <h3 className="text-secondary !text-4xl font-parkson text-center">
-                  {isGeneralZone ? "Elige una zona" : `Región ${selectedZoneName}`}
+                  {isGeneralZone
+                    ? "Elige una zona"
+                    : `Región ${selectedZoneName}`}
                 </h3>
               </div>
               {selectedImageSrc && (

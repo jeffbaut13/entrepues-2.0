@@ -24,8 +24,8 @@ const MesasDisplay = ({
           <MesasSelectorx4
             index={ocupadas}
             size={size}
-            colorRelleno="fill-brown"
-            strokeSecondary="var(--secondary)"
+            colorRelleno="fill-secondary"
+            strokeSecondary="var(--dark)"
             strokeDark="var(--dark)"
             petSeats={petSeats}
             childSeats={childSeats}
@@ -39,8 +39,8 @@ const MesasDisplay = ({
         <MesasSelectorx6
           index={ocupadas}
           size={size}
-          colorRelleno="fill-brown"
-          strokeSecondary="var(--secondary)"
+          colorRelleno="fill-secondary"
+          strokeSecondary="var(--dark)"
           strokeDark="var(--dark)"
           petSeats={petSeats}
           childSeats={childSeats}
@@ -136,7 +136,7 @@ const MesasDisplay = ({
           <div className="flex items-center justify-center gap-4">
             {renderMesaGroup(
               mesaSeleccionada,
-              sizeOverride || `${isMobile ? "xl" : "lg"}`,
+              sizeOverride || `${isMobile ? "xl" : "2xl"}`,
               true,
               totalOcupacion,
             )}

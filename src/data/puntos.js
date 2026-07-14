@@ -19,11 +19,25 @@ export const RESERVA_ZONAS_ORDER = [
 
 export const MAPA_REGION_LAYOUT = [
   {
-    slug: "pet-family",
-    box: { x: 0, y: 32.59, width: 65.53, height: 345.19 },
-    labelPos: { x: 20.5, y: 205.18 },
-    col: true,
-    icon: { type: "zone-pet" },
+    slug: "andina",
+    box: { x: 390.88, y: 15.13, width: 212.17, height: 216.76 },
+    labelPos: { x: 507.3, y: 123.51 },
+    col: false,
+    icon: { type: "svg", url: "iconos/zonas/andina.svg" },
+  },
+  {
+    slug: "orinoquia",
+    box: { x: 301, y: 232.73, width: 196.94, height: 144 },
+    labelPos: { x: 349.52, y: 304.73 },
+    col: false,
+    icon: { type: "svg", url: "iconos/zonas/orinoquia.svg" },
+  },
+  {
+    slug: "amazonia",
+    box: { x: 151.06, y: 117.86, width: 151.66, height: 260 },
+    labelPos: { x: 175.31, y: 247.86 },
+    col: false,
+    icon: { type: "svg", url: "iconos/zonas/amazonia.svg" },
   },
   {
     slug: "caribe",
@@ -40,25 +54,11 @@ export const MAPA_REGION_LAYOUT = [
     icon: { type: "svg", url: "iconos/zonas/pacifica.svg" },
   },
   {
-    slug: "amazonia",
-    box: { x: 151.06, y: 117.86, width: 151.66, height: 260 },
-    labelPos: { x: 175.31, y: 247.86 },
-    col: false,
-    icon: { type: "svg", url: "iconos/zonas/amazonia.svg" },
-  },
-  {
-    slug: "orinoquia",
-    box: { x: 301, y: 232.73, width: 196.94, height: 144 },
-    labelPos: { x: 349.52, y: 304.73 },
-    col: false,
-    icon: { type: "svg", url: "iconos/zonas/orinoquia.svg" },
-  },
-  {
-    slug: "andina",
-    box: { x: 390.88, y: 15.13, width: 212.17, height: 216.76 },
-    labelPos: { x: 507.3, y: 123.51 },
-    col: false,
-    icon: { type: "svg", url: "iconos/zonas/andina.svg" },
+    slug: "pet-family",
+    box: { x: 0, y: 32.59, width: 65.53, height: 345.19 },
+    labelPos: { x: 20.5, y: 205.18 },
+    col: true,
+    icon: { type: "svg", url: "iconos/zonas/icon-pet.svg" },
   },
 ];
 

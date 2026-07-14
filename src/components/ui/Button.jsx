@@ -64,15 +64,15 @@ export const Button = ({
 
   const transition = `transition-all ease-in-out duration-300`;
   const disabledStyle = `disabled:opacity-40 disabled:!cursor-not-allowed`;
-  const baseStyle = `tracking-widest flex justify-center items-center gap-1 cursor-pointer text-center rounded-full py-1.5 pb-2 ${transition} ${disabledStyle}`;
-  const primary = `${baseStyle} font-parkson bg-dark/40 backdrop-blur-md hover:bg-black text-secondary border border-secondary/40 hover:border-black px-6`;
+  const baseStyle = `md:min-w-52 min-w-40 tracking-widest flex justify-center items-center gap-1 cursor-pointer text-center rounded-full ${transition} ${disabledStyle}`;
+  const primary = `${baseStyle} bg-dark/40 text-brown px-6 bg-secondary hover:opacity-60`;
   const listas = {
     "button-primary": primary,
     enlace: primary,
-    "button-secondary": `${baseStyle} font-parkson bg-none text-dark hover:opacity-60`,
+    "button-secondary": `${baseStyle} shadow-glow bg-dark/40 backdrop-blur-4xl hover:opacity-60 text-secondary`,
     "button-thirty": `${baseStyle} font-light text-dark`,
-    "button-dark": `${baseStyle} font-parkson text-secondary bg-dark hover:bg-dark/80 px-6`,
-    "button-white": `${baseStyle} font-parkson border border-white bg-secondary/70 text-dark hover:opacity-60 px-6`,
+    "button-dark": `${baseStyle} font-parkson text-secondary bg-dark hover:bg-dark/80 p-4`,
+    "button-white": `${baseStyle} font-parkson border border-white bg-secondary/70 text-dark hover:opacity-60`,
     "just-icon": `cursor-pointer flex h-fit ${transition} rounded-full p-2 hover:opacity-60 hover:bg-dark/20`,
     "just-icon-dark": `cursor-pointer flex h-fit ${transition} rounded-full p-2 bg-dark/30 hover:opacity-60 hover:bg-dark/20`,
     "just-icon-white": `cursor-pointer flex h-fit ${transition} rounded-full p-2 bg-amber-opacity shadow-glow backdrop-blur-4xl text-white hover:opacity-60`,
@@ -130,8 +130,8 @@ export const Button = ({
           onClick={disabled ? null : onClick}
           disabled={disabled}
         >
-          {Icon && <Icon size={getIconSize(iconSize)} />}
           {title}
+          {Icon && <Icon size={getIconSize(iconSize)} />}
         </motion.button>
       );
     case "button-secondary":
