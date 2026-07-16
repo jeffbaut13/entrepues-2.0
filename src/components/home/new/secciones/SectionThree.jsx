@@ -1,44 +1,26 @@
+import { ChevronRight } from "lucide-react";
 import { Button } from "../../../ui/Button";
+import { useNavigate } from "react-router-dom";
 
 export const SectionThree = () => {
+  const navigate = useNavigate();
+  const handleLinkClick = (href) => {
+    navigate(href);
+  };
   return (
-    <div className="hide-logo-section size-full flex justify-center items-center text-secondary">
-      <div className="flex-1 hidden lg:inline-flex" />
-      <div className="flex-1 flex flex-col justify-center items-center">
-        <div className="flex flex-col justify-center items-center">
-          <span
-            className={`font-amithen text-5xl`}
-            role="text"
-            aria-label="Subtítulo"
-          >
-            Recorra
-          </span>
-          <h2
-            id="title-heading"
-            className={`font-parkson md:text-[11rem] text-9xl  md:leading-[10rem]`}
-          >
-            Colombia
-          </h2>
-          <h2
-            id="title-heading"
-            className={`font-parkson md:text-6xl text-5xl`}
-          >
-            A través de sus sabores
-          </h2>
-        </div>
-        <figure className="w-28 inline-block mt-12">
-          <img
-            className="w-full h-full object-contain inline-block"
-            src="/iconos/360.webp"
-            alt="Icono de 360"
-          />
-        </figure>
+    <div className="size-full flex justify-center items-center text-secondary">
+      <div className="size-full pb-8 flex flex-col items-center justify-end">
         <Button
-          customClass="mt-12"
-          fontSize="2xl"
-          type="enlace"
-          title={"Recorido 360º"}
-          href={"/descubrenos"}
+          title={
+            <span className="flex justify-center items-center gap-3 transition-all ease-in-out duration-300">
+              <span>Iniciar</span>
+              <ChevronRight className="border border-brown rounded-full size-5" />
+            </span>
+          }
+          type="newAnclaActive"
+          fontSize="base"
+          customClass="min-h-12 min-w-60!"
+          onClick={() => handleLinkClick("/descubrenos")}
         />
       </div>
     </div>

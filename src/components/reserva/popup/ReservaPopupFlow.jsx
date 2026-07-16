@@ -1,15 +1,23 @@
-﻿import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  LoaderCircle,
+  X,
+} from "lucide-react";
+import { WhatsappShareButton } from "react-share";
 
 import { useScrollLock } from "../../../hooks/useScrollLock";
 import useReservaStore from "../../../store/reservaStore";
 import useCheckoutStore from "../../../store/checkoutStore";
 import { ResumenReservaModal } from "./ResumenReservaModal";
 import { Button } from "../../ui/Button";
+import { formatRegionLabel } from "../../../data/puntos";
 
 import { CheckoutSuccesComponent } from "../../Checkout/CheckoutSuccesComponent";
-import { useIsMobile } from "../../../hooks/useIsMobile";
+
 import { ReservaComponent } from "../ReservaComponent";
 
 export const ReservaPopupFlow = ({
@@ -25,7 +33,8 @@ export const ReservaPopupFlow = ({
     String(selectedRegion || "").trim().length > 0;
   const shouldForceCantidadFromPoint =
     shouldForceReservaFromRegion && forcedStartStep === "cantidad";
-  const { resetCheckout, setShowResumen } = useCheckoutStore();
+  const { resetCheckout, setShowResumen, obtenerReservaGuardada } =
+    useCheckoutStore();
 
   const {
     flowStep,
@@ -38,8 +47,6 @@ export const ReservaPopupFlow = ({
     validateStepAtIndex,
   } = useReservaStore();
 
-  const isMobile = useIsMobile();
-
   useScrollLock(isOpen);
 
   // Orden condicional de pasos (incluye "platos" como último paso del slider)
@@ -51,31 +58,6 @@ export const ReservaPopupFlow = ({
   const regionStepIndex = orderedSteps.indexOf("region");
   const cantidadStepIndex = orderedSteps.indexOf("cantidad");
   const datosStepIndex = orderedSteps.indexOf("datos");
-  const fechaStepIndex = orderedSteps.indexOf("fecha");
-  const horaStepIndex = orderedSteps.indexOf("hora");
-  const platosStepIndex = orderedSteps.indexOf("platos");
-
-  const getReservaPopupWidth = () => {
-    if (isMobile) return "100%";
-
-    return "80rem";
-  };
-
-  const getReservaPopupHeight = () => {
-    if (isMobile) return "100dvh";
-    if (flowStep === "succes") return "40rem";
-
-    const heightsByStep = {
-      [regionStepIndex]: "40rem",
-      [cantidadStepIndex]: "25rem",
-      [datosStepIndex]: "45rem",
-      [fechaStepIndex]: "34rem",
-      [horaStepIndex]: "34rem",
-      [platosStepIndex]: "50rem",
-    };
-
-    return heightsByStep[currentStep] || "auto";
-  };
 
   const clearReservationState = () => {
     resetCheckout();
@@ -85,7 +67,6 @@ export const ReservaPopupFlow = ({
       localStorage.removeItem("checkout:reserva:temp");
       localStorage.removeItem("checkout:firebase:response");
       localStorage.removeItem("checkout:state:v1");
-      localStorage.removeItem("reserva:currentStep");
       localStorage.removeItem("reserva:state:v1");
     } catch (_) {}
   };
@@ -111,6 +92,13 @@ export const ReservaPopupFlow = ({
     }
 
     wasOpenRef.current = true;
+
+    // Si ya hay un paso persistido válido, respetar donde se quedó
+    const platosIndex = orderedSteps.indexOf("platos");
+    if (currentStep >= platosIndex && currentStep > 0) {
+      setFlowStep("reserva");
+      return;
+    }
 
     const visitantesCompletado = Boolean(pasosReserva?.visitantes?.completado);
 
@@ -156,20 +144,22 @@ export const ReservaPopupFlow = ({
   const currentStepName = orderedSteps[currentStep] || orderedSteps[0];
   const isLastStep = currentStepName === "platos";
   const isFirstStep = currentStep === 0;
-  
+
   // Ref para almacenar las funciones de PlatosSeleccion (continuar/volver)
   const platosActionsRef = useRef(null);
   const [isReadyToPay, setIsReadyToPay] = useState(false);
   const [isLastAsistente, setIsLastAsistente] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
   const registerConfirmar = (actions) => {
     platosActionsRef.current = actions;
     setIsReadyToPay(actions?.isReadyToPay?.() ?? false);
     setIsLastAsistente(actions?.isLastAsistente?.() ?? false);
+    setIsPaying(actions?.isLoading?.() ?? false);
   };
 
-  // Disabled: en el último paso y último asistente, solo si no está listo para pagar
+  // Disabled: en el último paso y último asistente, solo si no está listo para pagar o está cargando
   const isContinueDisabled = isLastStep
-    ? (isLastAsistente && !isReadyToPay)
+    ? (isLastAsistente && !isReadyToPay) || isPaying
     : !currentValidation.isValid;
 
   const handleBackAction = () => {
@@ -218,6 +208,45 @@ export const ReservaPopupFlow = ({
     onClose?.();
   };
 
+  // WhatsApp share data
+  const reservaGuardada = useMemo(
+    () => (flowStep === "succes" ? obtenerReservaGuardada() : null),
+    [flowStep, obtenerReservaGuardada],
+  );
+  const whatsappShareUrl = "https://restauranteentrepues.com";
+  const whatsappMessage = useMemo(() => {
+    if (!reservaGuardada) return "";
+    const detalles = reservaGuardada.detalles || {};
+    const asistentes = reservaGuardada.asistentes?.resumen || {};
+    const fecha = detalles.fecha || "";
+    const hora = detalles.hora || "";
+    const region = formatRegionLabel(detalles.region || "general");
+    const numeroReserva = detalles.numeroReserva || "----";
+    const totalPersonas =
+      Number(asistentes.adultos || 0) + Number(asistentes.ninos || 0);
+    const totalMascotas = Number(asistentes.mascotas || 0);
+    const mesaTexto =
+      totalMascotas > 0
+        ? `${totalPersonas} y ${totalMascotas === 1 ? "un peludito" : `${totalMascotas} peluditos`}`
+        : `${totalPersonas}`;
+
+    return [
+      "¡Eh Ave María, que gusto verlo!",
+      "Lo invitaron a una reserva en EntrePues y ya",
+      "está todo listo.",
+      " ",
+      "Le dejo todos los detalles:",
+      `📅 ${fecha}`,
+      `⏰ ${hora}`,
+      `📍 ${region}`,
+      `🍽️ Mesa para ${mesaTexto}`,
+      `🔖 #${numeroReserva}`,
+      " ",
+      "Qué emoción tenerlos por acá. ¡Los esperamos!",
+      " ",
+    ].join("\n");
+  }, [reservaGuardada]);
+
   return (
     <>
       <AnimatePresence>
@@ -233,7 +262,7 @@ export const ReservaPopupFlow = ({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="max-md:w-full max-md:h-full max-md:bg-amber-opacity max-md:backdrop-blur-[3rem] inline-flex flex-col justify-center items-center gap-2"
+              className="max-md:w-full max-md:h-full max-md:bg-amber-opacity max-md:backdrop-blur-[3rem] inline-flex flex-col justify-center items-center gap-2 md:max-h-[90dvh]"
               onClick={(e) => e.stopPropagation()}
             >
               <motion.div
@@ -241,10 +270,10 @@ export const ReservaPopupFlow = ({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.2 }}
-                className="w-full relative overflow-hidden"
+                className="w-full max-md:flex-1 max-md:min-h-0 md:h-[70dvh] relative overflow-hidden"
               >
-                <div className="w-full flex-1 md:max-w-220 lg:max-w-320 p-6 flex flex-col justify-end items-center gap-8 md:bg-amber-opacity rounded-t-[3rem] rounded-b-lg rounded-br-lg md:shadow-[0_-1px_1px_0_rgba(255,255,255,0.10)_inset,0_1px_1px_0_rgba(255,255,255,0.25)_inset] md:backdrop-blur-[3rem]">
-                  <motion.div className="w-full flex justify-end items-center ">
+                <div className="w-full h-full md:max-w-220 lg:max-w-320 p-6 flex flex-col justify-end items-center gap-8 md:bg-amber-opacity rounded-t-[3rem] rounded-b-lg rounded-br-lg md:shadow-[0_-1px_1px_0_rgba(255,255,255,0.10)_inset,0_1px_1px_0_rgba(255,255,255,0.25)_inset] md:backdrop-blur-[3rem]">
+                  <motion.div className="w-full flex justify-end items-center shrink-0">
                     {flowStep !== "succes" && (
                       <Button
                         type="just-icon-white"
@@ -256,7 +285,7 @@ export const ReservaPopupFlow = ({
                   </motion.div>
 
                   <motion.div
-                    className="w-full h-fit overflow-hidden border-[1px] border-secondary/60 flex-1 mx-auto flex items-center justify-center p-4 rounded-2xl"
+                    className="w-full flex-1 min-h-0 overflow-hidden border-[1px] border-secondary/60 mx-auto flex items-center justify-center p-4 rounded-2xl"
                     initial={{
                       opacity: 0,
                       y: 40,
@@ -267,7 +296,7 @@ export const ReservaPopupFlow = ({
                     }}
                     transition={{ duration: 0.2, delay: 0.1, ease: "easeOut" }}
                   >
-                    <div className="w-full min-h-140 h-1 overflow-hidden text-secondary">
+                    <div className="w-full h-full overflow-hidden text-secondary">
                       <AnimatePresence mode="wait">
                         {flowStep === "reserva" && (
                           <ReservaComponent
@@ -297,7 +326,39 @@ export const ReservaPopupFlow = ({
                 className="w-full md:max-w-220 lg:max-w-320 px-6 py-4 md:bg-amber-opacity rounded-tl-lg rounded-tr-lg rounded-bl-[3rem] rounded-br-[3rem] md:shadow-[0_-1px_1px_0_rgba(255,255,255,0.10)_inset,0_1px_1px_0_rgba(255,255,255,0.25)_inset] md:backdrop-blur-[3rem] inline-flex flex-col justify-end items-center gap-8"
               >
                 <div className="w-full flex justify-center items-center gap-4">
-                  {flowStep !== "succes" && (
+                  {flowStep === "succes" ? (
+                    <>
+                      <Button
+                        onClick={handleFinalizarSuccess}
+                        title={
+                          <span className="flex justify-center items-center gap-3 ">
+                            <Check
+                              size={18}
+                              className="border border-secondary rounded-full p-1"
+                            />
+                            <span>Finalizar</span>
+                          </span>
+                        }
+                        type="button-secondary"
+                        fontSize="base"
+                        customClass="min-h-12"
+                      />
+                      <WhatsappShareButton
+                        url={whatsappShareUrl}
+                        title={whatsappMessage}
+                        separator=""
+                      >
+                        <div className="min-h-12 md:min-w-52 min-w-40 tracking-widest flex justify-center items-center gap-2 cursor-pointer text-center rounded-full text-brown px-6 bg-secondary hover:opacity-60">
+                          <span className="text-base">Compartir</span>
+                          <img
+                            src="/iconos/whatsapp.svg"
+                            alt="WhatsApp"
+                            className="w-5 h-5"
+                          />
+                        </div>
+                      </WhatsappShareButton>
+                    </>
+                  ) : (
                     <>
                       <Button
                         onClick={handleBackAction}
@@ -314,13 +375,22 @@ export const ReservaPopupFlow = ({
                       <Button
                         onClick={handleContinueAction}
                         title={
-                          <span className="flex justify-center items-center gap-3">
+                          <span className="flex justify-center items-center gap-2">
                             <span>
-                              {isLastStep && isLastAsistente
-                                ? "Pagar"
-                                : "Continuar"}
+                              {isPaying
+                                ? "Cargando..."
+                                : isLastStep && isLastAsistente
+                                  ? "Pagar"
+                                  : "Continuar"}
                             </span>
-                            <ChevronRight className="border border-brown rounded-full" />
+                            {isPaying ? (
+                              <LoaderCircle
+                                className="animate-spin"
+                                size={18}
+                              />
+                            ) : (
+                              <ChevronRight className="border border-brown rounded-full" />
+                            )}
                           </span>
                         }
                         type="button-primary"

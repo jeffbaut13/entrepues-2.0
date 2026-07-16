@@ -12,6 +12,7 @@ import useReservaStore, {
 } from "../../store/reservaStore";
 
 import { ReservaPopupFlow } from "../reserva/popup/ReservaPopupFlow";
+import { MenuBurger } from "../menu/MenuBurger";
 import { useEffect, useRef, useState } from "react";
 import { useStreamingStore } from "../../store/streamingStore";
 
@@ -100,6 +101,9 @@ export default function MainLayout() {
           }}
         />
       </main>
+
+      
+      <MenuBurger />
 
       <ReservaPopupFlow
         isOpen={isReservePopupOpen}

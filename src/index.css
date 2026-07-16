@@ -77,7 +77,7 @@ body.not_scroll {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply lg:bg-secondary bg-brown/30 rounded-full;
+  @apply bg-secondary rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {

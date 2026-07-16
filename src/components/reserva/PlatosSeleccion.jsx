@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronUp,
   Plus,
+  Star,
   Trash2,
 } from "lucide-react";
 import {
@@ -666,6 +667,7 @@ export default function PlatosSeleccion({
       },
       isLastAsistente: () => ctaEsPago,
       isReadyToPay: () => todosRequeridosConPlatos,
+      isLoading: () => guardando || pagoEnProceso,
     });
   });
 
@@ -680,7 +682,7 @@ export default function PlatosSeleccion({
   // ===========================
 
   return (
-    <div className="w-full h-full mx-auto lg:pt-6">
+    <div className="w-full h-full mx-auto">
       <div className="w-full h-full flex lg:flex-row flex-col max-lg:gap-2 items-center justify-center max-lg:pt-6">
         {/* Interaccion de personas */}
 
@@ -694,7 +696,7 @@ export default function PlatosSeleccion({
             <h4 className="font-parkson font-bold">
               <span className="!text-5xl">Seleccione sus platos</span>
             </h4>
-            <p className="my-4">
+            <p className="my-4 text-sm">
               Si reserva sus platos desde ya, cuando llegue a la mesa, los
               serviremos en 5 minutos.
             </p>
@@ -706,7 +708,7 @@ export default function PlatosSeleccion({
                     asistentesLista[asistenteActual] ||
                       `Persona ${asistenteActual + 1}`,
                   )
-                    .replaceAll(/_/g, " ")
+                    .replaceAll("_", " ")
                     .toUpperCase()}
                 </span>
                 {(platosSeleccionados[asistenteActual]?.length ?? 0) <= 0 && (
@@ -737,7 +739,7 @@ export default function PlatosSeleccion({
           </div>
         </motion.div>
         {/* Menu dinamico */}
-        <div className="flex-3 lg:flex-1 lg:h-full h-20 max-lg:w-full min-w-0 flex items-center">
+        <div className="flex-3 lg:flex-1/5 lg:h-full h-20 max-lg:w-full min-w-0 flex items-center">
           {loading ? (
             <motion.div
               initial={{ opacity: 0 }}
@@ -864,7 +866,7 @@ const MenuSelected = ({
     <div className="w-full max-w-full min-w-0 h-full grid grid-rows-[auto minmax(0,1fr)_auto] overflow-x-hidden overflow-y-hidden rounded-3xl gap-4 px-4 pt-4 pb-2">
       {/* Nombres de Categorías */}
       {categorias.length > 0 && (
-        <div className="bg-secondary rounded-full shrink-0 px-2 max-w-full overflow-x-hidden">
+        <div className="bg-secondary min-h-8 rounded-full shrink-0 px-2 max-w-full overflow-x-hidden">
           <div
             className={`w-full flex overflow-x-auto ${
               isMobile ? "gap-2" : "justify-between"
@@ -872,7 +874,7 @@ const MenuSelected = ({
           >
             {categorias.map((categoria) => (
               <div
-                className={`relative flex items-center justify-center border-dark/20 ${
+                className={`relative flex items-center justify-center border-dark/20  ${
                   isMobile ? "min-w-[28.571%] shrink-0" : "w-fit"
                 }`}
                 key={categoria.key}
@@ -885,12 +887,12 @@ const MenuSelected = ({
                   type="button-thirty"
                   onClick={() => handleCategoriaChange(categoria.key)}
                   title={capitalizeFirst(
-                    String(categoria.displayName || categoria.key).replace(
-                      /_/g,
+                    String(categoria.displayName || categoria.key).replaceAll(
+                      "_",
                       " ",
                     ),
                   )}
-                  customClass={`text-start ${
+                  customClass={`p-2! text-sm! min-w-28! font-bold! text-dark! whitespace-nowrap text-start ${
                     categoriaActual === categoria.key
                       ? "opacity-100 rounded-full shadow-md"
                       : "opacity-40 hover:opacity-80"
@@ -937,24 +939,45 @@ const MenuSelected = ({
               contenidoCategoria = productosCategoria.map((plato) => (
                 <motion.div
                   key={plato.id}
-                  className={`group p-1.5 h-96 min-h-20 flex items-center gap-2 rounded-2xl transition-all cursor-pointer hover:bg-dark/10 relative overflow-hidden`}
+                  className={`group p-4 h-94 min-h-20 flex flex-col justify-between gap-2 rounded-2xl transition-all cursor-pointer bg-amber-full/25 hover:bg-amber-full/10 relative overflow-hidden`}
                   onClick={() => handleSeleccionarPlato(plato)}
                 >
-                  <PlatoThumbnail src={plato.img} alt={plato.nombre} />
-                  <p className="pl-1 font-medium flex-1 min-w-0 text-start lg:line-clamp-1 line-clamp-2 whitespace-normal">
+                  <div className="grid grid-cols-2">
+                    <PlatoThumbnail src={plato.img} alt={plato.nombre} />
+                  </div>
+                  <div className="w-fit flex items-center gap-2 bg-secondary text-dark px-4 py-1.5 rounded-full">
+                    <span className="font-bold">4.0</span>
+                    <span className="size-4">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 8 8"
+                        className="fill-yellow size-full object-contain"
+                      >
+                        <path
+                          d="M6.47078 8L4 6.64108L1.52827 8L2.00142 5.11972L0 3.08035L2.76319 2.66039L4 0L5.23681 2.66039L8 3.08035L5.99858 5.12071L6.47078 8Z"
+                          fill="#FFC529"
+                        />
+                      </svg>
+                    </span>
+                    <span className="opacity-60">(999+)</span>
+                  </div>
+                  <p className="min-w-0 text-start lg:line-clamp-1 line-clamp-2 whitespace-normal">
                     {plato.nombre}
                   </p>
-                  <span className="hidden md:inline-block opacity-0 group-hover:opacity-100 px-3 py-1.5 rounded-md bg-dark text-white absolute left-[22%] top-0 !text-xs transition-all duration-500 delay-200">
-                    {plato.nombre}
-                  </span>
-
-                  <p className="font-bold mt-1 text-start shrink-0 whitespace-nowrap">
+                  
+                  <p className="font-bold text-3xl text-start shrink-0 whitespace-nowrap">
                     ${plato.precio.toLocaleString("es-CO")}
                   </p>
+                  <div className="flex items-center gap-2 w-fit">
+                    <span className="bg-yellow text-xs text-dark font-bold py-2 px-4 rounded-full">
+                      -10%
+                    </span>
+                    <span className="line-through text-base">41000</span>
+                  </div>
 
                   {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
                   <div
-                    className="w-fit shrink-0 flex flex-col items-start justify-center p-1"
+                    className="w-full shrink-0 flex flex-col items-start justify-center p-1"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <AnimatePresence mode="wait" initial={false}>
@@ -965,7 +988,7 @@ const MenuSelected = ({
                           animate={{ opacity: 1, scale: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.92, y: -4 }}
                           transition={{ duration: 0.16, ease: "easeOut" }}
-                          className="rounded-full border border-dark/15 px-2 py-1 bg-white/40"
+                          className="w-full"
                         >
                           <IncremenAndDecrementComponent
                             item={obtenerCantidadPlato(plato.id)}
@@ -988,9 +1011,10 @@ const MenuSelected = ({
                           transition={{ duration: 0.16, ease: "easeOut" }}
                           onClick={() => incrementarCantidadPlato(plato)}
                           aria-label={`Agregar ${plato.nombre}`}
-                          className="p-1 w-8 h-8 rounded-full bg-[#65c566]"
+                          className="w-full h-12 flex gap-2 items-center justify-center rounded-full shadow-glow backdrop-blur-4xl"
                         >
-                          <Plus className={"text-secondary size-full"} />
+                          Agregar
+                          <Plus className={"text-secondary size-6"} />
                         </motion.button>
                       )}
                     </AnimatePresence>
@@ -1010,7 +1034,7 @@ const MenuSelected = ({
                 key={categoria.key}
                 className="!h-full !overflow-hidden"
               >
-                <div className="w-full max-w-full h-full min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain grid lg:grid-cols-2 grid-cols-1 gap-3 content-start auto-rows-max pl-2 pr-2">
+                <div className="w-full max-w-full h-full min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain grid md:grid-cols-2 grid-cols-1 gap-3 content-start auto-rows-max pl-2 pr-2">
                   {contenidoCategoria}
                 </div>
               </SwiperSlide>
@@ -1024,7 +1048,7 @@ const MenuSelected = ({
 };
 
 // ===========================
-// COMPONENTE RESUMEN REUTILIZABLE
+// COMPONENTE RESUMEN
 // ===========================
 
 const ResumenPlatosDetalle = ({
@@ -1043,11 +1067,11 @@ const ResumenPlatosDetalle = ({
   return (
     <div className={`w-full flex flex-col gap-3 ${maxHeight} overflow-y-auto`}>
       {/* Avatars de asistentes */}
-      {showAvatars && asistentesLista.length > 1 && (
+      {showAvatars && helpTextRequired && asistentesLista.length > 1 && (
         <div className="w-full flex items-center gap-6 pb-2 border-b border-secondary/20">
           {asistentesLista.map((asistente, index) => {
             const nombreAsistente = String(asistente || `Persona ${index + 1}`)
-              .replace(/_/g, " ")
+              .replaceAll("_", " ")
               .toUpperCase();
             return (
               <button
@@ -1140,14 +1164,21 @@ const ResumenPlatosDetalle = ({
   );
 };
 
+// ===========================
+// Componente para renderizar la imagen
+// ===========================
+
+
 const PlatoThumbnail = ({ src, alt }) => {
+ 
+  
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 
   return (
-    <picture className="relative w-20 h-20 max-lg:w-16 max-lg:h-16 shrink-0 block rounded-2xl overflow-hidden border border-[#e6e6e6] bg-[#f5f1ea]">
+    <picture className="relative w-26 h-26 shrink-0 block rounded-2xl overflow-hidden">
       {!isLoaded && !hasError && (
-        <span className="absolute inset-0 inline-block animate-pulse bg-gradient-to-br from-[#efe7da] via-[#f7f3eb] to-[#e8dece]" />
+        <span className="absolute inset-0 inline-block animate-pulse bg-dark/20" />
       )}
 
       {!hasError && src ? (

@@ -76,7 +76,7 @@ export default function SliderVertical({
     updateReservaField("mascotas", nextMascotas);
 
   useEffect(() => {
-    if (swiperRef.current && swiperRef.current.swiper) {
+    if (isMountedRef.current && swiperRef.current?.swiper) {
       swiperRef.current.swiper.slideTo(currentStep);
     }
   }, [currentStep]);
@@ -95,7 +95,17 @@ export default function SliderVertical({
     isNonDefaultTime,
   ]);
 
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const handleSlideChange = (swiper) => {
+    if (!isMountedRef.current) return;
     setCurrentStep(swiper.activeIndex);
   };
 

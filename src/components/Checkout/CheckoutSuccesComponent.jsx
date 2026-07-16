@@ -1,11 +1,8 @@
 import { useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { WhatsappShareButton } from "react-share";
-import { Button } from "../ui/Button";
 import useCheckoutStore from "../../store/checkoutStore";
-import { X } from "lucide-react";
-import { formatRegionLabel } from "../../data/puntos";
+import { Logo } from "../ui/Logo";
 
 const capitalizeSentence = (value = "") => {
   const text = String(value || "").trim();
@@ -13,30 +10,9 @@ const capitalizeSentence = (value = "") => {
   return text.charAt(0).toUpperCase() + text.slice(1);
 };
 
-const formatMesaPhrase = (adultos = 0, ninos = 0, mascotas = 0) => {
-  const totalPersonas = Number(adultos || 0) + Number(ninos || 0);
-  const totalMascotas = Number(mascotas || 0);
-
-  if (totalPersonas <= 0 && totalMascotas <= 0) {
-    return "ustedes";
-  }
-
-  const personasTexto = totalPersonas === 1 ? "1" : `${totalPersonas}`;
-
-  if (totalMascotas <= 0) {
-    return personasTexto;
-  }
-
-  if (totalMascotas === 1) {
-    return `${personasTexto} y un peludito`;
-  }
-
-  return `${personasTexto} y ${totalMascotas} peluditos`;
-};
-
 export const CheckoutSuccesComponent = ({ onFinalizar }) => {
   const navigate = useNavigate();
-  const { obtenerReservaGuardada, resetCheckout } = useCheckoutStore();
+  const { obtenerReservaGuardada } = useCheckoutStore();
 
   const reserva = useMemo(
     () => obtenerReservaGuardada(),
@@ -52,58 +28,20 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
     }
   }, [reserva, navigate, onFinalizar]);
 
-  const handleFinalizar = () => {
-    resetCheckout();
-    if (typeof onFinalizar === "function") {
-      onFinalizar();
-      return;
-    }
-  };
-
   const detallesReserva = reserva?.detalles || {};
   const asistentesReserva = reserva?.asistentes || {};
   const resumenAsistentes = asistentesReserva?.resumen || {};
-  const contactoReserva = reserva?.contacto || {};
 
   const numeroReserva = detallesReserva?.numeroReserva || "----";
-  const nombreReserva = capitalizeSentence(contactoReserva?.nombre || "");
-  /* const shareUrl =
-    typeof window !== "undefined" && window.location?.origin
-      ? window.location.origin
-      : "https://restauranteentrepues.com"; */
-  const shareUrl ="https://restauranteentrepues.com";
+
   const fechaReserva = capitalizeSentence(detallesReserva?.fecha || "");
   const horaReserva = detallesReserva?.hora || "";
-  const regionReserva = formatRegionLabel(detallesReserva?.region || "general");
-  const mesaReservaTexto = formatMesaPhrase(
-    resumenAsistentes?.adultos,
-    resumenAsistentes?.ninos,
-    resumenAsistentes?.mascotas,
-  );
-  const mensajeWhatsApp = [
-    `¡Eh Ave María, que gusto verlo!`,
-    "Lo invitaron a una reserva en EntrePues y ya",
-    "está todo listo.",
-    " ",
-    "Le dejo todos los detalles:",
-    `📅 ${fechaReserva}`,
-    `⏰ ${horaReserva}`,
-    `📍 ${regionReserva}`,
-    `🍽️ Mesa para ${mesaReservaTexto}`,
-    `🔖 #${numeroReserva}`,
-    " ",
-    "Qué emoción tenerlos por acá. ¡Los esperamos!",
-    " ",
-    " ",
-  ]
-    .filter(Boolean)
-    .join("\n");
 
   if (!reserva) return null;
 
   return (
-    <div className="size-full mx-auto flex justify-center items-center">
-      <div className="md:max-w-4xl size-full bg-secondary flex justify-center items-center">
+    <div className="size-full lg:min-w-280 sm:min-w-156 flex justify-center items-center">
+      <div className="w-full flex justify-center items-center">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -115,80 +53,54 @@ export const CheckoutSuccesComponent = ({ onFinalizar }) => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
-            <h2 className="font-parkson !text-6xl">¡Listo {nombreReserva}!</h2>
-            <h2 className="font-parkson !text-3xl">
-              Su reserva está confirmada
-            </h2>
-          </motion.div>
-
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.35 }}
-            className="space-y-2"
-          >
-            <p className="text-2xl border border-dark/40 rounded-full px-4 py-2 inline-block">
+            <Logo color={"white"} size={"md"} />
+            <h2 className="font-parkson lg:!text-3xl text-5xl!">
+              Reserva confirmada
+              <br />
               N°: <strong>{numeroReserva}</strong>
+            </h2>
+            <p className="my-2">
+              Sus platos estarán listos 5 minutos después de su llegada.
             </p>
           </motion.div>
+
+          <div className="border border-secondary/60 rounded-3xl grid grid-cols-2 grid-rows-2 gap-2 p-6 my-2">
+            <div className="justify-self-start text-start">
+              Km. 9 Autopista Norte vía Tunja
+            </div>
+            <div className="justify-self-end text-end">
+              {Number(resumenAsistentes?.adultos || 0) +
+                Number(resumenAsistentes?.ninos || 0) +
+                Number(resumenAsistentes?.mascotas || 0)}{" "}
+              {Number(resumenAsistentes?.adultos || 0) +
+                Number(resumenAsistentes?.ninos || 0) +
+                Number(resumenAsistentes?.mascotas || 0) <
+              2
+                ? "Persona"
+                : "Personas"}
+            </div>
+            <div className="justify-self-start text-start">{fechaReserva}</div>
+            <div className="justify-self-end text-end">{horaReserva}</div>
+          </div>
 
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.35 }}
-            className="space-y-2"
+            className="flex flex-col justify-center items-center gap-6 mt-6"
           >
             <p>
-              Sus platos estarán listos <br />5 minutos después de su llegada.
+              Le informamos que el tiempo de espera es de 15 minutos. Los
+              horarios de <br className="hidden lg:block" />
+              cierre de cocina son los siguientes:
             </p>
+            <div className="max-w-xl justify-center flex flex-wrap [&_div]:bg-amber-full/5 [&_div]:p-2 [&_div]:rounded-full [&_div]:min-w-42 gap-2">
+              <div>Lunes - Martes 9:30 pm</div>
+              <div>Miercoles 10 pm</div>
+              <div>Jueves - Sábado 11 pm</div>
+              <div>Domingo 9:30 pm</div>
+            </div>
           </motion.div>
-
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.35 }}
-            className="flex flex-col justify-center items-center gap-6"
-          >
-            <p>
-              Comparta los detalles de la reserva <br />y nos vemos en
-              EntrePues.
-            </p>
-            <Button
-              type="button-secondary"
-              title={
-                <WhatsappShareButton
-                  url={shareUrl}
-                  title={mensajeWhatsApp}
-                  separator=""
-                  className="rounded-full"
-                >
-                  <div className="flex items-center gap-3 rounded-full px-4 py-2 transition-all duration-300 hover:opacity-60">
-                    <i className="w-6">
-                      <img
-                        src="/iconos/whatsapp.svg"
-                        alt="compartir reserva por WhatsApp"
-                      />
-                    </i>{" "}
-                    Compartir
-                  </div>
-                </WhatsappShareButton>
-              }
-              fontSize="lg"
-              customClass="bg-green-400 px-4"
-            />
-          </motion.div>
-
-          {/* Boton de compartir whatsapp */}
-
-          <Button
-            onClick={handleFinalizar}
-            title="Finalizar"
-            Icon={X}
-            width="ajustado"
-            type="just-icon"
-            customClass="absolute top-2 right-2"
-            fontSize="2xl"
-          />
         </motion.div>
       </div>
     </div>

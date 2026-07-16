@@ -7,6 +7,7 @@ import { streamingData as allData } from "../../../../data/streaming";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import "swiper/css";
+import { Play } from "../../../header/Header";
 
 export const SectionFour = () => {
   return (
@@ -23,8 +24,6 @@ const InteractiveHover = () => {
     currentStreamingId,
     arrayStreaming,
   } = useStreamingStore();
-
-  console.log(allData);
 
   const [isMobile, setIsMobile] = useState(false);
   const [overlayVisible, setOverlayVisible] = useState(false);
@@ -112,7 +111,7 @@ const InteractiveHover = () => {
   };
 
   return (
-    <div className="hide-logo-section size-full flex items-center justify-center text-lg">
+    <div className="hide-logo-section size-full flex items-center justify-center text-lg overflow-x-hidden">
       <div className="size-full absolute top-0 left-0 z-1">
         <div className="overlay bg-black/60!" />
         <video
@@ -125,8 +124,10 @@ const InteractiveHover = () => {
           className="size-full object-cover inline-block"
           onLoadedData={handleVideoReady}
         >
+          aplicalros aca
           <source
             src="/video/historia/historia.mp4"
+            // TODO Cuando se tengan los videos se llenan en el json para
             //src={videoUrl}
             type="video/mp4"
           />
@@ -139,16 +140,12 @@ const InteractiveHover = () => {
         animate={{ opacity: overlayVisible ? 1 : 0 }}
         transition={{ duration: 0.35, ease: "easeInOut" }}
       />
-      <div className="size-full md:px-24 px-6 relative z-10 flex flex-col justify-center items-center">
-        <div className="md:flex-2/3 flex-1 w-full flex justify-center md:items-end gap-4">
-          <div className="flex-1 flex flex-col justify-end md:items-start items-center">
-            <figure className="lg:w-56 w-32 h-auto inline-block mb-3">
-              <img
-                className="size-full object-contain inline-block"
-                src="/iconos/logo-subtitle.svg"
-                alt="Logo EntrePues"
-              />
-            </figure>
+      <div className="size-full relative z-10 flex flex-col justify-center items-center">
+        <div className="flex-1 w-full grid lg:grid-cols-2 grid-cols-1 pb-24">
+          <div className="col-start-2 flex-1 flex flex-col justify-end md:items-start items-center">
+            <h2 className="font-parkson text-5xl text-secondary">
+              {title}
+            </h2>
 
             <AnimatePresence mode="wait">
               {showDescription && (
@@ -158,11 +155,7 @@ const InteractiveHover = () => {
                       ? { opacity: 0, height: "auto" }
                       : { opacity: 0, height: 0 }
                   }
-                  animate={
-                    isMobile
-                      ? { opacity: 1, height: "auto" }
-                      : { opacity: 1, height: "auto" }
-                  }
+                  animate={{ opacity: 1, height: "auto" }}
                   exit={
                     isMobile
                       ? { opacity: 0, height: "auto" }
@@ -177,7 +170,7 @@ const InteractiveHover = () => {
                     animate={isMobile ? { opacity: 1 } : { opacity: 1, y: 0 }}
                     exit={isMobile ? { opacity: 0 } : { opacity: 0, y: -8 }}
                     transition={{ duration: 0.45, ease: "easeOut" }}
-                    className="text-secondary my-3 max-w-2xl"
+                    className="text-secondary my-3 lg:max-w-2xl max-lg:px-4"
                   >
                     {description}
                   </motion.p>
@@ -185,62 +178,111 @@ const InteractiveHover = () => {
               )}
             </AnimatePresence>
             <Button
+              type="newAnclaActive"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              type="button-white"
               title={
-                <>
+                <span className="flex justify-center items-center gap-3 transition-all ease-in-out duration-300">
                   <span>Reproducir</span>
-                  <i className="w-8 h-8 flex justify-center items-center p-2 pl-2.5 bg-white rounded-full">
-                    <img
-                      src="/iconos/play.svg"
-                      alt="play icon"
-                      className="size-full inline-block object-contain invert"
-                    />
-                  </i>
-                </>
+                  <span className="size-6 [&_.icon-svg]:stroke-brown">
+                    <Play />
+                  </span>
+                </span>
               }
-              fontSize="2xl"
+              fontSize="base"
+              customClass="min-h-12 min-w-60! mt-4"
               onClick={onOpenHistoriaVideoPopup}
-              customClass="mt-3"
             />
           </div>
-          <div className="flex-1 hidden lg:inline-flex" />
         </div>
 
-        <div className="flex md:flex-2/5 flex-1 w-full justify-center items-center">
+        <div className="w-full z-20 pb-8">
           {isMobile ? (
             <MobileStreamingSlider
               currentStreamingId={currentStreamingId}
               changeStreaming={changeStreaming}
             />
           ) : (
-            <div className="w-full flex justify-between items-center gap-12">
-              {allData.map((item) => (
-                <motion.button
-                  onMouseEnter={() => {
-                    if (!isMobile) changeStreaming(item.id);
-                  }}
-                  onClick={onOpenHistoriaVideoPopup}
-                  key={item.id}
-                  className={`relative w-103 h-61 overflow-hidden rounded-2xl inline-block ${currentStreamingId === item.id ? "scale-110 opacity-100" : "hover:scale-110 opacity-40 hover:opacity-80"} transition-all duration-300  `}
-                >
-                  <div className="bg-black size-full absolute top-0 left-0 opacity-40 z-1" />
-                  <img
-                    src={item.thumbnail}
-                    alt={item.title}
-                    className="object-cover size-full absolute top-0 left-0 z-0"
-                  />
-                  <div className="absolute bottom-0 left-0 p-2 z-10 text-secondary text-start">
-                    <h2 className="font-parkson text-4xl">{item.title}</h2>
-                    <p className="text-sm">{item.shortDescription}</p>
-                  </div>
-                </motion.button>
-              ))}
-            </div>
+            <DesktopStreamingSlider
+              currentStreamingId={currentStreamingId}
+              changeStreaming={changeStreaming}
+              onOpenHistoriaVideoPopup={onOpenHistoriaVideoPopup}
+            />
           )}
         </div>
       </div>
+    </div>
+  );
+};
+
+const DesktopStreamingSlider = ({
+  currentStreamingId,
+  changeStreaming,
+  onOpenHistoriaVideoPopup,
+}) => {
+  const swiperRef = useRef(null);
+
+  useEffect(() => {
+    const swiper = swiperRef.current;
+    if (!swiper) return;
+    const targetIndex = allData.findIndex(
+      (item) => item.id === currentStreamingId,
+    );
+    if (targetIndex >= 0 && targetIndex !== swiper.realIndex) {
+      swiper.slideToLoop(targetIndex);
+    }
+  }, [currentStreamingId]);
+
+  const handleSlideChange = (swiper) => {
+    const centerItem = allData[swiper.realIndex];
+    if (centerItem) changeStreaming(centerItem.id);
+  };
+
+  return (
+    <div className="w-full">
+      <Swiper
+        onSwiper={(swiper) => {
+          swiperRef.current = swiper;
+        }}
+        onSlideChangeTransitionEnd={handleSlideChange}
+        slidesPerView="auto"
+        spaceBetween={20}
+        loop={false}
+        style={{ marginLeft: "max(80px, calc((100vw - 1280px) / 2 + 60px))" }}
+        className="!overflow-visible"
+      >
+        {allData.map((item) => (
+          <SwiperSlide key={item.id} className="!w-[320px]">
+            <motion.button
+              onMouseEnter={() => changeStreaming(item.id)}
+              onClick={onOpenHistoriaVideoPopup}
+              className={`relative w-full h-[200px] overflow-hidden rounded-2xl inline-block cursor-pointer ${
+                currentStreamingId === item.id
+                  ? "scale-105 opacity-100"
+                  : "opacity-50 hover:opacity-80 hover:scale-105"
+              } transition-all duration-300`}
+            >
+              <div className="bg-black size-full absolute top-0 left-0 opacity-40 z-1" />
+              <img
+                src={item.thumbnail}
+                alt={item.title}
+                className="object-cover size-full absolute top-0 left-0 z-0"
+              />
+              <div className="absolute bottom-3 left-3 z-10 text-secondary text-start">
+                <h2 className="font-parkson text-3xl leading-tight">
+                  {item.title}
+                </h2>
+                <p className="text-sm mt-1">{item.shortDescription}</p>
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center z-10">
+                <div className="w-12 h-12 rounded-full border-2 border-white/80 flex items-center justify-center">
+                  <img src="/iconos/play.svg" alt="play" className="w-5 h-5" />
+                </div>
+              </div>
+            </motion.button>
+          </SwiperSlide>
+        ))}
+      </Swiper>
     </div>
   );
 };

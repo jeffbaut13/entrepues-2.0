@@ -64,11 +64,15 @@ export const Button = ({
 
   const transition = `transition-all ease-in-out duration-300`;
   const disabledStyle = `disabled:opacity-40 disabled:!cursor-not-allowed`;
-  const baseStyle = `md:min-w-52 min-w-40 tracking-widest flex justify-center items-center gap-1 cursor-pointer text-center rounded-full ${transition} ${disabledStyle}`;
-  const primary = `${baseStyle} bg-dark/40 text-brown px-6 bg-secondary hover:opacity-60`;
+  const baseStyle = `group md:min-w-52 min-w-40 tracking-widest flex justify-center items-center gap-1 cursor-pointer text-center rounded-full ${transition} ${disabledStyle}`;
+  const primary = `${baseStyle} bg-dark/40 text-brown px-6 bg-secondary hover:opacity-80`;
+  const enlace = `${baseStyle} shadow-glow backdrop-blur-4xl shadow-glow bg-amber-opacity text-secondary font-bold hover:opacity-80`;
+
+  const newAnclaActive = `${baseStyle} text-brown px-6 font-bold bg-secondary hover:opacity-80`;
   const listas = {
     "button-primary": primary,
-    enlace: primary,
+    enlace: enlace,
+    newAnclaActive: newAnclaActive,
     "button-secondary": `${baseStyle} shadow-glow bg-dark/40 backdrop-blur-4xl hover:opacity-60 text-secondary`,
     "button-thirty": `${baseStyle} font-light text-dark`,
     "button-dark": `${baseStyle} font-parkson text-secondary bg-dark hover:bg-dark/80 p-4`,
@@ -135,6 +139,22 @@ export const Button = ({
         </motion.button>
       );
     case "button-secondary":
+      return (
+        <motion.button
+          type="button"
+          {...motionProps}
+          {...props}
+          className={`${getWidthClass(width)} ${getFontSizeClass(fontSize)} ${
+            listas[type]
+          } ${customClass}`}
+          onClick={onClick}
+          disabled={disabled}
+        >
+          {Icon && <Icon size={getIconSize(iconSize)} />}
+          {title}
+        </motion.button>
+      );
+    case "newAnclaActive":
       return (
         <motion.button
           type="button"

@@ -442,7 +442,6 @@ export const useReservaStore = create(
 
       setCurrentStep: (step) => {
         set({ currentStep: step });
-        localStorage.setItem("reserva:currentStep", JSON.stringify(step));
       },
 
       setHasUserSelectedDate: (value) =>

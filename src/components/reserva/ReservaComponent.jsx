@@ -38,31 +38,9 @@ export const ReservaComponent = ({
 
   /* zustand */
 
-  const { setCurrentStep, seleccionarZona } = useReservaStore();
+  const { seleccionarZona } = useReservaStore();
 
   const regionFromUrl = region || null;
-
-  useEffect(() => {
-    if (regionFromUrl) return;
-
-    try {
-      const raw = localStorage.getItem("checkout:reserva:temp");
-      if (!raw) return;
-
-      const parsed = JSON.parse(raw);
-      const debeAbrirMenu =
-        parsed?.estado === "temporal" && parsed?.uiState?.showMenu === true;
-
-      if (debeAbrirMenu) {
-        setCurrentStep(3);
-      }
-    } catch (error) {
-      console.error(
-        "Error restaurando estado de menú desde checkout temp:",
-        error,
-      );
-    }
-  }, [regionFromUrl, setCurrentStep]);
 
   useEffect(() => {
     if (!regionFromUrl) return;
@@ -72,10 +50,6 @@ export const ReservaComponent = ({
 
     seleccionarZona(regionToSelect);
   }, [regionFromUrl, seleccionarZona]);
-
-  useEffect(() => {
-    if (!regionFromUrl) return;
-  }, [regionFromUrl]);
 
   return (
     <SliderVertical

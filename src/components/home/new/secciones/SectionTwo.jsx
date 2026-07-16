@@ -1,35 +1,31 @@
-import { Button } from "../../../ui/Button";
+import { useOutletContext } from "react-router-dom";
+import { ButtonCarta, ButtonReserva } from "./SectionOne";
 
 export const SectionTwo = () => {
+  const { onOpenReservePopup } = useOutletContext();
   return (
     <div className="size-full flex justify-center items-center text-secondary">
       <div className="absolute bg-black/50 size-full top-0 left-0 z-1" />
-      <div className="flex-1 flex flex-col justify-center items-center required z-10">
-        <div className="flex flex-col justify-center items-center gap-4">
-          <span
-            className={`font-parkson text-4xl mb-4`}
-            role="text"
-            aria-label="Subtítulo"
-          >
+      <div className="z-2 relative size-full max-w-7xl mx-auto grid lg:grid-cols-2 grid-cols-1">
+        <div className="flex flex-col justify-center gap-6 lg:items-end items-center lg:col-start-2 lg:justify-self-end">
+          <span role="text" aria-label="Subtítulo">
             Plato de la semana
           </span>
-          <h2 id="title-heading" className={`font-parkson text-8xl leading-6`}>
+          <h2 id="title-heading" className="font-parkson text-5xl">
             Bandeja paisa
           </h2>
-          <h2 id="title-heading" className={`mt-14 max-w-2xl`}>
-            Aquí hemos ido juntando lo mejor de cada rincón de Colombia, pero
-            sin perder lo nuestro, <br className="hidden lg:block" /> lo bien
-            paisa, lo de antes.
+          <h2 id="title-heading" className={`max-w-2xl md:text-end`}>
+            Aquí hemos juntado lo mejor de cada rincón de Colombia{" "}
+            <br /> pero sin perder lo nuestro.
           </h2>
+          <div className="flex gap-2">
+            <ButtonCarta transition={false} />
+            <ButtonReserva
+              onOpenReservePopup={onOpenReservePopup}
+              transition={false}
+            />
+          </div>
         </div>
-
-        <Button
-          customClass="mt-6"
-          type="enlace"
-          title={"ver menú"}
-          href={"/carta"}
-          fontSize="2xl"
-        />
       </div>
     </div>
   );

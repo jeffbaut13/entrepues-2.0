@@ -6,7 +6,7 @@ import { SectionOne } from "./secciones/SectionOne";
 import { SectionTwo } from "./secciones/SectionTwo";
 import { SectionThree } from "./secciones/SectionThree";
 import { SectionFour } from "./secciones/SectionFour";
-import { SiteFooter } from "../../footer/SiteFooter";
+
 import { useIsMobile } from "../../../hooks/useIsMobile";
 
 const sections = [
@@ -19,10 +19,18 @@ const sections = [
     component: <SectionOne />,
   },
   {
-    id: "menu",
+    id: "recorrido",
     title: "Caja 2",
-    img: "/imagenes/receta-semanal/section_three.webp",
-    imgMobile: "/imagenes/receta-semanal/section_threeM.webp",
+    img: "/imagenes/home/recorrido/bg-recorrido.webp",
+    imgMobile: "/imagenes/home/recorrido/bg-recorrido-m.webp",
+    scaleEffect: false,
+    component: <SectionThree />,
+  },
+  {
+    id: "menu",
+    title: "caja 3",
+    img: "/imagenes/home/menu/background_menu.webp",
+    imgMobile: "/imagenes/home/menu/background_menuM.webp",
     scaleEffect: false,
     component: <SectionTwo />,
   },
@@ -33,14 +41,6 @@ const sections = [
     imgMobile: "/imagenes/home/streaming/background_StreamM.webp",
     scaleEffect: false,
     component: <SectionFour />,
-  },
-  {
-    id: "footer",
-    title: "Footer",
-    img: "",
-    imgMobile: "",
-    scaleEffect: false,
-    component: <SiteFooter />,
   },
 ];
 

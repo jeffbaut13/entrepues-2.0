@@ -301,7 +301,7 @@ export const useCheckoutStore = create(
             throw new Error(guardado.error || "No se pudo guardar en Firebase");
           }
 
-          // Pasarela deshabilitada por ahora: se retorna ok para mostrar success
+          // Aqui va la pasarela de pago segun la logica q solicite, por ahora: se retorna ok para mostrar success
           const reservaPersistida = {
             firestoreId: guardado.id,
             ...(guardado.data || {}),
